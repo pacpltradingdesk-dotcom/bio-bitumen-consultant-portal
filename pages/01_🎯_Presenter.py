@@ -567,4 +567,95 @@ act2.page_link("pages/09_💰_Financial.py", label="Edit Financials", icon="💰
 act3.page_link("pages/15_🤖_AI_Advisor.py", label="AI Advisor", icon="🤖")
 act4.page_link("pages/03_📝_Project_Setup.py", label="Edit Project Info", icon="📝")
 
+# ══════════════════════════════════════════════════════════════════════
+# AI MEETING COPILOT (Sidebar — Available on EVERY slide)
+# ══════════════════════════════════════════════════════════════════════
+try:
+    from engines.ai_engine import is_ai_available
+    if is_ai_available():
+        from engines.meeting_copilot import (live_qa, handle_objection, COMMON_OBJECTIONS,
+            generate_cma_narrative, compare_competitor, generate_meeting_minutes,
+            analyze_govt_schemes, generate_investment_thesis, narrate_scenario)
+
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("### AI Meeting Copilot")
+
+        audience = st.sidebar.selectbox("Presenting to:",
+            ["Investor", "Bank Officer", "Govt Officer", "Farmer", "Competitor Client"],
+            key="audience_type")
+
+        copilot_mode = st.sidebar.radio("Mode:",
+            ["Live Q&A", "Handle Objection", "CMA for Bank", "Compare Competitor",
+             "Govt Schemes", "Investment Thesis", "Meeting Notes"],
+            key="copilot_mode")
+
+        if copilot_mode == "Live Q&A":
+            qa_input = st.sidebar.text_input("Client's question:", key="qa_input",
+                                              placeholder="Type what the client asked...")
+            if qa_input and st.sidebar.button("Answer Now", key="qa_go", type="primary"):
+                with st.sidebar:
+                    with st.spinner("AI thinking..."):
+                        answer, prov = live_qa(qa_input, audience, cfg)
+                    st.markdown(answer)
+                    st.caption(f"Powered by {prov}")
+
+        elif copilot_mode == "Handle Objection":
+            obj_list = COMMON_OBJECTIONS.get(audience.split()[0], COMMON_OBJECTIONS["Investor"])
+            obj_select = st.sidebar.selectbox("Common objections:", ["Custom..."] + obj_list, key="obj_sel")
+            if obj_select == "Custom...":
+                obj_text = st.sidebar.text_input("Type objection:", key="obj_custom")
+            else:
+                obj_text = obj_select
+            if obj_text and st.sidebar.button("Destroy Objection", key="obj_go", type="primary"):
+                with st.sidebar:
+                    with st.spinner("Building response..."):
+                        response, prov = handle_objection(obj_text, audience, cfg)
+                    st.markdown(response)
+
+        elif copilot_mode == "CMA for Bank":
+            if st.sidebar.button("Generate CMA Narrative", key="cma_go", type="primary"):
+                with st.sidebar:
+                    with st.spinner("Generating bank-ready CMA..."):
+                        cma, prov = generate_cma_narrative(cfg)
+                    st.markdown(cma)
+
+        elif copilot_mode == "Compare Competitor":
+            comp_names = [c["name"] for c in COMPETITORS]
+            comp_sel = st.sidebar.selectbox("Select competitor:", comp_names, key="comp_sel")
+            if st.sidebar.button("Compare Now", key="comp_go", type="primary"):
+                with st.sidebar:
+                    with st.spinner("Analyzing..."):
+                        comp_result, prov = compare_competitor(comp_sel, audience, cfg)
+                    st.markdown(comp_result)
+
+        elif copilot_mode == "Govt Schemes":
+            if st.sidebar.button("Analyze All Schemes", key="scheme_go", type="primary"):
+                with st.sidebar:
+                    with st.spinner("Analyzing eligibility..."):
+                        schemes, prov = analyze_govt_schemes(cfg)
+                    st.markdown(schemes)
+
+        elif copilot_mode == "Investment Thesis":
+            if st.sidebar.button("Generate Thesis", key="thesis_go", type="primary"):
+                with st.sidebar:
+                    with st.spinner("Building investment case..."):
+                        thesis, prov = generate_investment_thesis(cfg, audience)
+                    st.markdown(thesis)
+
+        elif copilot_mode == "Meeting Notes":
+            notes = st.sidebar.text_area("Type meeting notes:", height=150, key="meeting_notes",
+                placeholder="Client interested in 20TPD\nAsked about DSCR\nWants DPR by Friday...")
+            if notes and st.sidebar.button("Generate Minutes", key="notes_go", type="primary"):
+                with st.sidebar:
+                    with st.spinner("Generating minutes..."):
+                        minutes, prov = generate_meeting_minutes(notes, cfg)
+                    st.markdown(minutes)
+
+    else:
+        st.sidebar.markdown("---")
+        st.sidebar.info("Add API keys in AI Settings for AI Meeting Copilot")
+        st.sidebar.page_link("pages/17_🔑_AI_Settings.py", label="AI Settings", icon="🔑")
+except Exception:
+    pass
+
 st.caption(f"{COMPANY['name']} | {COMPANY['owner']} | {COMPANY['phone']} | Consultant Presentation System")
