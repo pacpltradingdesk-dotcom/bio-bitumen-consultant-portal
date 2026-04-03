@@ -70,7 +70,7 @@ else:
                     st.rerun()
 
     with lc2:
-        st.page_link("pages/34_Project_Setup.py", label="Go to Full Project Setup", icon="📝")
+        st.page_link("pages/03_📝_Project_Setup.py", label="Go to Full Project Setup", icon="📝")
         st.caption("Set client name, project name, site address, and all details")
 
 st.markdown("---")

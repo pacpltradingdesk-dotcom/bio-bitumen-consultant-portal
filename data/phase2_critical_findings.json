@@ -1,0 +1,31 @@
+{
+  "critical_errors": [
+    "MASTER_DATA.py get_annual_rev() uses wrong product model (oil+char vs bitumen)",
+    "Revenue figures (rev_yr1_cr, rev_yr5_cr) in MASTER_DATA.py don't match Excel models",
+    "Interest rate conflict: MASTER_DATA.py=10.5% vs Excel=11.5%",
+    "Biomass cost conflict: MASTER_DATA.py=Rs 8000/MT vs Excel=Rs 2000/MT",
+    "Investment component gaps (10MT-50MT): 5-13% unaccounted amounts",
+    "DSCR values in MASTER_DATA.py are not derivable from stated figures",
+    "Variable cost per MT: Excel=Rs 22,000/MT vs MASTER_DATA formula is completely different"
+  ],
+  "excel_revenue_model": {
+    "bitumen_price_per_mt": 35000,
+    "biochar_per_mt": 4000,
+    "syngas_per_mt": 1250,
+    "total_per_mt": 40250,
+    "variable_cost_per_mt": 22000,
+    "utilization_schedule": {
+      "yr1": 0.4,
+      "yr2": 0.55,
+      "yr3": 0.7,
+      "yr4": 0.8,
+      "yr5": 0.9
+    }
+  },
+  "master_data_revenue_model": {
+    "oil_price_per_litre": 38,
+    "char_price_per_kg": 10,
+    "biomass_cost_per_mt": 8000,
+    "interest_rate": 0.105
+  }
+}

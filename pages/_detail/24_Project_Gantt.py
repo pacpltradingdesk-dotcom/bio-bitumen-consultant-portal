@@ -28,7 +28,7 @@ customers = get_all_customers()
 
 if not customers:
     st.warning("No customers in CRM. Add customers first to track project timelines.")
-    st.page_link("pages/12_Customers.py", label="Go to Customer Manager", icon="👥")
+    st.page_link("pages/14_👥_Customers.py", label="Go to Customer Manager", icon="👥")
     st.stop()
 
 # ══════════════════════════════════════════════════════════════════════
