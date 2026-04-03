@@ -214,7 +214,7 @@ elif step_idx == 2:
                 st.markdown(stage['description'])
                 st.markdown(f"**CAPEX:** {stage['capex']} | **Manpower:** {stage['manpower']} | **Space:** {stage.get('space', stage.get('network', 'N/A'))}")
         st.page_link("pages/07_⚙️_Plant_Design.py", label="⚙️ Full Plant Design (5-100 TPD)", icon="⚙️")
-        st.page_link("pages/_detail/02c_Process_Flow.py", label="🔄 13-Step Process Flow", icon="🔄")
+        st.page_link("pages/02c_Process_Flow.py", label="🔄 13-Step Process Flow", icon="🔄")
 
     elif selected_type == "bitumen_owner":
         st.markdown("""
@@ -243,7 +243,7 @@ elif step_idx == 2:
 
         **Your advantage:** Raw material cost near ZERO = HIGHEST margin in the chain
         """)
-        st.page_link("pages/_detail/02a_Technology.py", label="🔬 CSIR-CRRI Technology Details", icon="🔬")
+        st.page_link("pages/02a_Technology.py", label="🔬 CSIR-CRRI Technology Details", icon="🔬")
 
     elif selected_type == "pyrolysis_owner":
         st.markdown("""
@@ -376,7 +376,7 @@ elif step_idx == 4:
         | Week 13+ | Commercial production + sales |
         """)
 
-    st.page_link("pages/_detail/02d_Timeline.py", label="📅 Detailed Project Timeline", icon="📅")
+    st.page_link("pages/02d_Timeline.py", label="📅 Detailed Project Timeline", icon="📅")
 
 # ── STEP 6: COMPLIANCE ───────────────────────────────────────────────
 elif step_idx == 5:
@@ -472,7 +472,7 @@ elif step_idx == 7:
 
     st.markdown("### Generate Your Documents NOW")
     doc_cols = st.columns(4)
-    doc_cols[0].page_link("pages/_detail/15_DPR_Generator.py", label="📄 Generate DPR", icon="📄")
+    doc_cols[0].page_link("pages/15_DPR_Generator.py", label="📄 Generate DPR", icon="📄")
     doc_cols[1].page_link("pages/09_💰_Financial.py", label="💰 Financial Model", icon="💰")
     doc_cols[2].page_link("pages/08_📐_Drawings.py", label="📐 All Drawings", icon="📐")
     doc_cols[3].page_link("pages/15_🤖_AI_Advisor.py", label="🤖 Ask AI", icon="🤖")

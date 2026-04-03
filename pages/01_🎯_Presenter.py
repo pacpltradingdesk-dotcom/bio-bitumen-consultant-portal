@@ -246,7 +246,7 @@ elif slide == 5:
     - India became FIRST country to commercially produce bio-bitumen (Jan 2026)
     """)
 
-    st.page_link("pages/_detail/02a_Technology.py", label="See Technology Details", icon="🔬")
+    st.page_link("pages/02a_Technology.py", label="See Technology Details", icon="🔬")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 6: PROCESS FLOW
@@ -273,7 +273,7 @@ elif slide == 6:
     for step, desc in steps:
         st.markdown(f"**{step}** — {desc}")
 
-    st.page_link("pages/_detail/02c_Process_Flow.py", label="See Detailed Process Flow", icon="🔄")
+    st.page_link("pages/02c_Process_Flow.py", label="See Detailed Process Flow", icon="🔄")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 7: PLANT LAYOUT
@@ -361,7 +361,7 @@ elif slide == 9:
     p3.metric("DSCR Yr3", f"{cfg.get('dscr_yr3', 0):.2f}x")
     p4.metric("Annual Revenue Yr5", f"Rs {cfg.get('revenue_yr5_lac', 0):.0f} Lac")
 
-    st.page_link("pages/_detail/19_ROI_Quick_Calc.py", label="Interactive ROI Calculator", icon="🎯")
+    st.page_link("pages/19_ROI_Quick_Calc.py", label="Interactive ROI Calculator", icon="🎯")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 10: COMPLIANCE & LICENSES
@@ -439,7 +439,7 @@ elif slide == 12:
     fig.update_layout(template="plotly_white", height=450)
     st.plotly_chart(fig, width="stretch")
 
-    st.page_link("pages/_detail/24_Project_Gantt.py", label="Customer-Specific Timeline", icon="📅")
+    st.page_link("pages/24_Project_Gantt.py", label="Customer-Specific Timeline", icon="📅")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 13: RISK ANALYSIS
@@ -460,7 +460,7 @@ elif slide == 13:
         with st.expander(f"{sev} {r['category']}: {r['risk'][:60]} (Score: {r['score']}/25)"):
             st.markdown(f"**Mitigation:** {r['mitigation']}")
 
-    st.page_link("pages/_detail/26_Risk_Matrix.py", label="Full Risk Matrix", icon="⚠️")
+    st.page_link("pages/26_Risk_Matrix.py", label="Full Risk Matrix", icon="⚠️")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 14: FINAL PROPOSAL & DOCUMENTS
@@ -496,11 +496,11 @@ elif slide == 14:
 
     d1, d2, d3 = st.columns(3)
     d1.page_link("pages/13_📁_Document_Hub.py", label="Generate ALL Documents (ZIP)", icon="📁")
-    d2.page_link("pages/_detail/15_DPR_Generator.py", label="Generate DPR", icon="📄")
-    d3.page_link("pages/_detail/20_Loan_EMI_Calculator.py", label="Loan EMI Calculator", icon="🏦")
+    d2.page_link("pages/15_DPR_Generator.py", label="Generate DPR", icon="📄")
+    d3.page_link("pages/20_Loan_EMI_Calculator.py", label="Loan EMI Calculator", icon="🏦")
 
     d4, d5, d6 = st.columns(3)
-    d4.page_link("pages/_detail/27_Export_Center.py", label="Export All Data", icon="📤")
+    d4.page_link("pages/27_Export_Center.py", label="Export All Data", icon="📤")
     d5.page_link("pages/03_📝_Project_Setup.py", label="Edit Project Details", icon="📝")
     d6.page_link("pages/15_🤖_AI_Advisor.py", label="Ask AI Advisor", icon="🤖")
 
