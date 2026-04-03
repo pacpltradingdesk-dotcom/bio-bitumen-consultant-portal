@@ -1,0 +1,74 @@
+{
+  "audit_date": "2026-04-02",
+  "auditor": "Senior Financial Auditor (AI-Assisted)",
+  "scope": "3,085 files - Bio-Modified Bitumen Project",
+  "critical_errors": 4,
+  "high_errors": 4,
+  "medium_errors": 3,
+  "findings": [
+    {
+      "id": "F01",
+      "severity": "CRITICAL",
+      "title": "Excel unit mixing error",
+      "description": "Revenue computed in Rs but labeled as Lakhs. Inflates all P&L, cashflow, DSCR by 100,000x. DSCR shows 7,933x instead of ~2x.",
+      "affected_files": "All 7 COMPLETE_Financial_Model_BANK_READY.xlsx",
+      "action": "MUST FIX - Divide revenue/cost cells by 100000 OR change label to Rs"
+    },
+    {
+      "id": "F02",
+      "severity": "CRITICAL",
+      "title": "Three conflicting revenue datasets",
+      "description": "MASTER_DATA.py formula, MASTER_DATA.py stated values, and Excel models all produce different revenue numbers for same capacity.",
+      "affected_files": "MASTER_DATA.py + All Excel models + All DOCX reports",
+      "action": "MUST FIX - Establish single source of truth"
+    },
+    {
+      "id": "F03",
+      "severity": "CRITICAL",
+      "title": "Investment component gaps",
+      "description": "10MT-50MT: Sum of components is 5-13% less than stated investment. Missing line items.",
+      "affected_files": "MASTER_DATA.py",
+      "action": "MUST FIX - Add missing components (electrical, misc)"
+    },
+    {
+      "id": "F04",
+      "severity": "CRITICAL",
+      "title": "DSCR completely wrong in Excel",
+      "description": "Shows 7,933x (impossible). Bank minimum is 1.5x. Any CA would reject immediately.",
+      "affected_files": "All 7 Excel models - Sheet 10_DSCR",
+      "action": "MUST FIX - Correct unit basis"
+    },
+    {
+      "id": "F05",
+      "severity": "HIGH",
+      "title": "Interest rate conflict",
+      "description": "MASTER_DATA.py uses 10.5%, Excel uses 11.5%.",
+      "affected_files": "MASTER_DATA.py vs Excel Key_Assumptions",
+      "action": "Standardize to 11.5% (SBI MCLR + spread)"
+    },
+    {
+      "id": "F06",
+      "severity": "HIGH",
+      "title": "Biomass cost conflict",
+      "description": "Rs 2,000/MT in assumptions vs Rs 8,000/MT in production cost.",
+      "affected_files": "Excel Sheet 2 vs Sheet 4",
+      "action": "Verify market rate and standardize"
+    },
+    {
+      "id": "F07",
+      "severity": "HIGH",
+      "title": "Location inconsistency",
+      "description": "MASTER_DATA says Pune for 5MT, Excel says Lakhimpur Kheri UP.",
+      "affected_files": "MASTER_DATA.py vs Excel",
+      "action": "Standardize all location references"
+    },
+    {
+      "id": "F08",
+      "severity": "HIGH",
+      "title": "Depreciation method conflict",
+      "description": "MASTER_DATA uses WDV 15%, Excel uses SLM 10%.",
+      "affected_files": "MASTER_DATA.py vs Excel",
+      "action": "Choose one method and apply consistently"
+    }
+  ]
+}

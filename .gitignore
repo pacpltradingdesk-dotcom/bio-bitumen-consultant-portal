@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+data/api_cache_*.json
+data/auto_update_log.json
+data/consultant_portal.db
+data/test_outputs/
+data/deep_content.json
+data/extracted_content.json
+data/repair_log.json
+*.b64
+.claude/

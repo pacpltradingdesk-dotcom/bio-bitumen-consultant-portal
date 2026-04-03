@@ -1,0 +1,12 @@
+streamlit>=1.30.0
+pandas
+numpy
+plotly
+python-docx
+reportlab
+openpyxl
+Pillow
+pytz
+requests
+yfinance
+fpdf2
