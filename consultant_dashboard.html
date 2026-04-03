@@ -641,9 +641,23 @@ function dashboard(){
     backgroundColor:season.map(s=>mp*s>=0?'#006699':'#CC3333')}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
    });
+  },
+
+  // ═══ KEYBOARD NAVIGATION (Meeting Mode) ═══
+  meetingTabs:['client','project','rawmaterial','production','financial','sensitivity','documents'],
+  handleKey(e){
+   if(!this.meetingMode)return;
+   let idx=this.meetingTabs.indexOf(this.tab);
+   if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();this.tab=this.meetingTabs[Math.min(idx+1,this.meetingTabs.length-1)];}
+   if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();this.tab=this.meetingTabs[Math.max(idx-1,0)];}
+   if(e.key==='Escape'){this.meetingMode=false;}
   }
  }
 }
+document.addEventListener('keydown',function(e){
+ let app=document.querySelector('[x-data]').__x.$data||{};
+ if(app.handleKey)app.handleKey(e);
+});
 </script>
 </body>
 </html>
