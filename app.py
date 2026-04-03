@@ -363,6 +363,7 @@ with nav[4]:
     st.page_link("pages/29_Training.py", label="Training & SOPs", icon="📚")
     st.page_link("pages/16_AI_Advisor.py", label="AI Advisor", icon="🤖")
     st.page_link("pages/34_Project_Setup.py", label="Project Setup", icon="📝")
+    st.page_link("pages/35_AI_Settings.py", label="AI Settings", icon="🔑")
     st.page_link("pages/32_System_Calculations.py", label="System & Formulas", icon="🔧")
 
 st.markdown("---")

@@ -145,6 +145,26 @@ with gen_col1:
         except Exception as e:
             st.error(f"Investor Pitch generation failed: {e}")
 
+    # AI DPR Writer
+    try:
+        from engines.ai_engine import is_ai_available, ai_write_dpr_section, ai_auto_report
+        if is_ai_available():
+            st.markdown("---")
+            st.markdown("**AI-Powered Writing**")
+            ai_section = st.selectbox("AI Write Section",
+                ["executive_summary", "market_analysis", "technical_description",
+                 "risk_assessment", "compliance_narrative"], key="ai_section",
+                format_func=lambda x: x.replace("_", " ").title())
+            if st.button("Generate with AI", key="ai_write"):
+                with st.spinner("AI writing..."):
+                    text, provider = ai_auto_report(ai_section, cfg, COMPANY)
+                if text:
+                    st.markdown(text)
+                    st.download_button("Download AI Text", text,
+                                        f"AI_{ai_section}_{client_prefix}.txt", "text/plain", key="dl_ai_text")
+    except Exception:
+        pass
+
 with gen_col2:
     st.markdown("**Financial & Technical Documents**")
 

@@ -9,3 +9,4 @@ data/extracted_content.json
 data/repair_log.json
 *.b64
 .claude/
+data/ai_config.json

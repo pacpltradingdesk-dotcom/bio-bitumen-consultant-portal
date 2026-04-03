@@ -557,13 +557,34 @@ for msg in st.session_state["chat_history"]:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
+# AI Mode indicator
+try:
+    from engines.ai_engine import is_ai_available, ai_chat, get_active_provider
+    ai_on = is_ai_available()
+    provider = get_active_provider()
+    if ai_on:
+        st.caption(f"🟢 AI Mode: **{provider.upper()}** — Real AI answers enabled")
+    else:
+        st.caption("🟡 Built-in Mode — 100+ patterns. Add API keys in AI Settings for smart AI chat.")
+except Exception:
+    ai_on = False
+
 # Chat input
 if prompt := st.chat_input("Ask about bio-bitumen plant setup, subsidies, loans, safety, carbon credits..."):
     st.session_state["chat_history"].append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    # Try built-in first for quick structured answers
     response = answer_question(prompt)
+
+    # If built-in gives default/generic response AND AI is available, use AI
+    if ai_on and ("I can help with" in response or "25+ topic areas" in response):
+        with st.spinner("AI thinking..."):
+            ai_response, used_provider = ai_chat(prompt, st.session_state["chat_history"], cfg)
+            if ai_response and used_provider != "none":
+                response = ai_response + f"\n\n*— Powered by {used_provider.upper()}*"
+
     st.session_state["chat_history"].append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
         st.markdown(response)

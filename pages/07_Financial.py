@@ -355,12 +355,41 @@ if cfg.get("roi_timeline"):
                            template="plotly_white", height=400, yaxis_title="Rs Lac")
     st.plotly_chart(fig_cum, width="stretch")
 
+# ═══════════════════════════════════════════════════════════════════
+# AI FINANCIAL ANALYSIS (NEW — powered by OpenAI/Claude)
+# ═══════════════════════════════════════════════════════════════════
+st.markdown("---")
+st.subheader("AI Financial Analysis")
+
+try:
+    from engines.ai_engine import is_ai_available, ai_financial_analysis
+    if is_ai_available():
+        if st.button("Generate AI Financial Commentary", type="primary", key="ai_fin"):
+            with st.spinner("AI analyzing your financial model..."):
+                analysis, provider = ai_financial_analysis(cfg)
+            if analysis:
+                st.markdown(f"""
+                <div style="background: #f8f9fa; border-left: 4px solid #003366; padding: 15px 20px;
+                            border-radius: 0 8px 8px 0;">
+                    {analysis.replace(chr(10), '<br>')}
+                    <p style="color: #999; margin-top: 10px; font-size: 0.8em;">Powered by {provider.upper()}</p>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.warning("AI analysis could not be generated. Check API settings.")
+    else:
+        st.info("Add API keys in AI Settings to enable AI-powered financial analysis.")
+        st.page_link("pages/35_AI_Settings.py", label="Go to AI Settings", icon="🔑")
+except Exception:
+    pass
+
 # Quick links
 st.markdown("---")
 st.subheader("Related Tools")
-ql1, ql2, ql3 = st.columns(3)
+ql1, ql2, ql3, ql4 = st.columns(4)
 ql1.page_link("pages/19_ROI_Quick_Calc.py", label="ROI Quick Calculator", icon="🎯")
 ql2.page_link("pages/20_Loan_EMI_Calculator.py", label="Loan EMI Calculator", icon="🏦")
 ql3.page_link("pages/21_Capacity_Compare.py", label="Capacity Comparison", icon="⚖️")
+ql4.page_link("pages/35_AI_Settings.py", label="AI Settings", icon="🔑")
 
 st.caption("All values auto-calculate when ANY input changes. This model is bank-ready and investor-grade.")
