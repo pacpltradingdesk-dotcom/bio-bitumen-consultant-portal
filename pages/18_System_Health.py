@@ -6,6 +6,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import streamlit as st
+from state_manager import init_state, get_config
 import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timezone, timedelta
@@ -23,6 +24,8 @@ from config import COMPANY
 IST = timezone(timedelta(hours=5, minutes=30))
 
 st.set_page_config(page_title="System Health", page_icon="🏥", layout="wide")
+init_state()
+cfg = get_config()
 init_db()
 st.title("System Health & Auto-Monitoring")
 st.markdown("**10-Component Health Check | Auto-Updater | Self-Healing | Repair Log**")

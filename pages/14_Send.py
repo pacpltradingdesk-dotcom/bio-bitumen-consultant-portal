@@ -6,6 +6,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import streamlit as st
+from state_manager import init_state, get_config
 import pandas as pd
 from database import (init_db, get_all_customers, get_customer,
                        get_packages_for_customer, get_communications_for_customer,
@@ -16,6 +17,8 @@ from engines.whatsapp_engine import generate_whatsapp_message, get_whatsapp_link
 from config import COMPANY, CAPACITY_KEYS, CAPACITY_LABELS
 
 st.set_page_config(page_title="Send to Customer", page_icon="📧", layout="wide")
+init_state()
+cfg = get_config()
 init_db()
 st.title("Send to Customer")
 

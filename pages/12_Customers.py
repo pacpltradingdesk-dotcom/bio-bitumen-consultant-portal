@@ -6,6 +6,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import streamlit as st
+from state_manager import init_state, get_config
 import pandas as pd
 from database import (init_db, insert_customer, update_customer, delete_customer,
                        get_all_customers, search_customers, get_customer,
@@ -13,6 +14,8 @@ from database import (init_db, insert_customer, update_customer, delete_customer
 from config import CAPACITY_KEYS, CAPACITY_LABELS, STATES, CUSTOMER_STATUSES
 
 st.set_page_config(page_title="Customer Manager", page_icon="👥", layout="wide")
+init_state()
+cfg = get_config()
 init_db()
 st.title("Customer Manager")
 

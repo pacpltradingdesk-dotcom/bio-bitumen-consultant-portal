@@ -5,10 +5,13 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import streamlit as st
+from state_manager import init_state, get_config
 import pandas as pd
 import plotly.express as px
 
 st.set_page_config(page_title="Product Grades", page_icon="🧪", layout="wide")
+init_state()
+cfg = get_config()
 st.title("Product Grades & Specifications")
 st.markdown("**Bio-Bitumen VG Grade Matrix | IS:73 Compliance | MoRTH 2026 Standards**")
 st.markdown("---")

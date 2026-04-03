@@ -6,11 +6,14 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import streamlit as st
+from state_manager import init_state, get_config
 from document_index import build_index, search_index
 from config import (CAPACITY_KEYS, CAPACITY_LABELS, FILE_TYPES,
                     DOCUMENT_SECTIONS, SUBMISSION_CATEGORIES, STATES)
 
 st.set_page_config(page_title="Document Library", page_icon="📚", layout="wide")
+init_state()
+cfg = get_config()
 st.title("Document Library")
 
 # Load index

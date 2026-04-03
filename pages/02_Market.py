@@ -5,6 +5,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import streamlit as st
+from state_manager import init_state, get_config
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
@@ -12,6 +13,8 @@ from engines.market_data_api import get_market_summary
 from config import STATES
 
 st.set_page_config(page_title="Market Intelligence", page_icon="📈", layout="wide")
+init_state()
+cfg = get_config()
 st.title("Market Intelligence (LIVE DATA)")
 st.markdown("**Real-time: Crude Oil | USD/INR | VG30 Estimate | Demand Heatmap | Govt Projects**")
 st.markdown("---")

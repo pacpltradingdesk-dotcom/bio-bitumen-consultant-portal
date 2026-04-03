@@ -11,11 +11,12 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import datetime
-from state_manager import init_state
+from state_manager import init_state, get_config
 from config import COMPANY, NHAI_TENDERS, STATES
 
 st.set_page_config(page_title="NHAI Tender Tracker", page_icon="🛣️", layout="wide")
 init_state()
+cfg = get_config()
 
 st.title("NHAI & Government Tender Tracker")
 st.markdown("**Track NHAI, State PWD, BRO, PMGSY road project tenders — Filter, Analyze, Act**")

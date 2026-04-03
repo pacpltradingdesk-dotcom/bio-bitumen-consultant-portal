@@ -65,17 +65,29 @@ def generate_dpr_pdf(output_path, cfg, company):
     now = datetime.now(IST)
     elements = []
 
-    # ── COVER PAGE ────────────────────────────────────────────────────
+    # ── COVER PAGE (with client info) ────────────────────────────────
+    client_name = cfg.get("client_name", "")
+    project_name = cfg.get("project_name", f"Bio-Modified Bitumen Plant — {cfg['capacity_tpd']:.0f} MT/Day")
+    site_address = cfg.get("site_address", f"{cfg.get('location', 'To be finalized')}, {cfg.get('state', '')}")
+
     elements.append(Spacer(1, 3 * cm))
     elements.append(Paragraph("DETAILED PROJECT REPORT (DPR)", styles["Title2"]))
     elements.append(Spacer(1, 0.5 * cm))
-    elements.append(Paragraph(f"Bio-Modified Bitumen Plant — {cfg['capacity_tpd']:.0f} MT/Day", styles["Sub"]))
+    elements.append(Paragraph(project_name, styles["Sub"]))
     elements.append(Spacer(1, 0.5 * cm))
+    if client_name:
+        elements.append(Paragraph(f"Prepared for: {client_name}", styles["Sub"]))
+        if cfg.get("client_company"):
+            elements.append(Paragraph(f"{cfg['client_company']}", styles["Body"]))
     elements.append(Paragraph(f"Total Investment: Rs {cfg['investment_cr']:.2f} Crore", styles["Sub"]))
+    elements.append(Paragraph(f"Location: {site_address}", styles["Body"]))
     elements.append(Spacer(1, 1 * cm))
     elements.append(Paragraph(f"Prepared by: {company['trade_name']}", styles["Body"]))
+    elements.append(Paragraph(f"Consultant: {company['owner']} | {company['phone']}", styles["Body"]))
     elements.append(Paragraph(f"Date: {now.strftime('%d %B %Y')}", styles["Body"]))
-    elements.append(Paragraph(f"Contact: {company['owner']} | {company['phone']}", styles["Body"]))
+    if cfg.get("project_id"):
+        elements.append(Paragraph(f"Reference: {cfg['project_id']}", styles["Body"]))
+    elements.append(Paragraph(f"CONFIDENTIAL", styles["Body"]))
     elements.append(PageBreak())
 
     # ── 1. PROJECT OVERVIEW ───────────────────────────────────────────

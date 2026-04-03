@@ -9,11 +9,12 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
-from state_manager import init_state
+from state_manager import init_state, get_config
 from config import COMPANY, COMPETITORS, PPS_SWOT
 
 st.set_page_config(page_title="Competitor Intelligence", page_icon="🕵️", layout="wide")
 init_state()
+cfg = get_config()
 
 st.title("Competitor Intelligence")
 st.markdown("**Market Positioning | SWOT Analysis | Competitive Radar | Differentiation**")

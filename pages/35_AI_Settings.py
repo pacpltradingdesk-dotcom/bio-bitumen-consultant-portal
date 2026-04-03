@@ -8,13 +8,14 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import streamlit as st
-from state_manager import init_state
+from state_manager import init_state, get_config
 from engines.ai_engine import (load_ai_config, save_ai_config, test_api_connection,
                                  is_ai_available, get_active_provider)
 from config import COMPANY
 
 st.set_page_config(page_title="AI Settings", page_icon="🔑", layout="wide")
 init_state()
+cfg = get_config()
 
 st.title("AI Settings — API Key Management")
 st.markdown("**Configure OpenAI (GPT-4o) and/or Claude (Sonnet) for AI-powered features**")

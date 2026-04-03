@@ -10,11 +10,12 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 import numpy as np
-from state_manager import init_state
+from state_manager import init_state, get_config
 from config import COMPANY, RISK_REGISTRY
 
 st.set_page_config(page_title="Risk Assessment", page_icon="⚠️", layout="wide")
 init_state()
+cfg = get_config()
 
 st.title("Risk Assessment Matrix")
 st.markdown("**20 Project Risks | Probability x Impact Heatmap | Mitigation Strategies**")

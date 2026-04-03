@@ -12,12 +12,13 @@ import plotly.graph_objects as go
 from datetime import datetime
 from database import (init_db, get_all_customers, get_milestones,
                        init_milestones_for_customer, update_milestone)
-from state_manager import init_state
+from state_manager import init_state, get_config
 from config import COMPANY
 
 st.set_page_config(page_title="Project Gantt", page_icon="📅", layout="wide")
 init_db()
 init_state()
+cfg = get_config()
 
 st.title("Project Timeline & Gantt Chart")
 st.markdown("**Per-Customer Milestone Tracking | 10-Phase Implementation | Status Updates**")

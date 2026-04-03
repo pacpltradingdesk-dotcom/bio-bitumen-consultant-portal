@@ -7,11 +7,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import streamlit as st
 import pandas as pd
-from state_manager import init_state
+from state_manager import init_state, get_config
 from config import COMPANY, TRAINING_MODULES, FOUR_STAGES
 
 st.set_page_config(page_title="Training & Knowledge Base", page_icon="📚", layout="wide")
 init_state()
+cfg = get_config()
 
 st.title("Training & Knowledge Base")
 st.markdown("**8 Training Modules | SOPs | FAQs | Plant Operations Guide**")

@@ -7,10 +7,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from state_manager import init_state
+from state_manager import init_state, get_config
 
 st.set_page_config(page_title="Technology", page_icon="🔬", layout="wide")
 init_state()
+cfg = get_config()
 st.title("Technology Validation & Process")
 st.markdown("**CSIR-CRRI Licensed Technology | KrishiBind Bio-Binder | Proven at Lab & Field Level**")
 st.markdown("---")

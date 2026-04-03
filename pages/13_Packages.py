@@ -6,6 +6,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import streamlit as st
+from state_manager import init_state, get_config
 import pandas as pd
 from database import (init_db, get_all_customers, get_customer, insert_package)
 from master_data_loader import get_plant, get_plants
@@ -16,6 +17,8 @@ from document_index import build_index, search_index
 from config import CAPACITY_KEYS, CAPACITY_LABELS, STATES
 
 st.set_page_config(page_title="Package Builder", page_icon="📦", layout="wide")
+init_state()
+cfg = get_config()
 init_db()
 st.title("Package Builder")
 st.markdown("Build customized document packages for your customers.")

@@ -5,11 +5,14 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import streamlit as st
+from state_manager import init_state, get_config
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
 st.set_page_config(page_title="Lab Testing", page_icon="🔬", layout="wide")
+init_state()
+cfg = get_config()
 st.title("Lab Testing & Performance Validation")
 st.markdown("**CSIR-CRRI Validated | IS:73 Compliant | Field Trial Proven**")
 st.markdown("---")
