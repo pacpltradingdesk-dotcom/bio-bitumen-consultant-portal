@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPS Anantams — Consultant Dashboard</title>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--navy:#003366;--teal:#006699;--green:#00AA44;--red:#CC3333;--amber:#FF8800;--blue:#0088cc;--bg:#f4f6f9;--card:#fff;--text:#222;--muted:#666;--border:#dde}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+.header{background:linear-gradient(135deg,var(--navy),var(--teal));color:#fff;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.header h1{font-size:1.3em;font-weight:600}
+.header .controls{display:flex;gap:8px;align-items:center}
+.btn{padding:6px 16px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:.2s}
+.btn-primary{background:#fff;color:var(--navy)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-green{background:var(--green);color:#fff}
+.btn-amber{background:var(--amber);color:#fff}
+.btn-small{padding:4px 10px;font-size:11px}
+.container{display:flex;min-height:calc(100vh - 52px)}
+.sidebar{width:220px;background:var(--navy);color:#fff;padding:12px 0;flex-shrink:0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.sidebar a{display:block;padding:10px 20px;color:#aac;text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:.15s}
+.sidebar a:hover,.sidebar a.active{background:#004c8c;color:#fff;border-left-color:var(--blue)}
+.sidebar .section-title{padding:12px 20px 4px;font-size:10px;text-transform:uppercase;color:#668;letter-spacing:1px}
+.main{flex:1;padding:20px;max-width:1200px;overflow-y:auto}
+.card{background:var(--card);border-radius:10px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.card h2{font-size:1.1em;color:var(--navy);margin-bottom:12px;border-bottom:2px solid var(--teal);padding-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:3px;font-weight:600;text-transform:uppercase}
+.field input,.field select,.field textarea{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;outline:none;transition:.2s}
+.field input:focus,.field select:focus{border-color:var(--teal);box-shadow:0 0 0 2px rgba(0,102,153,.15)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--navy);color:#fff;padding:8px 10px;text-align:left;font-size:11px;text-transform:uppercase}
+td{padding:6px 10px;border-bottom:1px solid var(--border)}
+td input{width:100%;border:1px solid transparent;background:transparent;padding:4px 6px;font-size:12px;border-radius:3px}
+td input:focus{border-color:var(--teal);background:#f0f8ff}
+tr:hover{background:#f8fafc}
+.metric{text-align:center;padding:16px;border-radius:8px;background:linear-gradient(135deg,#f0f8ff,#e8f4fd)}
+.metric .value{font-size:1.8em;font-weight:700;color:var(--navy)}
+.metric .label{font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase}
+.metric.green .value{color:var(--green)}
+.metric.red .value{color:var(--red)}
+.metric.amber .value{color:var(--amber)}
+.tag-green{color:var(--green);font-weight:700}
+.tag-red{color:var(--red);font-weight:700}
+.tag-amber{color:var(--amber);font-weight:700}
+.doc-panel{background:#fff;border:1px solid #ddd;padding:40px 60px;max-width:800px;margin:0 auto;font-family:'Georgia',serif;line-height:1.8;min-height:600px}
+.doc-panel h3{text-align:center;color:var(--navy);margin-bottom:20px}
+.doc-panel .letterhead{text-align:center;border-bottom:3px solid var(--navy);padding-bottom:12px;margin-bottom:20px}
+.doc-panel .letterhead h4{color:var(--navy);font-size:1.2em}
+.doc-panel .letterhead p{font-size:11px;color:var(--muted)}
+.sensitivity td{padding:8px 12px;text-align:center;font-weight:600;font-size:13px}
+.log-entry{font-size:11px;padding:4px 0;border-bottom:1px solid #eee;color:var(--muted)}
+.meeting-mode .sidebar,.meeting-mode .header .controls,.meeting-mode input,.meeting-mode select,.meeting-mode textarea,.meeting-mode .btn-small,.meeting-mode .edit-only{display:none!important}
+.meeting-mode .main{max-width:100%;padding:30px 40px}
+.meeting-mode .metric .value{font-size:2.4em}
+.meeting-mode body,.meeting-mode td,.meeting-mode p{font-size:18px}
+.meeting-mode .header{justify-content:center}
+@media print{.sidebar,.header,.controls,.btn,.no-print,input,select,textarea{display:none!important}.main{padding:0;max-width:100%}.card{box-shadow:none;break-inside:avoid;page-break-inside:avoid}@page{margin:1.5cm;@top-center{content:"Bio-Bitumen Project Report"}@bottom-center{content:"PPS Anantams | Confidential | Page " counter(page)}}}
+.chart-container{position:relative;height:280px;margin:12px 0}
+.hidden{display:none!important}
+</style>
+</head>
+<body x-data="dashboard()" :class="{'meeting-mode': meetingMode}">
+
+<!-- HEADER -->
+<div class="header">
+ <h1>PPS Anantams — Consultant Dashboard</h1>
+ <div class="controls">
+  <span x-show="p.client.name" x-text="'Client: '+p.client.name" style="font-size:12px;opacity:.8"></span>
+  <button class="btn btn-primary" @click="meetingMode=!meetingMode" x-text="meetingMode?'EXIT MEETING MODE':'ENTER MEETING MODE'"></button>
+  <button class="btn btn-green no-print" @click="window.print()">Print Full Report</button>
+ </div>
+</div>
+
+<div class="container">
+<!-- SIDEBAR -->
+<div class="sidebar">
+ <div class="section-title">Navigation</div>
+ <a href="#" @click.prevent="tab='client'" :class="{'active':tab=='client'}">👤 Client Master</a>
+ <a href="#" @click.prevent="tab='project'" :class="{'active':tab=='project'}">⚙️ Project Parameters</a>
+ <a href="#" @click.prevent="tab='rawmaterial'" :class="{'active':tab=='rawmaterial'}">🧪 Raw Material Cost</a>
+ <a href="#" @click.prevent="tab='production'" :class="{'active':tab=='production'}">🏭 Production Cost</a>
+ <a href="#" @click.prevent="tab='suppliers'" :class="{'active':tab=='suppliers'}">📦 Suppliers</a>
+ <a href="#" @click.prevent="tab='financial'" :class="{'active':tab=='financial'}">💰 Financial Dashboard</a>
+ <a href="#" @click.prevent="tab='sensitivity'" :class="{'active':tab=='sensitivity'}">📊 Sensitivity</a>
+ <a href="#" @click.prevent="tab='documents'" :class="{'active':tab=='documents'}">📄 Documents</a>
+ <a href="#" @click.prevent="tab='log'" :class="{'active':tab=='log'}">📝 Edit Log</a>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+<!-- ═══════════ MODULE 1: CLIENT MASTER ═══════════ -->
+<div x-show="tab=='client'">
+ <div class="card">
+  <h2>👤 Client Master Profile</h2>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Fill once → auto-appears in every document, letter, and report</p>
+  <div class="grid2">
+   <div class="field"><label>Client Name *</label><input x-model="p.client.name" @input="logChange('Client Name',$event)"></div>
+   <div class="field"><label>Company</label><input x-model="p.client.company" @input="logChange('Company',$event)"></div>
+   <div class="field"><label>Contact Person</label><input x-model="p.client.contact"></div>
+   <div class="field"><label>Designation</label><input x-model="p.client.designation"></div>
+   <div class="field"><label>Phone</label><input x-model="p.client.phone"></div>
+   <div class="field"><label>WhatsApp</label><input x-model="p.client.whatsapp"></div>
+   <div class="field"><label>Email</label><input x-model="p.client.email" type="email"></div>
+   <div class="field"><label>GST No</label><input x-model="p.client.gst" placeholder="24XXXXX1234X1Z5"></div>
+   <div class="field"><label>PAN No</label><input x-model="p.client.pan"></div>
+   <div class="field"><label>State</label>
+    <select x-model="p.client.state">
+     <option value="">Select State</option>
+     <template x-for="s in states"><option :value="s" x-text="s"></option></template>
+    </select>
+   </div>
+   <div class="field"><label>City</label><input x-model="p.client.city"></div>
+   <div class="field"><label>Site Address</label><input x-model="p.client.address"></div>
+   <div class="field"><label>Referred By</label><input x-model="p.client.referredBy"></div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════════ MODULE 2: PROJECT PARAMETERS ═══════════ -->
+<div x-show="tab=='project'">
+ <div class="card">
+  <h2>⚙️ Project Parameters</h2>
+  <div class="grid3">
+   <div class="field"><label>Plant Type</label>
+    <select x-model="p.project.type" @change="logChange('Plant Type',$event)">
+     <option>Bio-bitumen</option><option>Emulsion</option><option>CRMB</option><option>Blown Bitumen</option><option>Import Terminal</option>
+    </select>
+   </div>
+   <div class="field"><label>Capacity (kg/hr)</label><input type="number" x-model.number="p.project.capacityKgHr" @input="logChange('Capacity',$event)"></div>
+   <div class="field"><label>Working Hours/Day</label><input type="number" x-model.number="p.project.hoursPerDay"></div>
+   <div class="field"><label>Working Days/Year</label><input type="number" x-model.number="p.project.daysPerYear"></div>
+   <div class="field"><label>Site Area (sq.mt)</label><input type="number" x-model.number="p.project.siteArea"></div>
+   <div class="field"><label>Project Location</label><input x-model="p.project.location"></div>
+   <div class="field"><label>Capital Investment (₹ Lac)</label><input type="number" x-model.number="p.project.capitalLac" @input="logChange('Capital Investment',$event)"></div>
+   <div class="field"><label>Selling Price (₹/MT)</label><input type="number" x-model.number="p.project.sellingPrice" @input="logChange('Selling Price',$event)"></div>
+  </div>
+  <!-- Auto-calc display -->
+  <div class="grid4" style="margin-top:16px">
+   <div class="metric"><div class="value" x-text="fmt(annualProductionMT())"></div><div class="label">Annual Production (MT)</div></div>
+   <div class="metric"><div class="value" x-text="inr(annualRevenue())"></div><div class="label">Annual Revenue</div></div>
+   <div class="metric"><div class="value" x-text="fmt(dailyProductionMT())+' MT'"></div><div class="label">Daily Production</div></div>
+   <div class="metric"><div class="value" x-text="p.project.type"></div><div class="label">Plant Type</div></div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════════ MODULE 3: RAW MATERIAL COST ═══════════ -->
+<div x-show="tab=='rawmaterial'">
+ <div class="card">
+  <h2>🧪 Raw Material Cost Table</h2>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:8px">All fields editable. Landed Cost & Contribution auto-calculate.</p>
+  <table>
+   <thead><tr><th>Material</th><th>% Mix</th><th>Purchase ₹/MT</th><th>Freight ₹/MT</th><th>Landed ₹/MT</th><th>Contribution ₹/MT</th><th>% Share</th><th></th></tr></thead>
+   <tbody>
+    <template x-for="(rm,i) in p.rawMaterials" :key="i">
+     <tr>
+      <td><input x-model="rm.name"></td>
+      <td><input type="number" x-model.number="rm.mixPct" step="0.1" style="width:60px" @input="logChange(rm.name+' Mix%',$event)"></td>
+      <td><input type="number" x-model.number="rm.purchasePrice" style="width:80px"></td>
+      <td><input type="number" x-model.number="rm.freight" style="width:70px"></td>
+      <td style="font-weight:600" x-text="'₹ '+(rm.purchasePrice+rm.freight).toLocaleString('en-IN')"></td>
+      <td style="font-weight:600" x-text="'₹ '+Math.round((rm.purchasePrice+rm.freight)*rm.mixPct/100).toLocaleString('en-IN')"></td>
+      <td>
+       <div style="background:#e0e0e0;border-radius:3px;height:16px;width:80px;display:inline-block">
+        <div :style="'width:'+Math.min(rm.mixPct,100)+'%;background:var(--teal);height:100%;border-radius:3px'"></div>
+       </div>
+       <span style="font-size:11px" x-text="rm.mixPct+'%'"></span>
+      </td>
+      <td><button class="btn btn-small btn-danger" @click="p.rawMaterials.splice(i,1)">✕</button></td>
+     </tr>
+    </template>
+   </tbody>
+   <tfoot>
+    <tr style="font-weight:700;background:#f0f8ff">
+     <td>TOTAL</td>
+     <td :class="{'tag-red':totalMixPct()!=100,'tag-green':totalMixPct()==100}" x-text="totalMixPct()+'%'"></td>
+     <td colspan="3"></td>
+     <td style="color:var(--navy)" x-text="'₹ '+totalRMCost().toLocaleString('en-IN')+'/MT'"></td>
+     <td colspan="2"></td>
+    </tr>
+   </tfoot>
+  </table>
+  <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+   <button class="btn btn-green btn-small" @click="p.rawMaterials.push({name:'New Material',mixPct:0,purchasePrice:0,freight:0})">+ Add Material</button>
+   <span x-show="totalMixPct()!=100" style="color:var(--red);font-size:12px;font-weight:600">⚠ Total mix must equal 100%</span>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════════ MODULE 4: PRODUCTION COST ═══════════ -->
+<div x-show="tab=='production'">
+ <div class="card">
+  <h2>🏭 Production Cost Table</h2>
+  <table>
+   <thead><tr><th>Cost Head</th><th>₹ per MT</th><th>₹ per Month</th><th>₹ per Year</th><th></th></tr></thead>
+   <tbody>
+    <template x-for="(pc,i) in p.productionCosts" :key="i">
+     <tr>
+      <td><input x-model="pc.name"></td>
+      <td><input type="number" x-model.number="pc.perMT" style="width:80px" @input="logChange(pc.name+' ₹/MT',$event)"></td>
+      <td x-text="'₹ '+Math.round(pc.perMT*monthlyProductionMT()).toLocaleString('en-IN')"></td>
+      <td style="font-weight:600" x-text="'₹ '+Math.round(pc.perMT*annualProductionMT()).toLocaleString('en-IN')"></td>
+      <td><button class="btn btn-small btn-danger" @click="p.productionCosts.splice(i,1)">✕</button></td>
+     </tr>
+    </template>
+   </tbody>
+   <tfoot>
+    <tr style="font-weight:700;background:#f0f8ff">
+     <td>TOTAL</td>
+     <td x-text="'₹ '+totalProdCost().toLocaleString('en-IN')+'/MT'"></td>
+     <td x-text="'₹ '+Math.round(totalProdCost()*monthlyProductionMT()).toLocaleString('en-IN')"></td>
+     <td x-text="inr(totalProdCost()*annualProductionMT())"></td>
+     <td></td>
+    </tr>
+   </tfoot>
+  </table>
+  <button class="btn btn-green btn-small" style="margin-top:8px" @click="p.productionCosts.push({name:'New Cost',perMT:0})">+ Add Cost</button>
+ </div>
+</div>
+
+<!-- ═══════════ MODULE 5: SUPPLIERS ═══════════ -->
+<div x-show="tab=='suppliers'">
+ <div class="card">
+  <h2>📦 Supplier Database</h2>
+  <template x-for="(rm,ri) in p.rawMaterials" :key="'s'+ri">
+   <div style="margin-bottom:16px">
+    <h3 style="font-size:14px;color:var(--teal);margin:8px 0" x-text="rm.name+' — Suppliers'"></h3>
+    <table>
+     <thead><tr><th>Supplier</th><th>City</th><th>Rate ₹/MT</th><th>Payment Terms</th><th>Lead Time</th><th>Active</th><th></th></tr></thead>
+     <tbody>
+      <template x-for="(s,si) in (rm.suppliers||[])" :key="'sp'+ri+'_'+si">
+       <tr :style="s.active?'background:#e8ffe8':''">
+        <td><input x-model="s.name"></td>
+        <td><input x-model="s.city" style="width:80px"></td>
+        <td><input type="number" x-model.number="s.rate" style="width:80px" @change="if(s.active){rm.purchasePrice=s.rate}"></td>
+        <td><input x-model="s.terms" style="width:100px"></td>
+        <td><input type="number" x-model.number="s.leadDays" style="width:50px"></td>
+        <td><input type="checkbox" x-model="s.active" @change="if(s.active){rm.suppliers.forEach((x,xi)=>{if(xi!=si)x.active=false});rm.purchasePrice=s.rate}"></td>
+        <td><button class="btn btn-small btn-danger" @click="rm.suppliers.splice(si,1)">✕</button></td>
+       </tr>
+      </template>
+     </tbody>
+    </table>
+    <button class="btn btn-small btn-green" style="margin-top:4px" @click="if(!rm.suppliers)rm.suppliers=[];rm.suppliers.push({name:'',city:'',rate:0,terms:'30 days',leadDays:15,active:false})">+ Add Supplier</button>
+   </div>
+  </template>
+ </div>
+</div>
+
+<!-- ═══════════ MODULE 6: FINANCIAL DASHBOARD ═══════════ -->
+<div x-show="tab=='financial'">
+ <div class="card">
+  <h2>💰 Live Financial Dashboard</h2>
+  <div class="grid4">
+   <div class="metric"><div class="value" x-text="'₹ '+p.project.sellingPrice.toLocaleString('en-IN')"></div><div class="label">Selling Price /MT</div></div>
+   <div class="metric"><div class="value" x-text="'₹ '+totalRMCost().toLocaleString('en-IN')"></div><div class="label">RM Cost /MT</div></div>
+   <div class="metric"><div class="value" x-text="'₹ '+totalProdCost().toLocaleString('en-IN')"></div><div class="label">Prod Cost /MT</div></div>
+   <div class="metric"><div class="value" x-text="'₹ '+totalCostPerMT().toLocaleString('en-IN')"></div><div class="label">Total Cost /MT</div></div>
+  </div>
+  <div class="grid4" style="margin-top:12px">
+   <div class="metric" :class="grossProfitPerMT()>=0?'green':'red'"><div class="value" x-text="'₹ '+grossProfitPerMT().toLocaleString('en-IN')"></div><div class="label">Gross Profit /MT</div></div>
+   <div class="metric" :class="marginPct()>=0?'green':'red'"><div class="value" x-text="marginPct().toFixed(1)+'%'"></div><div class="label">Margin %</div></div>
+   <div class="metric green"><div class="value" x-text="inr(annualRevenue())"></div><div class="label">Annual Revenue</div></div>
+   <div class="metric" :class="annualNetProfit()>=0?'green':'red'"><div class="value" x-text="inr(annualNetProfit())"></div><div class="label">Annual Net Profit</div></div>
+  </div>
+  <div class="grid3" style="margin-top:12px">
+   <div class="metric"><div class="value" x-text="roiPct().toFixed(1)+'%'"></div><div class="label">ROI %</div></div>
+   <div class="metric amber"><div class="value" x-text="paybackMonths()+' mo'"></div><div class="label">Payback Period</div></div>
+   <div class="metric"><div class="value" x-text="breakEvenPct().toFixed(0)+'%'"></div><div class="label">Break-Even Capacity</div></div>
+  </div>
+ </div>
+
+ <!-- CHARTS -->
+ <div class="grid2">
+  <div class="card"><h2>Cost Breakdown</h2><div class="chart-container"><canvas id="chartPie"></canvas></div></div>
+  <div class="card"><h2>Raw Material Share</h2><div class="chart-container"><canvas id="chartBar"></canvas></div></div>
+ </div>
+ <div class="grid2">
+  <div class="card"><h2>5-Year Cumulative Profit</h2><div class="chart-container"><canvas id="chartLine"></canvas></div></div>
+  <div class="card"><h2>Monthly Cash Flow</h2><div class="chart-container"><canvas id="chartCash"></canvas></div></div>
+ </div>
+</div>
+
+<!-- ═══════════ MODULE 7: SENSITIVITY ═══════════ -->
+<div x-show="tab=='sensitivity'">
+ <div class="card">
+  <h2>📊 Sensitivity Analysis</h2>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Profit at different selling prices and capacity utilization</p>
+  <table class="sensitivity">
+   <thead>
+    <tr><th>Capacity ↓ \ Price →</th>
+     <template x-for="pv in [-20,-10,0,10,20]"><th x-text="pv==0?'Base (₹'+p.project.sellingPrice.toLocaleString('en-IN')+')':((pv>0?'+':'')+pv+'%')"></th></template>
+    </tr>
+   </thead>
+   <tbody>
+    <template x-for="cu in [50,75,100,125]">
+     <tr>
+      <td style="font-weight:700;background:#f0f8ff" x-text="cu+'% Capacity'"></td>
+      <template x-for="pv in [-20,-10,0,10,20]">
+       <td :style="'background:'+(senProfit(cu,pv)>0?'#e8ffe8':senProfit(cu,pv)<0?'#ffe8e8':'#fff8e0')+';color:'+(senProfit(cu,pv)>0?'var(--green)':senProfit(cu,pv)<0?'var(--red)':'var(--amber)')"
+           x-text="inr(senProfit(cu,pv))">
+       </td>
+      </template>
+     </tr>
+    </template>
+   </tbody>
+  </table>
+ </div>
+</div>
+
+<!-- ═══════════ MODULE 8: DOCUMENTS ═══════════ -->
+<div x-show="tab=='documents'">
+ <div class="card">
+  <h2>📄 Auto-Generated Documents</h2>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+   <template x-for="d in docTypes">
+    <button class="btn" :class="activeDoc==d.id?'btn-primary':''" style="border:1px solid var(--navy)" @click="activeDoc=d.id" x-text="d.name"></button>
+   </template>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px" class="no-print">
+   <button class="btn btn-small btn-green" @click="docDisplayMode=!docDisplayMode" x-text="docDisplayMode?'Edit Mode':'Display Mode'"></button>
+   <button class="btn btn-small btn-primary" @click="window.print()">🖨️ Print</button>
+  </div>
+
+  <!-- COVERING LETTER -->
+  <div class="doc-panel" x-show="activeDoc=='cover'">
+   <div class="letterhead">
+    <h4>PPS Anantams Corporation Pvt Ltd</h4>
+    <p>Bio-Bitumen Plant Consultants | Vadodara, Gujarat | +91 7795242424</p>
+   </div>
+   <p><strong>Date:</strong> <span x-text="today()"></span></p>
+   <p><strong>To:</strong><br><span x-text="p.client.contact||p.client.name"></span><br>
+   <span x-text="p.client.designation"></span><br>
+   <span x-text="p.client.company"></span><br>
+   <span x-text="p.client.city+', '+p.client.state"></span></p>
+   <p><strong>Subject:</strong> Proposal for <span x-text="p.project.type"></span> Plant — <span x-text="p.project.capacityKgHr"></span> kg/hr</p>
+   <p>Dear <span x-text="p.client.contact||'Sir/Madam'"></span>,</p>
+   <p>Thank you for your interest in setting up a <span x-text="p.project.type"></span> plant. We are pleased to submit our proposal for a <span x-text="p.project.capacityKgHr"></span> kg/hr plant at <span x-text="p.project.location||p.client.city"></span>.</p>
+   <p>With 25 years of experience and 10 plants built across India, PPS Anantams provides end-to-end consulting from site selection to commercial production.</p>
+   <p>We look forward to your positive response.</p>
+   <p style="margin-top:30px">Yours sincerely,<br><strong>Prince Pratap Shah</strong><br>Managing Director<br>PPS Anantams Corporation Pvt Ltd<br>+91 7795242424</p>
+  </div>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <div class="doc-panel" x-show="activeDoc=='summary'">
+   <div class="letterhead"><h4>Executive Summary</h4><p x-text="p.project.type+' Plant — '+p.project.capacityKgHr+' kg/hr | '+p.client.company"></p></div>
+   <table style="width:100%">
+    <tr><td><strong>Client</strong></td><td x-text="p.client.name+' — '+p.client.company"></td></tr>
+    <tr><td><strong>Plant Type</strong></td><td x-text="p.project.type"></td></tr>
+    <tr><td><strong>Capacity</strong></td><td x-text="p.project.capacityKgHr+' kg/hr ('+fmt(dailyProductionMT())+' MT/day)'"></td></tr>
+    <tr><td><strong>Location</strong></td><td x-text="p.project.location||p.client.city+', '+p.client.state"></td></tr>
+    <tr><td><strong>Capital Investment</strong></td><td x-text="inrLac(p.project.capitalLac)"></td></tr>
+    <tr><td><strong>Annual Revenue</strong></td><td x-text="inr(annualRevenue())"></td></tr>
+    <tr><td><strong>Annual Profit</strong></td><td :style="'color:'+(annualNetProfit()>=0?'var(--green)':'var(--red)')" x-text="inr(annualNetProfit())"></td></tr>
+    <tr><td><strong>ROI</strong></td><td x-text="roiPct().toFixed(1)+'%'"></td></tr>
+    <tr><td><strong>Payback</strong></td><td x-text="paybackMonths()+' months'"></td></tr>
+    <tr><td><strong>Margin</strong></td><td x-text="marginPct().toFixed(1)+'%'"></td></tr>
+   </table>
+  </div>
+
+  <!-- COMMERCIAL PROPOSAL -->
+  <div class="doc-panel" x-show="activeDoc=='proposal'">
+   <div class="letterhead"><h4>Commercial Proposal</h4><p x-text="'Ref: PPS/'+new Date().getFullYear()+'/'+p.project.type.substring(0,3).toUpperCase()"></p></div>
+   <h3>Scope of Work</h3>
+   <ol>
+    <li>Detailed Project Report (DPR) preparation</li>
+    <li>Plant layout and engineering design</li>
+    <li>Equipment selection and procurement assistance</li>
+    <li>Civil and structural design</li>
+    <li>Installation supervision and commissioning</li>
+    <li>Trial run and production optimization</li>
+    <li>Training of plant operators</li>
+    <li>Buyer network and market linkage</li>
+   </ol>
+   <h3 style="margin-top:20px">Consulting Fee Structure</h3>
+   <table>
+    <tr><td><strong>DPR Fee</strong></td><td>₹ 3,00,000 — ₹ 5,00,000</td></tr>
+    <tr><td><strong>Setup Consulting</strong></td><td>₹ 15,00,000 — ₹ 25,00,000</td></tr>
+    <tr><td><strong>Monthly Retainer</strong></td><td>₹ 1,00,000 — ₹ 2,00,000/month</td></tr>
+   </table>
+   <p style="margin-top:16px"><strong>Payment Terms:</strong> 50% advance, 25% on design approval, 25% on commissioning.</p>
+  </div>
+
+  <!-- DPR -->
+  <div class="doc-panel" x-show="activeDoc=='dpr'">
+   <div class="letterhead"><h4>Detailed Project Report (DPR)</h4><p x-text="p.project.type+' Plant | '+p.project.capacityKgHr+' kg/hr | '+p.client.company"></p></div>
+   <p><strong>Prepared for:</strong> <span x-text="p.client.name"></span>, <span x-text="p.client.company"></span></p>
+   <p><strong>Location:</strong> <span x-text="p.project.location||p.client.city+', '+p.client.state"></span></p>
+   <p><strong>Date:</strong> <span x-text="today()"></span></p>
+   <h3>1. Project Overview</h3>
+   <p>This DPR presents a <span x-text="p.project.capacityKgHr"></span> kg/hr <span x-text="p.project.type"></span> plant with total investment of <span x-text="inrLac(p.project.capitalLac)"></span>. Annual production: <span x-text="fmt(annualProductionMT())"></span> MT. Expected ROI: <span x-text="roiPct().toFixed(1)"></span>%.</p>
+   <h3>2. Financial Summary</h3>
+   <table>
+    <tr><td>Capital Investment</td><td x-text="inrLac(p.project.capitalLac)"></td></tr>
+    <tr><td>Selling Price</td><td x-text="'₹ '+p.project.sellingPrice.toLocaleString('en-IN')+'/MT'"></td></tr>
+    <tr><td>Total Cost</td><td x-text="'₹ '+totalCostPerMT().toLocaleString('en-IN')+'/MT'"></td></tr>
+    <tr><td>Gross Profit</td><td :style="'color:'+(grossProfitPerMT()>=0?'green':'red')" x-text="'₹ '+grossProfitPerMT().toLocaleString('en-IN')+'/MT'"></td></tr>
+    <tr><td>Annual Revenue</td><td x-text="inr(annualRevenue())"></td></tr>
+    <tr><td>Annual Profit</td><td x-text="inr(annualNetProfit())"></td></tr>
+    <tr><td>ROI</td><td x-text="roiPct().toFixed(1)+'%'"></td></tr>
+    <tr><td>Payback Period</td><td x-text="paybackMonths()+' months'"></td></tr>
+   </table>
+   <h3>3. Raw Material Cost Breakdown</h3>
+   <table>
+    <thead><tr><th>Material</th><th>% Mix</th><th>Landed ₹/MT</th><th>Contribution ₹/MT</th></tr></thead>
+    <tbody>
+     <template x-for="rm in p.rawMaterials">
+      <tr><td x-text="rm.name"></td><td x-text="rm.mixPct+'%'"></td>
+       <td x-text="'₹ '+(rm.purchasePrice+rm.freight).toLocaleString('en-IN')"></td>
+       <td x-text="'₹ '+Math.round((rm.purchasePrice+rm.freight)*rm.mixPct/100).toLocaleString('en-IN')"></td></tr>
+     </template>
+    </tbody>
+    <tfoot><tr style="font-weight:700"><td>Total RM Cost</td><td x-text="totalMixPct()+'%'"></td><td></td><td x-text="'₹ '+totalRMCost().toLocaleString('en-IN')"></td></tr></tfoot>
+   </table>
+   <p style="margin-top:20px;font-style:italic;color:var(--muted)">CONFIDENTIAL — Prepared by PPS Anantams Corporation Pvt Ltd</p>
+  </div>
+
+  <!-- INVOICE -->
+  <div class="doc-panel" x-show="activeDoc=='invoice'">
+   <div class="letterhead"><h4>Tax Invoice</h4><p>PPS Anantams Corporation Pvt Ltd | GST: 24AAHCV1611L2ZD</p></div>
+   <div class="grid2">
+    <div><strong>Bill To:</strong><br><span x-text="p.client.company||p.client.name"></span><br><span x-text="p.client.address"></span><br><span x-text="p.client.city+', '+p.client.state"></span><br>GST: <span x-text="p.client.gst||'N/A'"></span></div>
+    <div style="text-align:right"><strong>Invoice No:</strong> PPS/<span x-text="new Date().getFullYear()"></span>/001<br><strong>Date:</strong> <span x-text="today()"></span></div>
+   </div>
+   <table style="margin-top:20px">
+    <thead><tr><th>#</th><th>Description</th><th>Amount ₹</th></tr></thead>
+    <tbody>
+     <tr><td>1</td><td>DPR Preparation — <span x-text="p.project.type"></span> Plant <span x-text="p.project.capacityKgHr"></span> kg/hr</td><td>3,00,000</td></tr>
+     <tr><td>2</td><td>Plant Setup Consulting</td><td>15,00,000</td></tr>
+     <tr><td colspan="2" style="text-align:right"><strong>Subtotal</strong></td><td><strong>18,00,000</strong></td></tr>
+     <tr><td colspan="2" style="text-align:right">CGST @ 9%</td><td>1,62,000</td></tr>
+     <tr><td colspan="2" style="text-align:right">SGST @ 9%</td><td>1,62,000</td></tr>
+     <tr style="background:#f0f8ff"><td colspan="2" style="text-align:right"><strong>Grand Total</strong></td><td><strong>₹ 21,24,000</strong></td></tr>
+    </tbody>
+   </table>
+  </div>
+
+  <!-- MOU -->
+  <div class="doc-panel" x-show="activeDoc=='mou'">
+   <div class="letterhead"><h4>Memorandum of Understanding</h4></div>
+   <p>This MOU is entered into between:</p>
+   <p><strong>Party A (Consultant):</strong> PPS Anantams Corporation Pvt Ltd, Vadodara, Gujarat</p>
+   <p><strong>Party B (Client):</strong> <span x-text="p.client.company||p.client.name"></span>, <span x-text="p.client.city+', '+p.client.state"></span></p>
+   <p><strong>Project:</strong> <span x-text="p.project.type"></span> Plant, <span x-text="p.project.capacityKgHr"></span> kg/hr at <span x-text="p.project.location||p.client.city"></span></p>
+   <p><strong>Investment:</strong> <span x-text="inrLac(p.project.capitalLac)"></span></p>
+   <h3>Terms:</h3>
+   <ol>
+    <li>Consultant shall provide complete technical and business consulting.</li>
+    <li>Client shall provide site access, utilities, and timely payments.</li>
+    <li>Project timeline: 12-18 months from date of agreement.</li>
+    <li>All intellectual property remains with the Consultant.</li>
+    <li>Confidentiality: Both parties agree to maintain confidentiality.</li>
+   </ol>
+   <div class="grid2" style="margin-top:40px">
+    <div><p>___________________</p><p>Party A: Prince Pratap Shah<br>PPS Anantams</p></div>
+    <div><p>___________________</p><p>Party B: <span x-text="p.client.contact||p.client.name"></span><br><span x-text="p.client.company"></span></p></div>
+   </div>
+  </div>
+
+  <!-- SUBMISSION LETTER -->
+  <div class="doc-panel" x-show="activeDoc=='submission'">
+   <div class="letterhead"><h4>Submission Letter</h4><p>To the concerned authority</p></div>
+   <p><strong>Date:</strong> <span x-text="today()"></span></p>
+   <p><strong>To:</strong> The Branch Manager / Concerned Authority</p>
+   <p><strong>Subject:</strong> Submission of DPR for <span x-text="p.project.type"></span> Plant — <span x-text="p.project.capacityKgHr"></span> kg/hr</p>
+   <p>Dear Sir/Madam,</p>
+   <p>We hereby submit the Detailed Project Report for the proposed <span x-text="p.project.type"></span> plant at <span x-text="p.project.location||p.client.city+', '+p.client.state"></span> by <span x-text="p.client.company||p.client.name"></span>.</p>
+   <p><strong>Project Highlights:</strong></p>
+   <ul>
+    <li>Capacity: <span x-text="p.project.capacityKgHr"></span> kg/hr (<span x-text="fmt(annualProductionMT())"></span> MT/year)</li>
+    <li>Investment: <span x-text="inrLac(p.project.capitalLac)"></span></li>
+    <li>Annual Revenue: <span x-text="inr(annualRevenue())"></span></li>
+    <li>ROI: <span x-text="roiPct().toFixed(1)"></span>%</li>
+    <li>Employment: <span x-text="Math.round(p.project.capacityKgHr/50)"></span> direct jobs</li>
+   </ul>
+   <p>Kindly review and provide your approval at the earliest.</p>
+   <p style="margin-top:30px">Yours faithfully,<br><strong><span x-text="p.client.contact||p.client.name"></span></strong><br><span x-text="p.client.company"></span></p>
+  </div>
+</div>
+
+<!-- ═══════════ MODULE 10: EDIT LOG ═══════════ -->
+<div x-show="tab=='log'">
+ <div class="card">
+  <h2>📝 Edit Log — Revision History</h2>
+  <table>
+   <thead><tr><th>Time</th><th>Field</th><th>Old Value</th><th>New Value</th></tr></thead>
+   <tbody>
+    <template x-for="(log,i) in editLog.slice().reverse()" :key="'log'+i">
+     <tr class="log-entry">
+      <td x-text="log.time" style="white-space:nowrap"></td>
+      <td x-text="log.field" style="font-weight:600"></td>
+      <td x-text="log.oldVal" style="color:var(--red)"></td>
+      <td x-text="log.newVal" style="color:var(--green)"></td>
+     </tr>
+    </template>
+   </tbody>
+  </table>
+  <p x-show="editLog.length==0" style="color:var(--muted);padding:20px;text-align:center">No changes recorded yet.</p>
+  <button class="btn btn-small btn-primary no-print" style="margin-top:8px" @click="window.print()">🖨️ Print Revision History</button>
+ </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /container -->
+
+<script>
+function dashboard(){
+ return {
+  tab:'client',
+  meetingMode:false,
+  activeDoc:'cover',
+  docDisplayMode:false,
+  editLog:[],
+  _prev:{},
+  docTypes:[
+   {id:'cover',name:'Covering Letter'},{id:'summary',name:'Executive Summary'},
+   {id:'proposal',name:'Commercial Proposal'},{id:'dpr',name:'DPR'},
+   {id:'invoice',name:'Invoice'},{id:'mou',name:'MOU / Agreement'},
+   {id:'submission',name:'Submission Letter'}
+  ],
+  states:['Andhra Pradesh','Assam','Bihar','Chhattisgarh','Gujarat','Haryana','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Odisha','Punjab','Rajasthan','Tamil Nadu','Telangana','Uttar Pradesh','West Bengal'],
+
+  p:{
+   client:{name:'',company:'',contact:'',designation:'',phone:'',whatsapp:'',email:'',gst:'',pan:'',state:'Gujarat',city:'',address:'',referredBy:''},
+   project:{type:'Bio-bitumen',capacityKgHr:500,hoursPerDay:16,daysPerYear:300,siteArea:5000,location:'',capitalLac:800,sellingPrice:52000},
+   rawMaterials:[
+    {name:'VG-40 Bitumen',mixPct:65,purchasePrice:42000,freight:1500,suppliers:[]},
+    {name:'Crumb Rubber',mixPct:12,purchasePrice:28000,freight:2000,suppliers:[]},
+    {name:'Lignin / Bio-oil',mixPct:10,purchasePrice:18000,freight:1000,suppliers:[]},
+    {name:'Hydrated Lime',mixPct:5,purchasePrice:8000,freight:800,suppliers:[]},
+    {name:'Adhesion Agent',mixPct:3,purchasePrice:65000,freight:500,suppliers:[]},
+    {name:'Polymer Modifier',mixPct:5,purchasePrice:120000,freight:1000,suppliers:[]}
+   ],
+   productionCosts:[
+    {name:'Power & Fuel',perMT:1800},
+    {name:'Labour',perMT:1200},
+    {name:'Packaging',perMT:500},
+    {name:'Water & Utilities',perMT:300},
+    {name:'Maintenance',perMT:600},
+    {name:'QC & Testing',perMT:400},
+    {name:'Admin Overhead',perMT:800},
+    {name:'Finance / Interest',perMT:500}
+   ]
+  },
+
+  // ═══ CALCULATIONS (all reactive via Alpine.js getters) ═══
+  dailyProductionMT(){return this.p.project.capacityKgHr*this.p.project.hoursPerDay/1000},
+  monthlyProductionMT(){return this.dailyProductionMT()*this.p.project.daysPerYear/12},
+  annualProductionMT(){return this.dailyProductionMT()*this.p.project.daysPerYear},
+  totalMixPct(){return this.p.rawMaterials.reduce((s,r)=>s+r.mixPct,0)},
+  totalRMCost(){return this.p.rawMaterials.reduce((s,r)=>s+Math.round((r.purchasePrice+r.freight)*r.mixPct/100),0)},
+  totalProdCost(){return this.p.productionCosts.reduce((s,c)=>s+c.perMT,0)},
+  totalCostPerMT(){return this.totalRMCost()+this.totalProdCost()},
+  grossProfitPerMT(){return this.p.project.sellingPrice-this.totalCostPerMT()},
+  marginPct(){return this.p.project.sellingPrice>0?(this.grossProfitPerMT()/this.p.project.sellingPrice*100):0},
+  annualRevenue(){return this.annualProductionMT()*this.p.project.sellingPrice},
+  annualTotalCost(){return this.annualProductionMT()*this.totalCostPerMT()},
+  annualNetProfit(){return this.annualRevenue()-this.annualTotalCost()},
+  roiPct(){return this.p.project.capitalLac>0?(this.annualNetProfit()/(this.p.project.capitalLac*100000)*100):0},
+  paybackMonths(){let mp=this.annualNetProfit()/12;return mp>0?Math.ceil(this.p.project.capitalLac*100000/mp):0},
+  breakEvenPct(){let fc=this.totalProdCost()*this.annualProductionMT();let cm=this.p.project.sellingPrice-this.totalRMCost();return cm>0?(fc/(cm*this.annualProductionMT())*100):0},
+
+  senProfit(capPct,pricePct){
+   let prod=this.annualProductionMT()*capPct/100;
+   let price=this.p.project.sellingPrice*(1+pricePct/100);
+   return prod*price-prod*this.totalCostPerMT()
+  },
+
+  // ═══ FORMATTING ═══
+  fmt(n){return Math.round(n).toLocaleString('en-IN')},
+  inr(n){
+   if(n==null||n==0)return'₹ 0';
+   let neg=n<0?'-':'';n=Math.abs(n);
+   if(n>=10000000)return neg+'₹ '+(n/10000000).toFixed(2)+' Cr';
+   if(n>=100000)return neg+'₹ '+(n/100000).toFixed(1)+' L';
+   return neg+'₹ '+Math.round(n).toLocaleString('en-IN')
+  },
+  inrLac(lac){return lac>=100?'₹ '+(lac/100).toFixed(2)+' Cr':'₹ '+lac.toFixed(1)+' Lac'},
+  today(){let d=new Date();return d.toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'})},
+
+  // ═══ EDIT LOG ═══
+  logChange(field,event){
+   let nv=event.target.value;
+   let ov=this._prev[field]||'';
+   if(ov!==nv&&ov!==''){
+    this.editLog.push({time:new Date().toLocaleTimeString('en-IN'),field:field,oldVal:String(ov),newVal:String(nv)});
+   }
+   this._prev[field]=nv;
+  },
+
+  // ═══ CHARTS (rebuild on tab switch) ═══
+  charts:{},
+  init(){
+   this.$watch('tab',(v)=>{if(v=='financial')this.$nextTick(()=>this.buildCharts())});
+   // Rebuild charts when any data changes
+   this.$watch('p',()=>{if(this.tab=='financial')this.$nextTick(()=>this.buildCharts())},{deep:true});
+  },
+  buildCharts(){
+   // Destroy old charts
+   Object.values(this.charts).forEach(c=>{if(c)c.destroy()});
+
+   // 1. Cost Breakdown Pie
+   let rm=this.totalRMCost(),pc=this.totalProdCost(),gp=Math.max(0,this.grossProfitPerMT());
+   this.charts.pie=new Chart(document.getElementById('chartPie'),{
+    type:'doughnut',data:{labels:['Raw Material','Production','Profit'],
+    datasets:[{data:[rm,pc,gp],backgroundColor:['#CC3333','#FF8800','#00AA44']}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}
+   });
+
+   // 2. RM Share Bar
+   this.charts.bar=new Chart(document.getElementById('chartBar'),{
+    type:'bar',data:{labels:this.p.rawMaterials.map(r=>r.name.substring(0,12)),
+    datasets:[{label:'% Share',data:this.p.rawMaterials.map(r=>r.mixPct),backgroundColor:'#006699'}]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},plugins:{legend:{display:false}}}
+   });
+
+   // 3. 5-Year Cumulative Profit Line
+   let ap=this.annualNetProfit();
+   let cumData=[],cum=0;for(let i=1;i<=5;i++){cum+=ap*(0.6+i*0.08);cumData.push(Math.round(cum));}
+   this.charts.line=new Chart(document.getElementById('chartLine'),{
+    type:'line',data:{labels:['Yr 1','Yr 2','Yr 3','Yr 4','Yr 5'],
+    datasets:[{label:'Cumulative Profit',data:cumData,borderColor:'#00AA44',backgroundColor:'rgba(0,170,68,0.1)',fill:true,tension:0.3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+   });
+
+   // 4. Monthly Cash Flow
+   let mp=this.annualNetProfit()/12;
+   let months=['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
+   let season=[0.6,0.7,0.5,0.3,0.4,0.8,1.0,1.2,1.3,1.1,0.9,0.8];
+   this.charts.cash=new Chart(document.getElementById('chartCash'),{
+    type:'bar',data:{labels:months,
+    datasets:[{label:'Monthly Profit',data:season.map(s=>Math.round(mp*s)),
+    backgroundColor:season.map(s=>mp*s>=0?'#006699':'#CC3333')}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+   });
+  }
+ }
+}
+</script>
+</body>
+</html>
