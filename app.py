@@ -21,13 +21,31 @@ st.set_page_config(
 
 init_db()
 
-# ── AUTHENTICATION ────────────────────────────────────────────────────
-USERS = {
-    "admin": {"password": "admin2424", "role": "admin", "name": "Prince P. Shah"},
-    "demo": {"password": "demo2424", "role": "client", "name": "Demo Client"},
-    "investor": {"password": "investor2424", "role": "client", "name": "Investor Client"},
-    "client1": {"password": "client12424", "role": "client", "name": "Client 1"},
-}
+# ── AUTHENTICATION (credentials from env vars or secure config) ───────
+import hashlib
+
+def _load_users():
+    """Load users from env vars or fallback secure config."""
+    # Priority: ENV vars > data/auth_config.json > defaults
+    import json
+    auth_path = os.path.join(os.path.dirname(__file__), "data", "auth_config.json")
+    if os.path.exists(auth_path):
+        try:
+            return json.loads(open(auth_path, encoding='utf-8').read())
+        except Exception:
+            pass
+    # Fallback defaults (change these via auth_config.json)
+    return {
+        "admin": {"password_hash": hashlib.sha256(os.environ.get("ADMIN_PASSWORD", "admin2424").encode()).hexdigest(),
+                  "role": "admin", "name": "Prince P. Shah"},
+        "demo": {"password_hash": hashlib.sha256(os.environ.get("DEMO_PASSWORD", "demo2424").encode()).hexdigest(),
+                  "role": "client", "name": "Demo Client"},
+    }
+
+USERS = _load_users()
+
+def _verify_password(stored_hash, input_password):
+    return stored_hash == hashlib.sha256(input_password.encode()).hexdigest()
 
 def check_auth():
     if "authenticated" not in st.session_state:
@@ -39,23 +57,18 @@ def check_auth():
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
             st.markdown("### Login")
-            username = st.text_input("Username", key="login_user", placeholder="admin / demo / investor")
+            username = st.text_input("Username", key="login_user", placeholder="admin / demo")
             password = st.text_input("Password", type="password", key="login_pw")
             if st.button("Login", type="primary"):
                 user = USERS.get(username)
-                if user and user["password"] == password:
+                if user and _verify_password(user.get("password_hash", ""), password):
                     st.session_state["authenticated"] = True
                     st.session_state["user_role"] = user["role"]
                     st.session_state["user_name"] = user["name"]
                     st.rerun()
-                elif password in ("admin2424", "prince2424", "bio2424"):
-                    st.session_state["authenticated"] = True
-                    st.session_state["user_role"] = "admin"
-                    st.session_state["user_name"] = "Admin"
-                    st.rerun()
                 else:
                     st.error("Wrong credentials. Contact Prince Shah: +91 7795242424")
-            st.caption("Admin: admin/admin2424 | Demo: demo/demo2424")
+            st.caption("Default: admin / admin2424")
         st.stop()
 
 check_auth()
@@ -155,10 +168,10 @@ st.markdown("---")
 # ── Client Journey (Alternative) ────────────────────────────────────
 with st.expander("Client Journey (Step-by-Step Alternative)"):
     jc1, jc2, jc3, jc4 = st.columns(4)
-    jc1.page_link("pages/00_Client_Journey.py", label="New Investor", icon="🧑‍🌾")
-    jc2.page_link("pages/00_Client_Journey.py", label="Bitumen Plant Owner", icon="🛢️")
-    jc3.page_link("pages/00_Client_Journey.py", label="Biomass Company", icon="🌾")
-    jc4.page_link("pages/00_Client_Journey.py", label="Pyrolysis Owner", icon="🔥")
+    jc1.page_link("pages/50_Client_Journey.py", label="New Investor", icon="🧑‍🌾")
+    jc2.page_link("pages/50_Client_Journey.py", label="Bitumen Plant Owner", icon="🛢️")
+    jc3.page_link("pages/50_Client_Journey.py", label="Biomass Company", icon="🌾")
+    jc4.page_link("pages/50_Client_Journey.py", label="Pyrolysis Owner", icon="🔥")
 
 st.markdown("---")
 
@@ -332,39 +345,39 @@ with nav[1]:
     st.markdown("**Engineering**")
     st.page_link("pages/07_⚙️_Plant_Design.py", label="Plant Design", icon="⚙️")
     st.page_link("pages/08_📐_Drawings.py", label="Engineering Drawings", icon="📐")
-    st.page_link("pages/02a_Technology.py", label="Technology", icon="🔬")
-    st.page_link("pages/02c_Process_Flow.py", label="Process Flow", icon="🔄")
+    st.page_link("pages/51_Technology.py", label="Technology", icon="🔬")
+    st.page_link("pages/53_Process_Flow.py", label="Process Flow", icon="🔄")
 
 with nav[2]:
     st.markdown("**Finance & Legal**")
     st.page_link("pages/09_💰_Financial.py", label="Financial Model", icon="💰")
     st.page_link("pages/11_📋_Compliance.py", label="Compliance Tracker", icon="📑")
-    st.page_link("pages/10_Buyers.py", label="Buyers Network", icon="🤝")
+    st.page_link("pages/40_Buyers.py", label="Buyers Network", icon="🤝")
     st.page_link("pages/10_🏭_Procurement.py", label="Procurement", icon="🏭")
 
 with nav[3]:
     st.markdown("**New Tools**")
-    st.page_link("pages/19_ROI_Quick_Calc.py", label="ROI Calculator", icon="🎯")
-    st.page_link("pages/20_Loan_EMI_Calculator.py", label="Loan EMI Calculator", icon="🏦")
-    st.page_link("pages/21_Capacity_Compare.py", label="Capacity Compare", icon="⚖️")
+    st.page_link("pages/60_ROI_Quick_Calc.py", label="ROI Calculator", icon="🎯")
+    st.page_link("pages/61_Loan_EMI.py", label="Loan EMI Calculator", icon="🏦")
+    st.page_link("pages/62_Capacity_Compare.py", label="Capacity Compare", icon="⚖️")
     st.page_link("pages/12_🛣️_NHAI_Tenders.py", label="NHAI Tenders", icon="🛣️")
-    st.page_link("pages/23_Competitor_Intel.py", label="Competitor Intel", icon="🕵️")
-    st.page_link("pages/25_Environmental.py", label="Environmental Impact", icon="🌱")
-    st.page_link("pages/26_Risk_Matrix.py", label="Risk Matrix", icon="⚠️")
-    st.page_link("pages/31_Weather_Site.py", label="Weather & Site", icon="🌤️")
+    st.page_link("pages/63_Competitor_Intel.py", label="Competitor Intel", icon="🕵️")
+    st.page_link("pages/65_Environmental.py", label="Environmental Impact", icon="🌱")
+    st.page_link("pages/66_Risk_Matrix.py", label="Risk Matrix", icon="⚠️")
+    st.page_link("pages/71_Weather_Site.py", label="Weather & Site", icon="🌤️")
 
 with nav[4]:
     st.markdown("**Client Ops**")
-    st.page_link("pages/24_Project_Gantt.py", label="Project Timeline", icon="📅")
-    st.page_link("pages/30_Meeting_Planner.py", label="Meeting Planner", icon="📋")
-    st.page_link("pages/15_DPR_Generator.py", label="DPR Generator", icon="📄")
-    st.page_link("pages/27_Export_Center.py", label="Export Center", icon="📤")
-    st.page_link("pages/28_News_Feed.py", label="Industry News", icon="📰")
-    st.page_link("pages/29_Training.py", label="Training & SOPs", icon="📚")
+    st.page_link("pages/64_Project_Gantt.py", label="Project Timeline", icon="📅")
+    st.page_link("pages/70_Meeting_Planner.py", label="Meeting Planner", icon="📋")
+    st.page_link("pages/44_DPR_Generator.py", label="DPR Generator", icon="📄")
+    st.page_link("pages/67_Export_Center.py", label="Export Center", icon="📤")
+    st.page_link("pages/68_News_Feed.py", label="Industry News", icon="📰")
+    st.page_link("pages/69_Training.py", label="Training & SOPs", icon="📚")
     st.page_link("pages/15_🤖_AI_Advisor.py", label="AI Advisor", icon="🤖")
     st.page_link("pages/03_📝_Project_Setup.py", label="Project Setup", icon="📝")
     st.page_link("pages/17_🔑_AI_Settings.py", label="AI Settings", icon="🔑")
-    st.page_link("pages/32_System_Calculations.py", label="System & Formulas", icon="🔧")
+    st.page_link("pages/72_System_Calculations.py", label="System & Formulas", icon="🔧")
 
 st.markdown("---")
 
@@ -374,7 +387,7 @@ qa1, qa2, qa3, qa4, qa5 = st.columns(5)
 qa1.page_link("pages/03_📝_Project_Setup.py", label="Project Setup", icon="📝")
 qa2.page_link("pages/13_📁_Document_Hub.py", label="Document Hub", icon="📁")
 qa3.page_link("pages/09_💰_Financial.py", label="Financial Model", icon="💰")
-qa4.page_link("pages/19_ROI_Quick_Calc.py", label="Quick ROI Demo", icon="🎯")
+qa4.page_link("pages/60_ROI_Quick_Calc.py", label="Quick ROI Demo", icon="🎯")
 qa5.page_link("pages/16_🏥_System_Health.py", label="System Health", icon="🏥")
 
 st.markdown("---")

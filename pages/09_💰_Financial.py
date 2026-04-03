@@ -387,9 +387,9 @@ except Exception:
 st.markdown("---")
 st.subheader("Related Tools")
 ql1, ql2, ql3, ql4 = st.columns(4)
-ql1.page_link("pages/19_ROI_Quick_Calc.py", label="ROI Quick Calculator", icon="🎯")
-ql2.page_link("pages/20_Loan_EMI_Calculator.py", label="Loan EMI Calculator", icon="🏦")
-ql3.page_link("pages/21_Capacity_Compare.py", label="Capacity Comparison", icon="⚖️")
+ql1.page_link("pages/60_ROI_Quick_Calc.py", label="ROI Quick Calculator", icon="🎯")
+ql2.page_link("pages/61_Loan_EMI.py", label="Loan EMI Calculator", icon="🏦")
+ql3.page_link("pages/62_Capacity_Compare.py", label="Capacity Comparison", icon="⚖️")
 ql4.page_link("pages/17_🔑_AI_Settings.py", label="AI Settings", icon="🔑")
 
 st.caption("All values auto-calculate when ANY input changes. This model is bank-ready and investor-grade.")

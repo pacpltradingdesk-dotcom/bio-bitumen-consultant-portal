@@ -201,11 +201,11 @@ with act_col:
 
 with action_col:
     st.subheader("Quick Actions")
-    st.page_link("pages/19_ROI_Quick_Calc.py", label="ROI Calculator", icon="🎯")
-    st.page_link("pages/20_Loan_EMI_Calculator.py", label="Loan EMI Calculator", icon="🏦")
-    st.page_link("pages/21_Capacity_Compare.py", label="Compare Capacities", icon="⚖️")
+    st.page_link("pages/60_ROI_Quick_Calc.py", label="ROI Calculator", icon="🎯")
+    st.page_link("pages/61_Loan_EMI.py", label="Loan EMI Calculator", icon="🏦")
+    st.page_link("pages/62_Capacity_Compare.py", label="Compare Capacities", icon="⚖️")
     st.page_link("pages/09_💰_Financial.py", label="Financial Model", icon="💰")
-    st.page_link("pages/15_DPR_Generator.py", label="Generate DPR", icon="📄")
+    st.page_link("pages/44_DPR_Generator.py", label="Generate DPR", icon="📄")
     st.page_link("pages/12_🛣️_NHAI_Tenders.py", label="NHAI Tenders", icon="🛣️")
     st.page_link("pages/15_🤖_AI_Advisor.py", label="AI Advisor", icon="🤖")
 

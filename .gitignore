@@ -10,3 +10,7 @@ data/repair_log.json
 *.b64
 .claude/
 data/ai_config.json
+data/auth_config.json
+*.env
+.env.*
+secrets.json
