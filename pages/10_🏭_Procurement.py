@@ -15,6 +15,10 @@ from config import CAPACITY_KEYS, CAPACITY_LABELS
 st.set_page_config(page_title="Procurement", page_icon="🛒", layout="wide")
 init_db()
 init_state()
+st.sidebar.markdown("---")
+if st.sidebar.button("Print This Page", key="print_page"):
+    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+
 st.title("Procurement & Vendor Management")
 st.markdown("**Machinery vendors, cost comparison, and equipment sourcing**")
 st.markdown("---")

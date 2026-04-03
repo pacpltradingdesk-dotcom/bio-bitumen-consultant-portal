@@ -27,6 +27,10 @@ st.set_page_config(page_title="System Health", page_icon="🏥", layout="wide")
 init_state()
 cfg = get_config()
 init_db()
+st.sidebar.markdown("---")
+if st.sidebar.button("Print This Page", key="print_page"):
+    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+
 st.title("System Health & Auto-Monitoring")
 st.markdown("**10-Component Health Check | Auto-Updater | Self-Healing | Repair Log**")
 st.markdown("---")

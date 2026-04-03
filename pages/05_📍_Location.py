@@ -14,6 +14,10 @@ from state_manager import get_config, update_field, init_state
 
 st.set_page_config(page_title="Location & Feasibility", page_icon="📍", layout="wide")
 init_state()
+st.sidebar.markdown("---")
+if st.sidebar.button("Print This Page", key="print_page"):
+    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+
 st.title("Location & Feasibility Analysis")
 st.markdown("**Pan-India state-wise scoring for Bio-Bitumen plant setup**")
 st.markdown("---")

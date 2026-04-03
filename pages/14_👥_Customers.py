@@ -17,6 +17,10 @@ st.set_page_config(page_title="Customer Manager", page_icon="👥", layout="wide
 init_state()
 cfg = get_config()
 init_db()
+st.sidebar.markdown("---")
+if st.sidebar.button("Print This Page", key="print_page"):
+    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+
 st.title("Customer Manager")
 
 # ── Pipeline Summary ──────────────────────────────────────────────────

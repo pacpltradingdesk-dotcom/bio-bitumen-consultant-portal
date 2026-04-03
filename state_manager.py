@@ -75,6 +75,116 @@ OIL_YIELD = 0.40
 CHAR_YIELD = 0.30
 
 
+# ══════════════════════════════════════════════════════════════════════
+# INDIAN NUMBER FORMATTING — Single function used everywhere
+# ══════════════════════════════════════════════════════════════════════
+def format_inr(amount, unit="rs"):
+    """Format number in Indian system.
+    unit='rs': raw rupees → auto-detect Cr/Lac/Rs
+    unit='lac': amount is already in Lakhs
+    unit='cr': amount is already in Crores
+    """
+    if amount is None or amount == 0:
+        return "₹ 0"
+    neg = "-" if amount < 0 else ""
+    a = abs(amount)
+
+    if unit == "cr":
+        return f"{neg}₹ {a:.2f} Cr"
+    if unit == "lac":
+        if a >= 100:
+            return f"{neg}₹ {a/100:.2f} Cr"
+        return f"{neg}₹ {a:.1f} Lac"
+
+    # unit == "rs" — raw rupees, auto-detect scale
+    if a >= 10000000:  # 1 Cr = 1,00,00,000
+        return f"{neg}₹ {a/10000000:.2f} Cr"
+    if a >= 100000:  # 1 Lac = 1,00,000
+        return f"{neg}₹ {a/100000:.1f} Lac"
+    if a >= 1000:
+        # Indian comma format: 1,23,456
+        s = str(int(a))
+        if len(s) > 3:
+            last3 = s[-3:]
+            rest = s[:-3]
+            parts = []
+            while len(rest) > 2:
+                parts.insert(0, rest[-2:])
+                rest = rest[:-2]
+            if rest:
+                parts.insert(0, rest)
+            return f"{neg}₹ {','.join(parts)},{last3}"
+        return f"{neg}₹ {s}"
+    return f"{neg}₹ {a:.0f}"
+
+
+def format_inr_lac(lac_amount):
+    """Format Lac amount: ₹ 23.7 Lac or ₹ 6.40 Cr"""
+    if lac_amount >= 100:
+        return f"₹ {lac_amount/100:.2f} Cr"
+    return f"₹ {lac_amount:.1f} Lac"
+
+
+# ══════════════════════════════════════════════════════════════════════
+# BOQ AUTO-CALCULATOR — Generates equipment list from capacity
+# ══════════════════════════════════════════════════════════════════════
+def calculate_boq(tpd):
+    """Auto-generate Bill of Quantities based on plant capacity."""
+    scale = tpd / 20  # 20 TPD as reference
+
+    boq = [
+        {"item": "Pyrolysis Reactor", "spec": f"{tpd:.0f} TPD Continuous", "qty": max(1, int(tpd/10)),
+         "unit": "Nos", "rate_lac": round(35 * max(1, tpd/10), 1), "category": "Machinery"},
+        {"item": "Biomass Shredder", "spec": "5-10 TPH Hammer Mill", "qty": max(1, int(scale)),
+         "unit": "Nos", "rate_lac": round(8 * scale, 1), "category": "Machinery"},
+        {"item": "Rotary Dryer", "spec": f"{tpd*1.5:.0f} kg/hr", "qty": 1,
+         "unit": "Nos", "rate_lac": round(18 * scale, 1), "category": "Machinery"},
+        {"item": "Bio-Oil Condenser", "spec": "Shell & Tube Type", "qty": max(1, int(tpd/15)),
+         "unit": "Nos", "rate_lac": round(5 * scale, 1), "category": "Machinery"},
+        {"item": "Bitumen Heating Tank", "spec": f"{tpd*2:.0f} MT capacity", "qty": 2,
+         "unit": "Nos", "rate_lac": round(8 * scale, 1), "category": "Machinery"},
+        {"item": "High Shear Mixer", "spec": "Bio-oil + VG30 blending", "qty": 1,
+         "unit": "Nos", "rate_lac": round(12 * scale, 1), "category": "Machinery"},
+        {"item": "Colloid Mill", "spec": "Fine dispersion unit", "qty": 1,
+         "unit": "Nos", "rate_lac": round(6 * scale, 1), "category": "Machinery"},
+        {"item": "Storage Tanks (Bitumen)", "spec": f"{tpd*3:.0f} MT heated", "qty": 2,
+         "unit": "Nos", "rate_lac": round(10 * scale, 1), "category": "Storage"},
+        {"item": "Bio-Oil Storage Tank", "spec": f"{tpd*2:.0f} KL", "qty": 2,
+         "unit": "Nos", "rate_lac": round(5 * scale, 1), "category": "Storage"},
+        {"item": "DG Set", "spec": f"{max(50, int(tpd*5))} kVA", "qty": 1,
+         "unit": "Nos", "rate_lac": round(8 * scale, 1), "category": "Electrical"},
+        {"item": "Electrical Panel + HT", "spec": "Complete distribution", "qty": 1,
+         "unit": "Lot", "rate_lac": round(15 * scale, 1), "category": "Electrical"},
+        {"item": "Weighbridge", "spec": "60 MT Electronic", "qty": 1,
+         "unit": "Nos", "rate_lac": 6, "category": "Civil"},
+        {"item": "Lab Equipment", "spec": "Complete QC Lab", "qty": 1,
+         "unit": "Lot", "rate_lac": round(15 * scale, 1), "category": "Quality"},
+        {"item": "Fire Safety System", "spec": "Hydrants + Extinguishers", "qty": 1,
+         "unit": "Lot", "rate_lac": round(8 * scale, 1), "category": "Safety"},
+        {"item": "Pollution Control", "spec": "Bag filter + Scrubber + Stack", "qty": 1,
+         "unit": "Lot", "rate_lac": round(12 * scale, 1), "category": "Environment"},
+        {"item": "Pipe Rack & Piping", "spec": "MS + SS piping complete", "qty": 1,
+         "unit": "Lot", "rate_lac": round(10 * scale, 1), "category": "Piping"},
+        {"item": "Civil & Building", "spec": f"{int(tpd*150)} sq ft PEB + RCC", "qty": 1,
+         "unit": "Lot", "rate_lac": round(40 * scale, 1), "category": "Civil"},
+        {"item": "Road & Compound Wall", "spec": "Internal roads + boundary", "qty": 1,
+         "unit": "Lot", "rate_lac": round(8 * scale, 1), "category": "Civil"},
+    ]
+
+    for item in boq:
+        item["amount_lac"] = round(item["qty"] * item["rate_lac"], 1)
+
+    return boq
+
+
+# Print helper — inject JS for browser print
+PRINT_BUTTON_JS = """
+<script>
+function printPage() { window.print(); }
+</script>
+"""
+
+
 def _full_default():
     """Return full config with defaults + empty derived fields."""
     cfg = dict(DEFAULTS)
@@ -97,6 +207,8 @@ def _full_default():
         "payroll_lac_yr": 0,
         "roi_timeline": [], "sensitivity_matrix": [],
         "monthly_pnl": {},
+        "boq": [],  # Auto-calculated Bill of Quantities
+        "display_mode": False,  # Meeting presentation mode
     })
     return cfg
 
@@ -366,3 +478,12 @@ def recalculate():
             "EMI": cfg["emi_lac_mth"],
             "Net Surplus": round((yr5["PAT (Lac)"] + yr5["Depreciation (Lac)"]) / 12 - cfg["emi_lac_mth"], 2),
         }
+
+    # ── BOQ Auto-Calculation (from capacity) ─────────────────────
+    cfg["boq"] = calculate_boq(tpd)
+
+    # ── Break-even month alias ───────────────────────────────────
+    cfg["break_even_month"] = cfg["break_even_months"]
+
+    # ── Capacity key ─────────────────────────────────────────────
+    cfg["capacity_key"] = f"{int(tpd):02d}MT"

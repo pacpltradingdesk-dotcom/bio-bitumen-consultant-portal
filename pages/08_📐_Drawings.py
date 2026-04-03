@@ -13,6 +13,10 @@ st.set_page_config(page_title="Engineering Drawings", page_icon="📐", layout="
 init_state()
 cfg = get_config()
 
+st.sidebar.markdown("---")
+if st.sidebar.button("Print This Page", key="print_page"):
+    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+
 st.title("Engineering Drawings")
 st.markdown(f"**{cfg['capacity_tpd']:.0f} TPD Plant — All drawings viewable & downloadable**")
 st.markdown("---")

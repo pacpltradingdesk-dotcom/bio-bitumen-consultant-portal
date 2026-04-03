@@ -18,6 +18,10 @@ init_db()
 init_state()
 cfg = get_config()
 
+st.sidebar.markdown("---")
+if st.sidebar.button("Print This Page", key="print_page"):
+    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+
 st.title("Project Setup — Client & Site Information")
 st.markdown("**Fill this ONCE → Auto-populates ALL documents, calculations, and reports**")
 st.markdown("---")

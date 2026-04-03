@@ -17,6 +17,10 @@ st.set_page_config(page_title="AI Settings", page_icon="🔑", layout="wide")
 init_state()
 cfg = get_config()
 
+st.sidebar.markdown("---")
+if st.sidebar.button("Print This Page", key="print_page"):
+    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+
 st.title("AI Settings — API Key Management")
 st.markdown("**Configure OpenAI (GPT-4o) and/or Claude (Sonnet) for AI-powered features**")
 st.markdown("---")

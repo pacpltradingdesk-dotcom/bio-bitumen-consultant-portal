@@ -12,6 +12,10 @@ from state_manager import get_config, update_field, init_state
 
 st.set_page_config(page_title="Plant Design", page_icon="⚙️", layout="wide")
 init_state()
+st.sidebar.markdown("---")
+if st.sidebar.button("Print This Page", key="print_page"):
+    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+
 st.title("Plant Design & Layout")
 st.markdown("**Capacity selector (5-100 TPD) | Auto area calculation | Section planning**")
 st.markdown("---")

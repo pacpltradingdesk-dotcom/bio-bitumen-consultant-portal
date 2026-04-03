@@ -18,6 +18,10 @@ st.set_page_config(page_title="Compliance Tracker", page_icon="📋", layout="wi
 init_state()
 cfg = get_config()
 init_db()
+st.sidebar.markdown("---")
+if st.sidebar.button("Print This Page", key="print_page"):
+    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+
 st.title("Compliance & License Tracker")
 st.markdown("**Track all licenses and approvals needed for plant setup — state-wise**")
 st.markdown("---")

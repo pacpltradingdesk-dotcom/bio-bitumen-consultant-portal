@@ -27,12 +27,38 @@ cfg = get_config()
 TOTAL_SLIDES = 15  # 0-14
 
 # ══════════════════════════════════════════════════════════════════════
-# SLIDE STATE MANAGEMENT
+# SLIDE STATE + DISPLAY MODE + PRINT
 # ══════════════════════════════════════════════════════════════════════
 if "slide" not in st.session_state:
     st.session_state["slide"] = 0
+if "display_mode" not in st.session_state:
+    st.session_state["display_mode"] = False
 
 slide = st.session_state["slide"]
+display_mode = st.session_state["display_mode"]
+
+# Sidebar controls
+st.sidebar.markdown("### Presentation Controls")
+if st.sidebar.toggle("Meeting Display Mode", value=display_mode, key="dm_toggle"):
+    st.session_state["display_mode"] = True
+    display_mode = True
+else:
+    st.session_state["display_mode"] = False
+    display_mode = False
+
+if display_mode:
+    st.sidebar.success("Display Mode ON — Clean presentation view")
+    # Hide sidebar content in display mode via CSS
+    st.markdown("""<style>
+    [data-testid="stSidebar"] {width: 0px !important; min-width: 0px !important;}
+    [data-testid="stSidebarContent"] {display: none !important;}
+    header {display: none !important;}
+    </style>""", unsafe_allow_html=True)
+
+# Print button (always available)
+st.sidebar.markdown("---")
+if st.sidebar.button("🖨️ Print Current Slide", key="print_btn"):
+    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
 
 # ── Slide Title Bar ──────────────────────────────────────────────────
 SLIDE_TITLES = [

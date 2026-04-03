@@ -14,6 +14,10 @@ from config import STATES
 
 st.set_page_config(page_title="Raw Material", page_icon="🌾", layout="wide")
 init_state()
+st.sidebar.markdown("---")
+if st.sidebar.button("Print This Page", key="print_page"):
+    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+
 st.title("Raw Material Analysis")
 st.markdown("**Agro-waste biomass availability, cost analysis, and seasonality planning**")
 st.markdown("---")

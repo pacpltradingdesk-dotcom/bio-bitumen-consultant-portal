@@ -18,6 +18,10 @@ st.set_page_config(page_title="NHAI Tender Tracker", page_icon="🛣️", layout
 init_state()
 cfg = get_config()
 
+st.sidebar.markdown("---")
+if st.sidebar.button("Print This Page", key="print_page"):
+    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+
 st.title("NHAI & Government Tender Tracker")
 st.markdown("**Track NHAI, State PWD, BRO, PMGSY road project tenders — Filter, Analyze, Act**")
 st.markdown("---")

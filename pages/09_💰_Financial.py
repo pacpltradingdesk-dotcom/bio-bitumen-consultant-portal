@@ -12,6 +12,10 @@ from state_manager import get_config, update_field, update_fields, init_state
 
 st.set_page_config(page_title="Financial Model", page_icon="💰", layout="wide")
 init_state()
+st.sidebar.markdown("---")
+if st.sidebar.button("Print This Page", key="print_page"):
+    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+
 st.title("Financial Model (Auto-Updating)")
 st.markdown("**Edit ANY input below → ALL calculations, charts, and reports auto-update instantly**")
 

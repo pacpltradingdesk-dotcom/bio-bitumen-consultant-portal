@@ -20,6 +20,10 @@ init_db()
 init_state()
 cfg = get_config()
 
+st.sidebar.markdown("---")
+if st.sidebar.button("Print This Page", key="print_page"):
+    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+
 st.title("Document Hub — Personalized Generation & Export")
 st.markdown("**Set Client Info → Generate ALL Formats → Download Submission-Ready Package**")
 st.markdown("---")

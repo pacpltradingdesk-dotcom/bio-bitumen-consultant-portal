@@ -18,6 +18,10 @@ from config import (STATES, STATE_SCORES, LOCATION_WEIGHTS, LICENSE_TYPES, COMPA
 
 st.set_page_config(page_title="AI Advisor", page_icon="🤖", layout="wide")
 init_state()
+st.sidebar.markdown("---")
+if st.sidebar.button("Print This Page", key="print_page"):
+    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+
 st.title("AI Business Advisor")
 st.markdown("**100+ Topics | Bio-Bitumen Plant Setup | Financial, Technical, Legal, Market Intelligence**")
 st.markdown("---")
