@@ -42,6 +42,17 @@ DEFAULTS = {
     "admin_pct": 0.02,
     "maintenance_pct": 0.03,
 
+    # NEW — Advanced Financial Inputs
+    "land_cost_per_acre": 15,          # Rs Lakhs per acre
+    "inflation_rate": 0.05,            # 5% annual inflation
+    "revenue_growth_rate": 0.03,       # 3% annual price escalation
+    "working_capital_months": 3,       # Months of WC needed
+    "moratorium_months": 6,            # Bank moratorium before EMI starts
+    "salvage_value_pct": 0.10,         # 10% of asset value at end of life
+    "bio_blend_pct": 20,               # 20% bio-oil in bitumen blend
+    "num_shifts": 2,                   # 1/2/3 shifts per day
+    "carbon_credit_rate_usd": 12,      # USD per tonne CO2
+
     # Location
     "state": "Uttar Pradesh",
     "location": "Lucknow",
@@ -209,6 +220,19 @@ def _full_default():
         "monthly_pnl": {},
         "boq": [],  # Auto-calculated Bill of Quantities
         "display_mode": False,  # Meeting presentation mode
+
+        # NEW — Advanced Financial Outputs (auto-calculated)
+        "land_cost_lac": 0,
+        "working_capital_lac": 0,
+        "npv_lac": 0,              # Net Present Value
+        "current_ratio": 0,
+        "debt_equity_ratio": 0,
+        "net_worth_yr5_lac": 0,
+        "carbon_credit_annual_lac": 0,
+        "total_investment_with_land": 0,
+        "dscr_schedule": [],       # DSCR for all 7 years
+        "cash_flow_statement": [],  # Operating + Investing + Financing
+        "balance_sheet": [],        # Assets = Liabilities + Equity
     })
     return cfg
 
@@ -487,3 +511,99 @@ def recalculate():
 
     # ── Capacity key ─────────────────────────────────────────────
     cfg["capacity_key"] = f"{int(tpd):02d}MT"
+
+    # ══════════════════════════════════════════════════════════════
+    # NEW — ADVANCED FINANCIAL CALCULATIONS (CA-Grade)
+    # ══════════════════════════════════════════════════════════════
+
+    # 1. Land cost
+    cfg["land_cost_lac"] = round(cfg["site_area_acres"] * cfg["land_cost_per_acre"], 1)
+
+    # 2. Working capital
+    monthly_cost = (var_per_mt * annual_output_full * 0.85 / 12) / 1e5  # Monthly cost in Lac at 85% util
+    cfg["working_capital_lac"] = round(monthly_cost * cfg["working_capital_months"], 1)
+
+    # 3. Total investment including land
+    cfg["total_investment_with_land"] = round(cfg["investment_cr"] + cfg["land_cost_lac"] / 100, 2)
+
+    # 4. Carbon credit revenue
+    co2_saved = tpd * days * 0.85 * 0.35  # At 85% util, 0.35 tCO2/MT
+    usd_inr = 84  # Default FX
+    try:
+        from engines.free_apis import get_exchange_rates
+        fx = get_exchange_rates()
+        if "error" not in fx:
+            usd_inr = fx.get("usd_inr", 84)
+    except Exception:
+        pass
+    cfg["carbon_credit_annual_lac"] = round(co2_saved * cfg["carbon_credit_rate_usd"] * usd_inr / 1e5, 1)
+
+    # 5. DSCR Schedule (all 7 years)
+    cfg["dscr_schedule"] = [round(t["DSCR"], 2) for t in timeline] if timeline else []
+
+    # 6. NPV (Net Present Value at cost of equity = 15%)
+    cost_of_equity = 0.15
+    npv = -equity_lac
+    for i, t in enumerate(timeline, 1):
+        npv += t["Cash Accrual (Lac)"] / (1 + cost_of_equity) ** i
+    cfg["npv_lac"] = round(npv, 1)
+
+    # 7. Debt-Equity Ratio (Year 1)
+    cfg["debt_equity_ratio"] = round(cfg["loan_cr"] / cfg["equity_cr"], 2) if cfg["equity_cr"] > 0 else 0
+
+    # 8. Current Ratio (simplified: current assets / current liabilities)
+    # Current assets = WC + 3 months receivables
+    current_assets = cfg["working_capital_lac"] + (cfg.get("revenue_yr5_lac", 0) / 12 * 3)
+    current_liabilities = cfg["emi_lac_mth"] * 12 + (inv_lac * 0.06)  # Annual EMI + fixed costs
+    cfg["current_ratio"] = round(current_assets / current_liabilities, 2) if current_liabilities > 0 else 0
+
+    # 9. Net Worth Year 5
+    retained_earnings = sum(t["PAT (Lac)"] for t in timeline[:5]) if len(timeline) >= 5 else 0
+    cfg["net_worth_yr5_lac"] = round(equity_lac + retained_earnings, 1)
+
+    # 10. Cash Flow Statement (7 years)
+    cash_flow = []
+    outstanding_loan = loan_lac
+    for yr_idx, t in enumerate(timeline):
+        # Apply inflation to revenue from year 2 onwards
+        inflation_factor = (1 + cfg["inflation_rate"]) ** yr_idx
+        revenue_growth_factor = (1 + cfg["revenue_growth_rate"]) ** yr_idx
+
+        operating = t["Cash Accrual (Lac)"]
+        investing = -inv_lac * 0.05 if yr_idx == 0 else 0  # Capex maintenance
+        emi_annual = cfg["emi_lac_mth"] * 12
+        # Moratorium: no EMI for first N months
+        if yr_idx == 0 and cfg["moratorium_months"] > 0:
+            emi_annual = cfg["emi_lac_mth"] * max(0, 12 - cfg["moratorium_months"])
+        principal_paid = emi_annual - (outstanding_loan * cfg["interest_rate"])
+        outstanding_loan = max(0, outstanding_loan - max(0, principal_paid))
+
+        financing = -emi_annual
+        net_cash = operating + investing + financing
+
+        cash_flow.append({
+            "Year": t["Year"],
+            "Operating (Lac)": round(operating, 1),
+            "Investing (Lac)": round(investing, 1),
+            "Financing (Lac)": round(financing, 1),
+            "Net Cash (Lac)": round(net_cash, 1),
+            "Loan Outstanding (Lac)": round(outstanding_loan, 1),
+        })
+    cfg["cash_flow_statement"] = cash_flow
+
+    # 11. Balance Sheet Summary (simplified, Year 5)
+    if len(timeline) >= 5:
+        total_assets = inv_lac * (1 - cfg["depreciation_rate"] * 5) + cfg["working_capital_lac"] + \
+                       sum(cf["Net Cash (Lac)"] for cf in cash_flow[:5])
+        loan_yr5 = cash_flow[4]["Loan Outstanding (Lac)"] if len(cash_flow) >= 5 else 0
+        equity_yr5 = cfg["net_worth_yr5_lac"]
+        cfg["balance_sheet"] = [
+            {"Item": "Fixed Assets (Net)", "Amount (Lac)": round(inv_lac * (1 - cfg["depreciation_rate"] * 5), 1)},
+            {"Item": "Working Capital", "Amount (Lac)": cfg["working_capital_lac"]},
+            {"Item": "Cash & Bank", "Amount (Lac)": round(sum(cf["Net Cash (Lac)"] for cf in cash_flow[:5]), 1)},
+            {"Item": "TOTAL ASSETS", "Amount (Lac)": round(total_assets, 1)},
+            {"Item": "---", "Amount (Lac)": 0},
+            {"Item": "Term Loan Outstanding", "Amount (Lac)": round(loan_yr5, 1)},
+            {"Item": "Net Worth (Equity + Retained)", "Amount (Lac)": round(equity_yr5, 1)},
+            {"Item": "TOTAL LIABILITIES", "Amount (Lac)": round(loan_yr5 + equity_yr5, 1)},
+        ]

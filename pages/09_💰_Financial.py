@@ -69,7 +69,22 @@ with col_input:
     interest = st.slider("Interest Rate (%)", 8.0, 14.0, float(cfg["interest_rate"]*100), 0.5, key="fin_int")
     equity_pct = st.slider("Equity (%)", 20, 50, int(cfg["equity_ratio"]*100), 5, key="fin_eq")
 
-    # Apply changes
+    st.markdown("**Advanced Parameters**")
+    with st.expander("Land, Inflation, WC, Moratorium, Carbon Credits"):
+        adv1, adv2 = st.columns(2)
+        with adv1:
+            land_rate = st.number_input("Land Cost (Rs Lac/acre)", 1, 100, int(cfg["land_cost_per_acre"]), 1, key="fin_land")
+            inflation = st.slider("Inflation Rate (%)", 0.0, 10.0, float(cfg["inflation_rate"]*100), 0.5, key="fin_infl")
+            rev_growth = st.slider("Revenue Growth (%/yr)", 0.0, 10.0, float(cfg["revenue_growth_rate"]*100), 0.5, key="fin_revgr")
+            wc_months = st.number_input("Working Capital (months)", 1, 12, int(cfg["working_capital_months"]), 1, key="fin_wc")
+        with adv2:
+            moratorium = st.number_input("Moratorium (months)", 0, 24, int(cfg["moratorium_months"]), 3, key="fin_mora")
+            salvage = st.slider("Salvage Value (%)", 0, 30, int(cfg["salvage_value_pct"]*100), 5, key="fin_salv")
+            bio_blend = st.slider("Bio-Blend (%)", 10, 40, int(cfg["bio_blend_pct"]), 5, key="fin_blend")
+            shifts = st.selectbox("Shifts/Day", [1, 2, 3], index=[1,2,3].index(int(cfg["num_shifts"])), key="fin_shifts")
+            carbon_rate = st.number_input("Carbon Credit (USD/tCO2)", 5, 50, int(cfg["carbon_credit_rate_usd"]), 1, key="fin_carbon")
+
+    # Apply ALL changes
     changes = {}
     if tpd != cfg["capacity_tpd"]: changes["capacity_tpd"] = tpd
     if days != cfg["working_days"]: changes["working_days"] = days
@@ -81,6 +96,15 @@ with col_input:
     if transport != cfg["transport_cost_per_mt"]: changes["transport_cost_per_mt"] = transport
     if abs(interest/100 - cfg["interest_rate"]) > 0.001: changes["interest_rate"] = interest/100
     if abs(equity_pct/100 - cfg["equity_ratio"]) > 0.01: changes["equity_ratio"] = equity_pct/100
+    if land_rate != cfg["land_cost_per_acre"]: changes["land_cost_per_acre"] = land_rate
+    if abs(inflation/100 - cfg["inflation_rate"]) > 0.001: changes["inflation_rate"] = inflation/100
+    if abs(rev_growth/100 - cfg["revenue_growth_rate"]) > 0.001: changes["revenue_growth_rate"] = rev_growth/100
+    if wc_months != cfg["working_capital_months"]: changes["working_capital_months"] = wc_months
+    if moratorium != cfg["moratorium_months"]: changes["moratorium_months"] = moratorium
+    if abs(salvage/100 - cfg["salvage_value_pct"]) > 0.01: changes["salvage_value_pct"] = salvage/100
+    if bio_blend != cfg["bio_blend_pct"]: changes["bio_blend_pct"] = bio_blend
+    if shifts != cfg["num_shifts"]: changes["num_shifts"] = shifts
+    if carbon_rate != cfg["carbon_credit_rate_usd"]: changes["carbon_credit_rate_usd"] = carbon_rate
 
     if changes:
         update_fields(changes)
@@ -116,6 +140,31 @@ with col_output:
     om1.metric("Investment", f"Rs {cfg['investment_cr']:.2f} Cr")
     om2.metric("Monthly EMI", f"Rs {cfg['emi_lac_mth']:.2f} Lac")
     om3.metric("Monthly Profit", f"Rs {cfg['monthly_profit_lac']:.1f} Lac")
+
+    # NEW — Advanced Financial Metrics
+    st.markdown("**Bank-Grade Metrics**")
+    bk1, bk2, bk3 = st.columns(3)
+    bk1.metric("NPV", f"Rs {cfg.get('npv_lac', 0):.1f} Lac")
+    bk2.metric("Debt-Equity", f"{cfg.get('debt_equity_ratio', 0):.2f}x")
+    bk3.metric("Current Ratio", f"{cfg.get('current_ratio', 0):.2f}")
+
+    bk4, bk5, bk6 = st.columns(3)
+    bk4.metric("Net Worth (Yr5)", f"Rs {cfg.get('net_worth_yr5_lac', 0):.0f} Lac")
+    bk5.metric("Carbon Credits", f"Rs {cfg.get('carbon_credit_annual_lac', 0):.1f} Lac/yr")
+    bk6.metric("Working Capital", f"Rs {cfg.get('working_capital_lac', 0):.1f} Lac")
+
+    # DSCR Schedule
+    dscr_sched = cfg.get("dscr_schedule", [])
+    if dscr_sched:
+        st.markdown("**DSCR Schedule (all 7 years)**")
+        dscr_text = " | ".join([f"Yr{i+1}: {d:.2f}x" for i, d in enumerate(dscr_sched)])
+        min_dscr = min(dscr_sched)
+        if min_dscr >= 1.5:
+            st.success(f"{dscr_text}")
+        elif min_dscr >= 1.0:
+            st.warning(f"{dscr_text}")
+        else:
+            st.error(f"{dscr_text}")
 
 st.markdown("---")
 
@@ -160,6 +209,40 @@ if cfg["roi_timeline"]:
     st.markdown("---")
     st.subheader("Detailed P&L Statement")
     st.dataframe(roi_df, width="stretch", hide_index=True)
+
+    # NEW — Cash Flow Statement
+    if cfg.get("cash_flow_statement"):
+        st.markdown("---")
+        st.subheader("Cash Flow Statement (7 Years)")
+        cf_df = pd.DataFrame(cfg["cash_flow_statement"])
+        st.dataframe(cf_df, width="stretch", hide_index=True)
+
+        fig_cf = go.Figure()
+        fig_cf.add_trace(go.Bar(x=cf_df["Year"], y=cf_df["Operating (Lac)"], name="Operating", marker_color="#003366"))
+        fig_cf.add_trace(go.Bar(x=cf_df["Year"], y=cf_df["Financing (Lac)"], name="Financing", marker_color="#CC3333"))
+        fig_cf.add_trace(go.Scatter(x=cf_df["Year"], y=cf_df["Net Cash (Lac)"], name="Net Cash",
+                                     mode="lines+markers", line=dict(color="#00AA44", width=3)))
+        fig_cf.update_layout(title="Cash Flow Statement (Rs Lac)", barmode="group",
+                              template="plotly_white", height=350)
+        st.plotly_chart(fig_cf, width="stretch")
+
+    # NEW — Balance Sheet
+    if cfg.get("balance_sheet"):
+        st.markdown("---")
+        st.subheader("Balance Sheet Summary (Year 5)")
+        bs_df = pd.DataFrame(cfg["balance_sheet"])
+        st.dataframe(bs_df, width="stretch", hide_index=True)
+
+    # NEW — Loan Repayment Schedule
+    if cfg.get("cash_flow_statement"):
+        st.markdown("---")
+        st.subheader("Loan Outstanding Schedule")
+        loan_df = pd.DataFrame(cfg["cash_flow_statement"])[["Year", "Loan Outstanding (Lac)"]]
+        fig_loan = go.Figure()
+        fig_loan.add_trace(go.Bar(x=loan_df["Year"], y=loan_df["Loan Outstanding (Lac)"],
+                                    name="Loan Outstanding", marker_color="#FF8800"))
+        fig_loan.update_layout(title="Loan Repayment Progress (Rs Lac)", template="plotly_white", height=300)
+        st.plotly_chart(fig_loan, width="stretch")
 
     # Sensitivity Matrix
     st.markdown("---")
