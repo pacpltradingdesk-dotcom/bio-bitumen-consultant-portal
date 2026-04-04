@@ -317,7 +317,8 @@ with scen_col2:
     saved = get_configurations()
     if saved:
         for s in saved[:5]:
-            snap = json.loads(s.get("config_json", "{}"))
+            raw = s.get("config_json", {})
+            snap = json.loads(raw) if isinstance(raw, str) else (raw if isinstance(raw, dict) else {})
             with st.expander(f"{s['name']} — {snap.get('capacity_tpd', '?')} TPD | ROI: {snap.get('roi_pct', '?')}%"):
                 for k, v in snap.items():
                     st.text(f"{k}: {v}")
