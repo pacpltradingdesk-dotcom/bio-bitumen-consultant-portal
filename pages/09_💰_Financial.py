@@ -13,8 +13,9 @@ from state_manager import get_config, update_field, update_fields, init_state
 st.set_page_config(page_title="Financial Model", page_icon="💰", layout="wide")
 init_state()
 st.sidebar.markdown("---")
-if st.sidebar.button("Print This Page", key="print_page"):
-    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+if st.sidebar.button("🖨️ Print This Page", key="print_page"):
+    import streamlit.components.v1 as stc
+    stc.html("<script>window.print();</script>", height=0)
 
 st.title("Financial Model (Auto-Updating)")
 st.markdown("**Edit ANY input below → ALL calculations, charts, and reports auto-update instantly**")
@@ -56,8 +57,12 @@ with col_input:
     days = st.number_input("Working Days/Year", 250, 365, int(cfg["working_days"]), 10, key="fin_days")
 
     st.markdown("**Revenue**")
-    sell_price = st.number_input("Selling Price (Rs/MT)", 20000, 60000, int(cfg["selling_price_per_mt"]), 1000, key="fin_sell")
-    biochar_p = st.number_input("Biochar Price (Rs/MT)", 1000, 10000, int(cfg["biochar_price_per_mt"]), 500, key="fin_char")
+    sell_price = st.number_input("Selling Price (Rs/MT)", 20000, 60000, int(cfg["selling_price_per_mt"]), 1000, key="fin_sell",
+                                  help="Price at which bio-modified bitumen is sold to NHAI/PWD contractors")
+    biochar_p = st.number_input("Biochar Price (Rs/MT)", 1000, 10000, int(cfg["biochar_price_per_mt"]), 500, key="fin_char",
+                                 help="Revenue from biochar byproduct — sold as soil amendment or carbon black substitute")
+    syngas_val = st.number_input("Syngas Revenue (Rs/MT)", 0, 5000, int(cfg.get("syngas_value_per_mt", 1250)), 250, key="fin_syngas",
+                                  help="Value of syngas used as captive fuel — reduces power cost")
 
     st.markdown("**Costs (Rs per MT output)**")
     raw_cost = st.number_input("Raw Material", 3000, 15000, int(cfg["raw_material_cost_per_mt"]), 500, key="fin_raw")
@@ -132,14 +137,14 @@ with col_output:
 
     st.markdown("**Key Metrics**")
     ok1, ok2, ok3 = st.columns(3)
-    ok1.metric("ROI", f"{cfg['roi_pct']:.1f}%")
-    ok2.metric("IRR", f"{cfg['irr_pct']:.1f}%")
-    ok3.metric("Break-Even", f"{cfg['break_even_months']} mo")
+    ok1.metric("ROI", f"{cfg['roi_pct']:.1f}%", help="Return on Investment — Annual Profit / Total Investment × 100")
+    ok2.metric("IRR", f"{cfg['irr_pct']:.1f}%", help="Internal Rate of Return — Discount rate where NPV = 0")
+    ok3.metric("Break-Even", f"{cfg['break_even_months']} mo", help="Months to recover total investment from net profits")
 
     om1, om2, om3 = st.columns(3)
-    om1.metric("Investment", f"Rs {cfg['investment_cr']:.2f} Cr")
-    om2.metric("Monthly EMI", f"Rs {cfg['emi_lac_mth']:.2f} Lac")
-    om3.metric("Monthly Profit", f"Rs {cfg['monthly_profit_lac']:.1f} Lac")
+    om1.metric("CAPEX", f"Rs {cfg['investment_cr']:.2f} Cr", help="Total Capital Expenditure — Plant + Machinery + WC + Pre-operative")
+    om2.metric("EMI/Month", f"Rs {cfg['emi_lac_mth']:.2f} Lac", help="Equated Monthly Installment — Fixed monthly loan repayment")
+    om3.metric("Monthly Profit", f"Rs {cfg['monthly_profit_lac']:.1f} Lac", help="Net Profit After Tax — Year 5 at 85% utilization")
 
     # NEW — Advanced Financial Metrics
     st.markdown("**Bank-Grade Metrics**")
@@ -391,6 +396,9 @@ with scen_col1:
             "roi_pct": cfg["roi_pct"],
             "irr_pct": cfg["irr_pct"],
             "monthly_profit_lac": cfg["monthly_profit_lac"],
+            "break_even_months": cfg["break_even_months"],
+            "dscr_yr3": cfg["dscr_yr3"],
+            "profit_per_mt": cfg["profit_per_mt"],
         }
         save_configuration(None, scenario_name, json.dumps(config_snapshot))
         st.success(f"Scenario '{scenario_name}' saved!")
@@ -456,13 +464,9 @@ try:
             with st.spinner("AI analyzing your financial model..."):
                 analysis, provider = ai_financial_analysis(cfg)
             if analysis:
-                st.markdown(f"""
-                <div style="background: #f8f9fa; border-left: 4px solid #003366; padding: 15px 20px;
-                            border-radius: 0 8px 8px 0;">
-                    {analysis.replace(chr(10), '<br>')}
-                    <p style="color: #999; margin-top: 10px; font-size: 0.8em;">Powered by {provider.upper()}</p>
-                </div>
-                """, unsafe_allow_html=True)
+                st.markdown("---")
+                st.markdown(analysis)
+                st.caption(f"Powered by {provider.upper()}")
             else:
                 st.warning("AI analysis could not be generated. Check API settings.")
     else:

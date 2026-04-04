@@ -20,7 +20,7 @@ st.set_page_config(page_title="AI Advisor", page_icon="🤖", layout="wide")
 init_state()
 st.sidebar.markdown("---")
 if st.sidebar.button("Print This Page", key="print_page"):
-    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+    import streamlit.components.v1 as _stc; _stc.html('<script>window.print();</script>', height=0)
 
 st.title("AI Business Advisor")
 st.markdown("**100+ Topics | Bio-Bitumen Plant Setup | Financial, Technical, Legal, Market Intelligence**")

@@ -19,7 +19,7 @@ cfg = get_config()
 
 st.sidebar.markdown("---")
 if st.sidebar.button("Print This Page", key="print_page"):
-    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+    import streamlit.components.v1 as _stc; _stc.html('<script>window.print();</script>', height=0)
 
 st.title("AI Settings — API Key Management")
 st.markdown("**Configure OpenAI (GPT-4o) and/or Claude (Sonnet) for AI-powered features**")

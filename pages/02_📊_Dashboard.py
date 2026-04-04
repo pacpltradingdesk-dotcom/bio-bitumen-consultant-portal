@@ -21,10 +21,20 @@ from config import (COMPANY, CUSTOMER_STATUSES, STATE_SCORES, LOCATION_WEIGHTS,
 st.set_page_config(page_title="Executive Dashboard", page_icon="🏭", layout="wide")
 init_db()
 init_state()
+cfg = get_config()
+
+st.sidebar.markdown("---")
+if st.sidebar.button("Print This Page", key="print_page"):
+    import streamlit.components.v1 as _stc; _stc.html('<script>window.print();</script>', height=0)
 
 # ── Greeting ─────────────────────────────────────────────────────────
-hour = datetime.datetime.now().hour
-greeting = "Good Morning" if hour < 12 else ("Good Afternoon" if hour < 17 else "Good Evening")
+now = datetime.datetime.now()
+hour = now.hour
+if hour < 5: greeting = "Good Night"
+elif hour < 12: greeting = "Good Morning"
+elif hour < 17: greeting = "Good Afternoon"
+elif hour < 21: greeting = "Good Evening"
+else: greeting = "Good Night"
 user_name = st.session_state.get("user_name", "Admin")
 
 st.markdown(f"""
@@ -32,6 +42,7 @@ st.markdown(f"""
 ### {COMPANY['trade_name']} — Executive Dashboard
 **ONE-POINT SOLUTION: Land Selection > Plant Setup > Financial Closure > Sales Network**
 """)
+st.caption(f"Last refreshed: {now.strftime('%d %b %Y %I:%M %p')}")
 st.markdown("---")
 
 cfg = get_config()
@@ -87,7 +98,19 @@ with market_col:
         vg30 = market.get("vg30_estimate", {})
         fx = market.get("usd_inr", {})
         crude_data = market.get("crude_oil")
-        crude_price = crude_data.get("latest_price", 0) if isinstance(crude_data, dict) else 0
+        if isinstance(crude_data, dict):
+            crude_price = crude_data.get("latest_price", 0)
+        elif isinstance(crude_data, list) and crude_data:
+            crude_price = crude_data[-1].get("price_usd", 0)
+        else:
+            crude_price = 0
+        # Fallback: re-fetch if zero
+        if crude_price == 0:
+            try:
+                import yfinance as yf
+                crude_price = round(yf.Ticker("BZ=F").history(period="5d")["Close"].iloc[-1], 2)
+            except Exception:
+                crude_price = 75.0  # Safe fallback
 
         mk1, mk2, mk3, mk4 = st.columns(4)
         mk1.metric("Crude Oil", f"${crude_price:.1f}/bbl")

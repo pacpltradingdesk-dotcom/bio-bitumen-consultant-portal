@@ -58,7 +58,7 @@ if display_mode:
 # Print button (always available)
 st.sidebar.markdown("---")
 if st.sidebar.button("🖨️ Print Current Slide", key="print_btn"):
-    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+    import streamlit.components.v1 as _stc; _stc.html('<script>window.print();</script>', height=0)
 
 # ── Slide Title Bar ──────────────────────────────────────────────────
 SLIDE_TITLES = [

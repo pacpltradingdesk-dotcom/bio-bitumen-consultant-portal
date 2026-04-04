@@ -16,7 +16,7 @@ st.set_page_config(page_title="Location & Feasibility", page_icon="📍", layout
 init_state()
 st.sidebar.markdown("---")
 if st.sidebar.button("Print This Page", key="print_page"):
-    st.markdown('<script>window.print();</script>', unsafe_allow_html=True)
+    import streamlit.components.v1 as _stc; _stc.html('<script>window.print();</script>', height=0)
 
 st.title("Location & Feasibility Analysis")
 st.markdown("**Pan-India state-wise scoring for Bio-Bitumen plant setup**")
