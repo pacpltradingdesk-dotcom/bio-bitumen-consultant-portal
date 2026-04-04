@@ -121,6 +121,15 @@ tr:hover{background:#f8fafc}
    <div class="field"><label>Site Address</label><input x-model="p.client.address"></div>
    <div class="field"><label>Referred By</label><input x-model="p.client.referredBy"></div>
   </div>
+  <!-- Validation + Next button -->
+  <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center">
+   <div>
+    <span x-show="!p.client.name" style="color:var(--red);font-weight:600">⚠ Client Name is required</span>
+    <span x-show="!p.client.city" style="color:var(--amber);font-weight:600;margin-left:12px">⚠ City not filled</span>
+    <span x-show="!p.client.state" style="color:var(--amber);font-weight:600;margin-left:12px">⚠ State not selected</span>
+   </div>
+   <button class="btn btn-primary" @click="if(!p.client.name){alert('Please enter Client Name first!')}else{tab='project'}" style="font-size:15px;padding:10px 30px">Next: Project Parameters →</button>
+  </div>
  </div>
 </div>
 
@@ -259,6 +268,16 @@ tr:hover{background:#f8fafc}
 <div x-show="tab=='financial'">
  <div class="card">
   <h2>💰 Live Financial Dashboard</h2>
+  <!-- NEGATIVE NUMBER WARNINGS -->
+  <div x-show="grossProfitPerMT()<0" style="background:#ffe0e0;border:2px solid var(--red);border-radius:8px;padding:12px 16px;margin-bottom:12px;color:var(--red);font-weight:700">
+   ⚠ WARNING: Negative Profit (₹ <span x-text="grossProfitPerMT().toLocaleString('en-IN')"></span>/MT) — Selling price is below total cost! Increase selling price or reduce costs.
+  </div>
+  <div x-show="roiPct()<0" style="background:#ffe0e0;border:2px solid var(--red);border-radius:8px;padding:12px 16px;margin-bottom:12px;color:var(--red);font-weight:700">
+   ⚠ WARNING: Negative ROI (<span x-text="roiPct().toFixed(1)"></span>%) — Project not viable at current parameters!
+  </div>
+  <div x-show="grossProfitPerMT()>=0 && marginPct()<10" style="background:#fff3e0;border:2px solid var(--amber);border-radius:8px;padding:12px 16px;margin-bottom:12px;color:var(--amber);font-weight:700">
+   ⚠ CAUTION: Low margin (<span x-text="marginPct().toFixed(1)"></span>%) — Consider increasing selling price for better profitability.
+  </div>
   <div class="grid4">
    <div class="metric"><div class="value" x-text="'₹ '+p.project.sellingPrice.toLocaleString('en-IN')"></div><div class="label">Selling Price /MT</div></div>
    <div class="metric"><div class="value" x-text="'₹ '+totalRMCost().toLocaleString('en-IN')"></div><div class="label">RM Cost /MT</div></div>

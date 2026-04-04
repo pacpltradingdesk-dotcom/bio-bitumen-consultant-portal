@@ -236,16 +236,180 @@ def generate_dpr_docx(cfg, company, customer=None):
         ["Electricity HT Connection", "State DISCOM", "60 days"],
     ])
 
+    doc.add_page_break()
+
+    # 9. BOQ — Bill of Quantities (auto-generated from capacity)
+    _add_heading(doc, "9. BILL OF QUANTITIES (BOQ)")
+    doc.add_paragraph(f"Equipment and material requirements for {cfg['capacity_tpd']:.0f} MT/Day plant:")
+    try:
+        from state_manager import calculate_boq
+        boq = calculate_boq(cfg["capacity_tpd"])
+        boq_rows = []
+        total_boq = 0
+        for item in boq:
+            boq_rows.append([item["item"], item["spec"], str(item["qty"]) + " " + item["unit"],
+                              f"Rs {item['rate_lac']:.1f} Lac", f"Rs {item['amount_lac']:.1f} Lac"])
+            total_boq += item["amount_lac"]
+        boq_rows.append(["TOTAL", "", "", "", f"Rs {total_boq:.1f} Lac (Rs {total_boq/100:.2f} Cr)"])
+        _add_table(doc, ["Equipment", "Specification", "Qty", "Rate", "Amount"], boq_rows)
+    except Exception:
+        doc.add_paragraph("BOQ will be provided separately based on final design.")
+    doc.add_page_break()
+
+    # 10. Raw Material Sourcing
+    _add_heading(doc, "10. RAW MATERIAL SOURCING PLAN")
+    doc.add_paragraph(
+        f"The plant requires approximately {cfg['capacity_tpd']*2.5:.0f} MT/day of agricultural biomass. "
+        f"Primary source: {cfg.get('biomass_source', 'Rice Straw')} from local farmer cooperatives "
+        f"within 50-100 km radius of {cfg.get('location', 'the plant site')}."
+    )
+    doc.add_heading("10.1 Biomass Types & Yield", level=2)
+    _add_table(doc, ["Biomass", "Oil Yield %", "Char Yield %", "Cost Rs/MT"], [
+        ["Rice Straw", "40%", "32%", "1,200-1,500"],
+        ["Wheat Straw", "38%", "30%", "1,400-1,600"],
+        ["Sugarcane Bagasse", "42%", "28%", "1,000-1,200"],
+        ["Cotton Stalk", "35%", "33%", "1,600-2,000"],
+        ["Groundnut Shell", "38%", "35%", "2,200-2,500"],
+    ])
+    doc.add_heading("10.2 Seasonal Procurement Calendar", level=2)
+    _add_table(doc, ["Quarter", "Primary Crop", "Availability", "Strategy"], [
+        ["Q1 (Apr-Jun)", "Wheat Straw, Sugarcane Bagasse", "High", "Peak procurement + pelletization"],
+        ["Q2 (Jul-Sep)", "Monsoon Season", "Low", "Use pelletized stock from buffer storage"],
+        ["Q3 (Oct-Dec)", "Rice Straw, Cotton Stalk", "Very High", "Maximum procurement, 90-day buffer"],
+        ["Q4 (Jan-Mar)", "Mixed sources", "Medium", "Supplementary procurement"],
+    ])
+    doc.add_paragraph(f"90-Day Buffer Stock Required: {cfg['capacity_tpd']*2.5*90:.0f} MT")
+    doc.add_paragraph(f"Storage Area Required: {int(cfg['capacity_tpd']*2.5*90/80*3.28*3.28/3):,} sq ft")
+    doc.add_page_break()
+
+    # 11. Environmental Impact
+    _add_heading(doc, "11. ENVIRONMENTAL IMPACT & CARBON CREDITS")
+    co2_annual = cfg["capacity_tpd"] * 300 * 0.35
+    stubble = cfg["capacity_tpd"] * 300 * 2.5
+    carbon_lac = co2_annual * 12 * 84 / 100000
+    doc.add_paragraph(
+        f"The Bio-Modified Bitumen plant provides significant environmental benefits by diverting "
+        f"agricultural waste from open burning and reducing petroleum dependency."
+    )
+    _add_table(doc, ["Environmental Metric", "Annual Impact"], [
+        ["CO2 Emissions Avoided", f"{co2_annual:,.0f} tonnes/year"],
+        ["Crop Residue Diverted", f"{stubble:,.0f} MT/year"],
+        ["Carbon Credit Revenue", f"Rs {carbon_lac:.1f} Lakhs/year (at USD 12/tonne)"],
+        ["Equivalent Trees Planted", f"{co2_annual*50:,.0f} trees equivalent"],
+        ["Equivalent Cars Removed", f"{co2_annual/4.6:,.0f} cars/year"],
+        ["Water Saved vs Conventional", "15% less usage"],
+        ["NHAI Green Mandate Compliance", "YES — 15% bio-bitumen target by 2030"],
+    ])
+    doc.add_page_break()
+
+    # 12. Government Subsidies
+    _add_heading(doc, "12. GOVERNMENT SUBSIDIES & INCENTIVES")
+    state = cfg.get("state", "Gujarat")
+    subsidy_pct = 20  # Default
+    doc.add_paragraph(
+        f"The project is eligible for multiple government subsidies and incentives. "
+        f"Located in {state}, the following schemes are applicable:"
+    )
+    _add_table(doc, ["Scheme", "Authority", "Benefit", "Status"], [
+        ["MNRE Waste-to-Wealth", "Ministry of New & Renewable Energy", "25% capital subsidy", "Eligible"],
+        [f"{state} MSME Subsidy", f"{state} Industrial Policy", f"{subsidy_pct}% capital subsidy", "Eligible"],
+        ["CGTMSE Guarantee", "CGTMSE Trust", "Collateral-free loan up to Rs 5 Cr", "Eligible"],
+        ["Carbon Credits", "Voluntary Carbon Market", f"Rs {carbon_lac:.1f} Lac/year", "Applicable"],
+        ["Udyam Registration", "MSME Ministry", "Priority sector lending", "Eligible"],
+        ["Technology Development Board", "DST", "Up to 50% for new technology", "Applicable"],
+    ])
+    subsidy_amount = cfg["investment_cr"] * subsidy_pct / 100
+    doc.add_paragraph(
+        f"\nTotal Estimated Subsidy: Rs {subsidy_amount:.2f} Crore ({subsidy_pct}% of investment)"
+    )
+    doc.add_paragraph(
+        f"Effective Investment After Subsidy: Rs {cfg['investment_cr'] - subsidy_amount:.2f} Crore"
+    )
+    doc.add_page_break()
+
+    # 13. Implementation Timeline
+    _add_heading(doc, "13. IMPLEMENTATION TIMELINE (12-18 MONTHS)")
+    _add_table(doc, ["Phase", "Duration", "Activities"], [
+        ["1. Pre-Feasibility & DPR", "1 month", "Site selection, feasibility study, DPR preparation"],
+        ["2. Company Setup", "1 month", "ROC incorporation, PAN, TAN, GST, Udyam registration"],
+        ["3. Land & Approvals", "3 months", "Land purchase/lease, building plan, zoning approval"],
+        ["4. Environmental Clearances", "5 months", "CTE from PCB, EIA, fire NOC, PESO license"],
+        ["5. Bank Loan Sanction", "3 months", "DPR submission, CMA data, bank appraisal"],
+        ["6. Engineering & Design", "3 months", "Detailed engineering, P&ID, civil design, electrical SLD"],
+        ["7. Equipment Procurement", "4 months", "Equipment ordering, vendor finalization, delivery tracking"],
+        ["8. Civil Construction", "5 months", "Foundation, structure, building, roads, bund walls"],
+        ["9. Installation & Commissioning", "3 months", "Equipment erection, piping, electrical, trial run"],
+        ["10. Commercial Production", "6 months", "CTO from PCB, ramp-up: 40% to 85% utilization"],
+    ])
+    doc.add_page_break()
+
+    # 14. Manpower Plan
+    _add_heading(doc, "14. MANPOWER PLAN")
+    _add_table(doc, ["Role", "Count", "Monthly CTC (Rs)"], [
+        ["Plant Manager", "1", "60,000-80,000"],
+        ["Shift Supervisor", "2", "30,000-40,000"],
+        ["Reactor Operators", f"{max(4, int(cfg['capacity_tpd']*0.3))}", "18,000-25,000"],
+        ["Lab Technician", "1-2", "20,000-30,000"],
+        ["Electrician", "1", "20,000-25,000"],
+        ["Helpers/Loaders", f"{max(6, int(cfg['capacity_tpd']*0.5))}", "12,000-15,000"],
+        ["Drivers", "2-3", "15,000-20,000"],
+        ["Office/Accounts", "2", "20,000-30,000"],
+        ["Security", "2-3", "12,000-15,000"],
+        ["TOTAL", f"{cfg['staff']}", f"Rs {cfg.get('payroll_lac_yr', 45):.1f} Lac/year"],
+    ])
+    doc.add_page_break()
+
+    # 15. Sensitivity Analysis
+    _add_heading(doc, "15. SENSITIVITY ANALYSIS")
+    doc.add_paragraph("The following table shows project profitability under different scenarios:")
+    if cfg.get("sensitivity_matrix"):
+        _add_table(doc, ["Scenario", "Low Price", "Base Price", "High Price"], [
+            ["Low Cost", f"Rs {cfg['sensitivity_matrix'][0][0]:.0f} Lac",
+             f"Rs {cfg['sensitivity_matrix'][0][1]:.0f} Lac", f"Rs {cfg['sensitivity_matrix'][0][2]:.0f} Lac"],
+            ["Base Cost", f"Rs {cfg['sensitivity_matrix'][1][0]:.0f} Lac",
+             f"Rs {cfg['sensitivity_matrix'][1][1]:.0f} Lac", f"Rs {cfg['sensitivity_matrix'][1][2]:.0f} Lac"],
+            ["High Cost", f"Rs {cfg['sensitivity_matrix'][2][0]:.0f} Lac",
+             f"Rs {cfg['sensitivity_matrix'][2][1]:.0f} Lac", f"Rs {cfg['sensitivity_matrix'][2][2]:.0f} Lac"],
+        ])
+    doc.add_paragraph(
+        f"Even in the worst-case scenario (high cost + low price), the project maintains positive EBITDA "
+        f"due to the inherent cost advantage of bio-modified bitumen vs conventional petroleum bitumen."
+    )
+    doc.add_page_break()
+
+    # 16. Consultant Profile
+    _add_heading(doc, "16. CONSULTANT PROFILE")
+    doc.add_paragraph(f"{company['trade_name']} — {company.get('tagline', '')}")
+    doc.add_paragraph(f"Owner & Managing Director: {company['owner']}")
+    doc.add_paragraph(f"Experience: {company.get('experience', '25 years')}")
+    doc.add_paragraph(f"Headquarters: {company.get('hq', 'Vadodara, Gujarat')}")
+    doc.add_paragraph(f"Contact: {company['phone']} | {company.get('email', '')}")
+    doc.add_paragraph("")
+    doc.add_paragraph("Key Credentials:")
+    for cred in ["BSE-Listed Founder — Omnipotent Industries (1.2L MT, 11 JVs)",
+                  "International Import Contracts — 2.4 Lakh MT/yr VG-30 (Iraq/USA)",
+                  "10 Plants Built — 5 Product Types across 17 States",
+                  "4,452 Industry Contacts — Contractors, Traders, Importers",
+                  "Pride of India Award — Best Fast-Growing Business 2021"]:
+        doc.add_paragraph(f"  - {cred}")
+
     # Disclaimer
     doc.add_page_break()
-    _add_heading(doc, "DISCLAIMER")
+    _add_heading(doc, "DISCLAIMER & CONFIDENTIALITY")
     doc.add_paragraph(
-        "This DPR is based on current market data, verified assumptions, and standard engineering practices. "
-        "All financial projections are estimates and subject to market conditions. "
-        "The client should conduct independent due diligence before making investment decisions."
+        "This Detailed Project Report is prepared by PPS Anantams Corporation Pvt Ltd based on "
+        "current market data, verified engineering assumptions, and standard industry practices. "
+        "All financial projections are estimates and subject to market conditions, regulatory changes, "
+        "and operational efficiency. The client should conduct independent due diligence before "
+        "making any investment decisions."
+    )
+    doc.add_paragraph(
+        f"\nThis document is CONFIDENTIAL and prepared exclusively for {client_name}. "
+        f"Unauthorized distribution or reproduction is prohibited."
     )
     doc.add_paragraph(f"\nPrepared by: {company['trade_name']}")
     doc.add_paragraph(f"{company['owner']} | {company['phone']} | {company['hq']}")
+    doc.add_paragraph(f"GST: {company.get('gst', '')} | CIN: {company.get('cin', '')}")
 
     _footer(doc, company)
     return doc

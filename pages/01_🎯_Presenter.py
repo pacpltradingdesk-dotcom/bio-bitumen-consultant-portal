@@ -127,16 +127,40 @@ if slide == 0:
         inp_project = st.text_input("Project Name", value=cfg.get("project_name", ""),
                                      placeholder=f"Bio-Bitumen Plant — {inp_city}", key="p_project")
 
-    if st.button("SAVE & START PRESENTATION", type="primary", key="save_client"):
-        update_fields({
-            "client_name": inp_name, "client_company": inp_company,
-            "state": inp_state, "location": inp_city, "site_address": inp_address,
-            "capacity_tpd": float(inp_cap), "client_phone": inp_phone,
-            "project_name": inp_project or f"Bio-Bitumen Plant — {inp_city}",
-            "biomass_source": inp_biomass,
-        })
-        st.session_state["slide"] = 1
-        st.rerun()
+    # Validation check
+    missing = []
+    if not inp_name: missing.append("Client Name")
+    if not inp_city: missing.append("City")
+    if not inp_state: missing.append("State")
+
+    if missing:
+        st.warning(f"Please fill required fields: **{', '.join(missing)}**")
+
+    col_save1, col_save2 = st.columns(2)
+    with col_save1:
+        if st.button("SAVE & START PRESENTATION", type="primary", key="save_client"):
+            if not inp_name:
+                st.error("Client Name is required! Please fill it above.")
+                st.stop()
+            update_fields({
+                "client_name": inp_name, "client_company": inp_company,
+                "state": inp_state, "location": inp_city, "site_address": inp_address,
+                "capacity_tpd": float(inp_cap), "client_phone": inp_phone,
+                "project_name": inp_project or f"Bio-Bitumen Plant — {inp_city}",
+                "biomass_source": inp_biomass,
+            })
+            st.session_state["slide"] = 1
+            st.rerun()
+    with col_save2:
+        if st.button("SAVE ONLY (stay on this slide)", key="save_only"):
+            update_fields({
+                "client_name": inp_name, "client_company": inp_company,
+                "state": inp_state, "location": inp_city, "site_address": inp_address,
+                "capacity_tpd": float(inp_cap), "client_phone": inp_phone,
+                "project_name": inp_project or f"Bio-Bitumen Plant — {inp_city}",
+                "biomass_source": inp_biomass,
+            })
+            st.success("Saved! All slides updated with your data.")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 1: THE OPPORTUNITY
@@ -325,6 +349,19 @@ elif slide == 7:
     for s in sections:
         st.markdown(f"- {s}")
 
+    # Show area pie chart
+    area_data = pd.DataFrame([
+        {"Section": "Raw Material", "Pct": 15}, {"Section": "Processing", "Pct": 20},
+        {"Section": "Reactor", "Pct": 15}, {"Section": "Blending", "Pct": 15},
+        {"Section": "Storage", "Pct": 10}, {"Section": "Pollution Control", "Pct": 5},
+        {"Section": "Dispatch", "Pct": 5}, {"Section": "Utility", "Pct": 5},
+        {"Section": "Admin & Lab", "Pct": 10},
+    ])
+    fig_area = px.pie(area_data, names="Section", values="Pct", title="Plant Area Allocation",
+                       color_discrete_sequence=["#003366","#006699","#CC3333","#FF8800","#0088cc","#00AA44","#AA3366","#009966","#666666"])
+    fig_area.update_layout(template="plotly_white", height=300)
+    st.plotly_chart(fig_area, width="stretch")
+
     st.page_link("pages/08_📐_Drawings.py", label="See All Engineering Drawings", icon="📐")
 
 # ══════════════════════════════════════════════════════════════════════
@@ -332,6 +369,17 @@ elif slide == 7:
 # ══════════════════════════════════════════════════════════════════════
 elif slide == 8:
     st.markdown(f"### Financial Model — {cfg['capacity_tpd']:.0f} TPD | Rs {cfg['investment_cr']:.2f} Crore")
+
+    # NEGATIVE NUMBER WARNING
+    profit = cfg.get('profit_per_mt', 0)
+    if profit < 0:
+        st.error(f"**WARNING: Negative Profit (Rs {profit:,.0f}/MT)** — Current selling price is below cost. Increase selling price or reduce costs!")
+    roi = cfg.get('roi_pct', 0)
+    if roi < 0:
+        st.error(f"**WARNING: Negative ROI ({roi:.1f}%)** — Project is not viable at current parameters!")
+    dscr = cfg.get('dscr_yr3', 0)
+    if dscr < 1.5:
+        st.warning(f"**CAUTION: DSCR {dscr:.2f}x is below bank minimum (1.5x)** — May face loan rejection.")
 
     f1, f2, f3, f4, f5 = st.columns(5)
     f1.metric("Investment", f"Rs {cfg['investment_cr']:.2f} Cr")

@@ -124,5 +124,23 @@
       "Govt_CTE_DOCX",
       "Factory_License_DOCX"
     ]
+  },
+  {
+    "time": "2026-04-04 07:54:02",
+    "capacity": 20.0,
+    "state": "Uttar Pradesh",
+    "location": "Lucknow",
+    "files_generated": 8,
+    "errors": 0,
+    "files": [
+      "DPR_DOCX",
+      "Bank_DOCX",
+      "Investor_PPTX",
+      "Financial_XLSX",
+      "DPR_PDF",
+      "Financial_PDF",
+      "Govt_CTE_DOCX",
+      "Factory_License_DOCX"
+    ]
   }
 ]
