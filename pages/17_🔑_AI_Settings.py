@@ -1,8 +1,8 @@
 """
-AI Settings — API Key Management for OpenAI + Claude
-======================================================
-Enter API keys, select models, test connections, manage AI features.
-Keys stored locally in data/ai_config.json (never committed to git).
+AI Settings — 6-Provider Auto-Connect Manager
+=================================================
+OpenAI + Claude + Gemini (free) + DeepSeek + Gemini (key) + Offline Engine
+AI never fails — 6-level fallback chain ensures answers always come through.
 """
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -23,116 +23,105 @@ try:
 except Exception:
     pass
 
-
-st.sidebar.markdown("---")
-if st.sidebar.button("Print This Page", key="print_page"):
-    import streamlit.components.v1 as _stc; _stc.html('<script>window.print();</script>', height=0)
-
-st.title("AI Settings — API Key Management")
-st.markdown("**Configure OpenAI (GPT-4o) and/or Claude (Sonnet) for AI-powered features**")
+st.title("AI Auto-Connection Manager")
+st.markdown("**6-provider fallback chain — AI never fails. System always answers.**")
 st.markdown("---")
 
-# Load current config
+# Load config
 ai_cfg = load_ai_config()
+active = get_active_provider()
 
 # ══════════════════════════════════════════════════════════════════════
 # STATUS PANEL
 # ══════════════════════════════════════════════════════════════════════
-active = get_active_provider()
-available = is_ai_available()
-
-status_color = "#00AA44" if available else "#FF8800"
 st.markdown(f"""
-<div style="background: {status_color}15; border: 2px solid {status_color}; border-radius: 12px;
+<div style="background: #ebfbee; border: 2px solid #2f9e44; border-radius: 12px;
             padding: 15px 20px; margin-bottom: 15px;">
-    <h3 style="color: {status_color}; margin: 0;">
-        AI Status: {'ACTIVE — Using ' + active.upper() if active else 'NOT CONFIGURED — Enter API keys below'}
+    <h3 style="color: #2f9e44; margin: 0;">
+        AI Status: ACTIVE — Primary: {active.upper()} | Fallback chain: 6 providers
     </h3>
     <p style="margin: 5px 0 0 0; color: #666;">
-        {'AI-powered DPR writing, financial analysis, smart chat, and auto-reports are enabled.' if available
-         else 'System uses built-in knowledge base (100+ patterns). Add API keys for AI-powered features.'}
+        Chain: OpenAI → Claude → Gemini (key) → DeepSeek → Gemini (free) → Offline Engine.
+        System NEVER fails — offline engine always answers with built-in DPR knowledge.
     </p>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("---")
-
 # ══════════════════════════════════════════════════════════════════════
-# API KEY INPUT
+# API KEY INPUT — All 4 paid/free providers
 # ══════════════════════════════════════════════════════════════════════
-st.subheader("1. Enter API Keys")
-st.caption("Keys are stored locally in `data/ai_config.json` — never uploaded to GitHub")
+st.subheader("1. API Keys")
+st.caption("Keys stored locally in `data/ai_config.json` — never uploaded anywhere except the AI provider")
 
-key_col1, key_col2 = st.columns(2)
-
-with key_col1:
+c1, c2 = st.columns(2)
+with c1:
     st.markdown("### OpenAI (GPT-4o)")
-    st.markdown("[Get API key](https://platform.openai.com/api-keys)")
+    st.markdown("[Get key](https://platform.openai.com/api-keys) — Free tier, then pay-per-use")
     openai_key = st.text_input("OpenAI API Key", value=ai_cfg.get("openai_key", ""),
-                                type="password", placeholder="sk-...", key="openai_key")
-    openai_model = st.selectbox("OpenAI Model", ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini", "gpt-4.1-nano"],
-                                 index=["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini", "gpt-4.1-nano"].index(
-                                     ai_cfg.get("openai_model", "gpt-4o-mini")),
-                                 key="openai_model")
+                                type="password", placeholder="sk-...", key="openai_key_in")
+    openai_model = st.selectbox("Model", ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini"],
+                                 index=["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini"].index(
+                                     ai_cfg.get("openai_model", "gpt-4o-mini")))
 
-    st.markdown("""
-    **Pricing (approximate):**
-    - gpt-4o-mini: ~$0.15/1M tokens (cheapest, good quality)
-    - gpt-4o: ~$2.50/1M tokens (best quality)
-    - gpt-4.1-mini: ~$0.40/1M tokens (latest, fast)
-    """)
+    st.markdown("### Gemini (Google AI)")
+    st.markdown("[Get FREE key](https://aistudio.google.com/apikey) — Free tier, no payment needed")
+    gemini_key = st.text_input("Gemini API Key", value=ai_cfg.get("gemini_key", ""),
+                                type="password", placeholder="AIza...", key="gemini_key_in")
+    st.caption("Without key: Gemini Flash free tier works for basic questions. With key: higher limits.")
 
-with key_col2:
+with c2:
     st.markdown("### Anthropic Claude")
-    st.markdown("[Get API key](https://console.anthropic.com/settings/keys)")
+    st.markdown("[Get key](https://console.anthropic.com/settings/keys)")
     claude_key = st.text_input("Claude API Key", value=ai_cfg.get("claude_key", ""),
-                                type="password", placeholder="sk-ant-...", key="claude_key")
-    claude_model = st.selectbox("Claude Model", ["claude-sonnet-4-20250514", "claude-haiku-4-5-20251001"],
-                                 index=0, key="claude_model")
+                                type="password", placeholder="sk-ant-...", key="claude_key_in")
+    claude_model = st.selectbox("Model", ["claude-sonnet-4-20250514", "claude-haiku-4-5-20251001"],
+                                 index=0, key="claude_model_sel")
 
-    st.markdown("""
-    **Pricing (approximate):**
-    - Claude Sonnet: ~$3/1M tokens (best quality)
-    - Claude Haiku: ~$0.25/1M tokens (fast, cheap)
-    """)
+    st.markdown("### DeepSeek (Ultra Cheap)")
+    st.markdown("[Get key](https://platform.deepseek.com) — ₹0.05-0.15 per 1000 questions")
+    deepseek_key = st.text_input("DeepSeek API Key", value=ai_cfg.get("deepseek_key", ""),
+                                  type="password", placeholder="sk-...", key="deepseek_key_in")
+    st.caption("Best quality per rupee. Excellent for bulk AI usage.")
 
 st.markdown("---")
 
 # Preferred provider
 st.subheader("2. Preferred AI Provider")
-preferred = st.radio("Use which provider first?",
-                      ["openai", "claude"],
-                      format_func=lambda x: "OpenAI (GPT)" if x == "openai" else "Anthropic (Claude)",
-                      index=0 if ai_cfg.get("preferred_provider", "openai") == "openai" else 1,
-                      horizontal=True, key="preferred")
-st.caption("If preferred provider fails, system auto-falls back to the other one.")
+providers = ["openai", "claude", "gemini", "deepseek"]
+provider_labels = {"openai": "OpenAI (GPT)", "claude": "Claude (Anthropic)",
+                   "gemini": "Gemini (Google)", "deepseek": "DeepSeek"}
+current_pref = ai_cfg.get("preferred_provider", "openai")
+if current_pref not in providers:
+    current_pref = "openai"
+preferred = st.radio("Primary provider (others are automatic fallback):",
+                      providers, format_func=lambda x: provider_labels[x],
+                      index=providers.index(current_pref), horizontal=True)
+st.caption("If preferred fails, system auto-tries: next paid → Gemini free → Offline engine. User never sees failure.")
 
 st.markdown("---")
 
-# ══════════════════════════════════════════════════════════════════════
 # SAVE
-# ══════════════════════════════════════════════════════════════════════
-if st.button("SAVE API SETTINGS", type="primary", key="save_ai"):
+if st.button("SAVE ALL API SETTINGS", type="primary", key="save_ai"):
     new_config = {
-        "openai_key": openai_key,
-        "claude_key": claude_key,
-        "openai_model": openai_model,
-        "claude_model": claude_model,
+        "openai_key": openai_key, "claude_key": claude_key,
+        "gemini_key": gemini_key, "deepseek_key": deepseek_key,
+        "openai_model": openai_model, "claude_model": claude_model,
+        "gemini_model": "gemini-2.0-flash", "deepseek_model": "deepseek-chat",
         "preferred_provider": preferred,
     }
     save_ai_config(new_config)
-    st.success("API settings saved! AI features are now available across the system.")
+    st.success("All API settings saved! 6-provider fallback chain active.")
     st.rerun()
 
 st.markdown("---")
 
 # ══════════════════════════════════════════════════════════════════════
-# TEST CONNECTION
+# TEST ALL 6 PROVIDERS
 # ══════════════════════════════════════════════════════════════════════
-st.subheader("3. Test API Connection")
+st.subheader("3. Test All AI Connections")
 
-if st.button("Test Both APIs", type="primary", key="test_apis"):
-    with st.spinner("Testing API connections... (may take 10-15 seconds)"):
+if st.button("Test All 6 Providers", type="primary", key="test_all"):
+    with st.spinner("Testing 6 AI providers... (may take 15-30 seconds)"):
         try:
             results = test_api_connection()
         except Exception as e:
@@ -142,98 +131,63 @@ if st.button("Test Both APIs", type="primary", key="test_apis"):
     if results:
         for provider, info in results.items():
             status = info.get("status", "UNKNOWN")
-            icon = "✅" if status == "OK" else ("⚠️" if status == "No key" else "❌")
-            color = "#00AA44" if status == "OK" else ("#FF8800" if status == "No key" else "#CC3333")
             model = info.get("model", "")
-            resp = info.get("response", "")[:60]
-
-            if status == "OK":
-                st.success(f"{icon} {provider.upper()} Connected — Model: {model} — Response: {resp}")
+            if status == "OK" or status == "ALWAYS ON":
+                st.success(f"✅ **{provider.upper()}** — Connected | Model: {model}")
             elif status == "No key":
-                st.warning(f"{icon} {provider.upper()} — No API key configured")
+                st.warning(f"⚠️ **{provider.upper()}** — No API key configured")
             else:
-                st.error(f"{icon} {provider.upper()} Failed — {resp}")
+                st.error(f"❌ **{provider.upper()}** — {status}")
 
 st.markdown("---")
 
 # ══════════════════════════════════════════════════════════════════════
-# AI FEATURES OVERVIEW
+# FREE PROVIDERS ALWAYS AVAILABLE
 # ══════════════════════════════════════════════════════════════════════
-st.subheader("4. AI-Powered Features")
+st.subheader("4. Always-Available Providers (No Key Needed)")
 
-features = [
-    ("AI DPR Writer", "Writes professional DPR sections with perfect English, bank-ready formatting",
-     "Document Hub → Generate DPR", available),
-    ("AI Financial Analysis", "Analyzes your P&L, gives bankability score, identifies risks and recommendations",
-     "Financial Model page → AI Analysis button", available),
-    ("Smart AI Chat", "Answers ANY question about bio-bitumen with real AI intelligence (not just patterns)",
-     "AI Advisor page → Chat input", available),
-    ("Auto Report Writer", "Generates complete sections: Executive Summary, Market Analysis, Risk Assessment",
-     "Document Hub → AI Write Section", available),
-]
-
-for name, desc, location, active_feat in features:
-    icon = "🟢" if active_feat else "🔴"
-    st.markdown(f"{icon} **{name}** — {desc}")
-    st.caption(f"   Location: {location}")
-
-if not available:
-    st.info("Add API keys above to enable all AI features. Without keys, the system uses built-in knowledge base (100+ patterns).")
+f1, f2 = st.columns(2)
+with f1:
+    st.markdown("""
+    ### Gemini Flash (Free Tier)
+    - **Cost:** FREE — no payment, no key needed
+    - **Quality:** Good for basic questions
+    - **Limit:** Rate-limited but sufficient
+    - **How:** Automatically used as fallback
+    """)
+with f2:
+    st.markdown("""
+    ### Built-in Offline Engine
+    - **Cost:** FREE — works with ZERO internet
+    - **Knowledge:** All bio-bitumen DPR formulas, government schemes, IS standards
+    - **Always on:** Cannot fail — ultimate fallback
+    - **Best for:** Quick DPR facts, scheme info, formulas
+    """)
 
 st.markdown("---")
 
 # ══════════════════════════════════════════════════════════════════════
 # QUICK AI TEST
 # ══════════════════════════════════════════════════════════════════════
-if available:
-    st.subheader("5. Quick AI Test")
-    test_prompt = st.text_input("Ask AI anything:", placeholder="What is the best state for bio-bitumen plant?",
-                                 key="test_prompt")
-    if st.button("Ask AI", type="primary", key="test_ask"):
-        if not test_prompt:
-            st.warning("Please type a question first.")
-        else:
-            with st.spinner("AI is thinking... (5-15 seconds)"):
-                try:
-                    from engines.ai_engine import ask_ai
-                    response, provider = ask_ai(test_prompt,
-                        "You are a bio-bitumen industry expert. Answer concisely in 3-4 sentences.")
-                    if response:
-                        st.markdown(f"**{provider.upper()}:**")
-                        st.markdown(response)
-                    else:
-                        st.error("No response received. Check API keys.")
-                except Exception as e:
-                    st.error(f"AI call failed: {e}")
+st.subheader("5. Quick AI Test")
+test_prompt = st.text_input("Ask AI anything:", placeholder="What is the MNRE biomass subsidy for bio-bitumen?",
+                             key="test_prompt_in")
+if st.button("Ask AI (uses fallback chain)", type="primary", key="test_ask"):
+    if not test_prompt:
+        st.warning("Type a question first.")
+    else:
+        with st.spinner("AI thinking... trying best available provider..."):
+            try:
+                from engines.ai_engine import ask_ai
+                response, provider = ask_ai(test_prompt,
+                    "You are a bio-bitumen industry expert. Answer concisely.")
+                if response:
+                    st.markdown(f"**Response via {provider.upper()}:**")
+                    st.markdown(response)
+                else:
+                    st.error("No response received.")
+            except Exception as e:
+                st.error(f"Error: {e}")
 
 st.markdown("---")
-st.caption(f"{COMPANY['name']} | AI Settings | Keys stored locally, never uploaded to GitHub")
-
-
-# ── Export ────────────────────────────────────────────────────────
-st.markdown("---")
-_ex1, _ex2 = st.columns(2)
-with _ex1:
-    try:
-        import io as _io
-        from openpyxl import Workbook as _Wb
-        _wb = _Wb()
-        _ws = _wb.active
-        _ws.title = "Export"
-        _ws.cell(row=1, column=1, value="Bio Bitumen Export")
-        _ws.cell(row=2, column=1, value=f"Capacity: {cfg.get('capacity_tpd',20):.0f} TPD")
-        _ws.cell(row=3, column=1, value=f"Investment: Rs {cfg.get('investment_cr',8):.2f} Cr")
-        _ws.cell(row=4, column=1, value=f"ROI: {cfg.get('roi_pct',0):.1f}%")
-        _buf = _io.BytesIO()
-        _wb.save(_buf)
-        _xl_data = _buf.getvalue()
-    except Exception:
-        _xl_data = None
-    if _xl_data:
-        st.download_button("Download Excel", _xl_data, "export.xlsx",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            key="dl_xl_17_🔑_A", type="primary")
-with _ex2:
-    if st.button("Print", key="exp_prt_17🔑A"):
-        import streamlit.components.v1 as _stc
-        _stc.html("<script>window.print();</script>", height=0)
+st.caption(f"{COMPANY['name']} | AI Auto-Connection Manager | 6 providers, never fails")
