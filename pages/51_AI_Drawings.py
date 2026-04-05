@@ -95,7 +95,7 @@ with tab_generate:
                                value=float(cfg["capacity_tpd"]), step=5.0, key="ai_tpd")
 
     # Select which drawings to generate
-    prompts = get_prompts(tpd_gen)
+    prompts = get_prompts(tpd_gen, cfg)
     drawing_names = list(prompts.keys())
     selected = st.multiselect("Select drawings to generate",
                                drawing_names, default=drawing_names,
@@ -143,7 +143,7 @@ with tab_custom:
     if st.button("Generate Custom Drawing", type="primary", key="gen_custom"):
         if custom_desc:
             with st.spinner("Generating custom drawing..."):
-                prompt = get_prompt_for_custom(custom_desc)
+                prompt = get_prompt_for_custom(custom_desc, cfg)
                 st.caption(f"Prompt: {prompt[:200]}...")
                 path = generate_with_pollinations(prompt, custom_name)
                 if path:

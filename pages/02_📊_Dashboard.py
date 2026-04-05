@@ -103,6 +103,27 @@ with config_col:
     cc7.metric("DSCR Yr3", f"{cfg['dscr_yr3']:.2f}x")
     cc8.metric("Rev Yr5", f"Rs {cfg['revenue_yr5_lac']:.0f} Lac")
 
+    # Plant Engineering Specs
+    try:
+        from engines.plant_engineering import compute_all
+        pc = compute_all(cfg)
+        with st.expander("Plant Specifications (for drawings)"):
+            sp1, sp2, sp3, sp4 = st.columns(4)
+            sp1.metric("Reactor", f"Ø{pc['reactor_dia_m']}m × {pc['reactor_ht_m']}m")
+            sp2.metric("Dryer", f"Ø{pc['dryer_dia_m']}m × {pc['dryer_len_m']}m")
+            sp3.metric("Oil Tank", f"Ø{pc['bio_oil_tank_dia_m']}m × {pc['bio_oil_tank_ht_m']}m")
+            sp4.metric("Plot", f"{pc['plot_l_m']}m × {pc['plot_w_m']}m")
+            sp5, sp6, sp7, sp8 = st.columns(4)
+            sp5.metric("Feed/hr", f"{pc['feed_per_hour_kg']:.0f} kg")
+            sp6.metric("Bio-Oil", f"{pc['bio_oil_tpd']:.1f} T/day")
+            sp7.metric("Bio-Char", f"{pc['bio_char_tpd']:.1f} T/day")
+            sp8.metric("Blend Output", f"{pc['blend_output_tpd']:.1f} T/day")
+            from state_manager import calculate_boq
+            boq = calculate_boq(cfg['capacity_tpd'])
+            st.caption(f"BOQ: {len(boq)} items | Total motor load: {sum(m.get('motor_kw',0)*m.get('qty',1) for m in ([] if not hasattr(pc,'items') else []))}")
+    except Exception:
+        pass
+
 with market_col:
     st.subheader("Live Market Data")
     try:
