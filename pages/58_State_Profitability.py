@@ -16,6 +16,8 @@ st.set_page_config(page_title="State Profitability", page_icon="📍", layout="w
 init_state()
 cfg = get_config()
 
+st.page_link("pages/09_💰_Financial.py", label="← Back to Financial Model", icon="💰")
+
 st.title("State-wise Profitability Analysis")
 st.markdown(f"**All 18 states ranked — {cfg['capacity_tpd']:.0f} TPD | Which state gives BEST ROI?**")
 st.markdown("---")

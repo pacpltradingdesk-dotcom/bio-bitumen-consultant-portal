@@ -182,7 +182,7 @@ try:
     if matching:
         st.markdown(f"**{len(matching)} documents** available for {cfg['capacity_tpd']:.0f} TPD:")
         for d in matching[:15]:
-            st.markdown(f"- **{d['filename']}** ({d['section']}) — {d.get('extension', '')} — `{d['path']}`")
+            st.markdown(f"- **{d['filename']}** ({d['section']}) — {d.get('extension', '')}")
         if len(matching) > 15:
             st.caption(f"...and {len(matching)-15} more. See Document Library for full list.")
     else:

@@ -18,6 +18,8 @@ st.set_page_config(page_title="Capacity Comparison", page_icon="⚖️", layout=
 init_state()
 cfg = get_config()
 
+st.page_link("pages/09_💰_Financial.py", label="← Back to Financial Model", icon="💰")
+
 st.title("Capacity Comparison Tool")
 st.markdown("**Compare 2-3 plant capacities side-by-side — Investment, ROI, Profit, Break-Even**")
 st.markdown("---")

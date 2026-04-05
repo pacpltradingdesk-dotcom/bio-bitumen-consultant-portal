@@ -17,6 +17,8 @@ st.set_page_config(page_title="Loan EMI Calculator", page_icon="🏦", layout="w
 init_state()
 cfg = get_config()
 
+st.page_link("pages/09_💰_Financial.py", label="← Back to Financial Model", icon="💰")
+
 st.title("Loan EMI Calculator")
 st.markdown("**Calculate EMI, Total Interest, Amortization Schedule | Compare Loan Options | CGTMSE Eligibility**")
 st.markdown("---")

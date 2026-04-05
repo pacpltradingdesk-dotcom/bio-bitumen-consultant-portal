@@ -75,7 +75,7 @@ with col_input:
     equity_pct = st.slider("Equity (%)", 20, 50, int(cfg["equity_ratio"]*100), 5, key="fin_eq")
 
     st.markdown("**Advanced Parameters**")
-    with st.expander("Land, Inflation, WC, Moratorium, Carbon Credits"):
+    with st.expander("Land, Inflation, WC, Moratorium, Carbon Credits", expanded=False):
         adv1, adv2 = st.columns(2)
         with adv1:
             land_rate = st.number_input("Land Cost (Rs Lac/acre)", 1, 100, int(cfg["land_cost_per_acre"]), 1, key="fin_land")
@@ -510,6 +510,28 @@ with scen_col2:
                         st.rerun()
     else:
         st.info("No saved scenarios yet. Save your first scenario above.")
+
+    # H5: Scenario comparison chart
+    if saved and len(saved) >= 2:
+        st.markdown("---")
+        st.markdown("**Scenario Comparison**")
+        chart_data = []
+        for s in saved[:6]:
+            raw = s.get("config_json", {})
+            snap = json.loads(raw) if isinstance(raw, str) else (raw if isinstance(raw, dict) else {})
+            chart_data.append({
+                "Scenario": s.get("name", "?"),
+                "ROI %": snap.get("roi_pct", 0),
+                "IRR %": snap.get("irr_pct", 0),
+                "Break-Even (mo)": snap.get("break_even_months", 0),
+            })
+        if chart_data:
+            chart_df = pd.DataFrame(chart_data)
+            fig_sc = go.Figure()
+            fig_sc.add_trace(go.Bar(x=chart_df["Scenario"], y=chart_df["ROI %"], name="ROI %", marker_color="#003366"))
+            fig_sc.add_trace(go.Bar(x=chart_df["Scenario"], y=chart_df["IRR %"], name="IRR %", marker_color="#006699"))
+            fig_sc.update_layout(title="Scenario Comparison", barmode="group", template="plotly_white", height=300)
+            st.plotly_chart(fig_sc, width="stretch")
 
 st.markdown("---")
 

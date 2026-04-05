@@ -135,6 +135,7 @@ if slide == 0:
 
     if missing:
         st.warning(f"Please fill required fields: **{', '.join(missing)}**")
+    st.caption("You can browse slides with Next/Previous below, or fill details and click SAVE to start")
 
     col_save1, col_save2 = st.columns(2)
     with col_save1:

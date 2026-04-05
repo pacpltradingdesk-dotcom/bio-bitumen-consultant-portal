@@ -60,8 +60,14 @@ c1, c2, c3, c4, c5, c6, c7 = st.columns(7)
 c1.metric("Capacities", "7 Standard")
 c2.metric("Documents", f"{len(doc_df):,}")
 c3.metric("States", "18")
-c4.metric("Customers", len(customers))
-c5.metric("Packages", len(packages))
+with c4:
+    st.metric("Customers", len(customers))
+    if len(customers) == 0:
+        st.caption("[Add →](pages/14_👥_Customers.py)")
+with c5:
+    st.metric("Packages", len(packages))
+    if len(packages) == 0:
+        st.caption("[Create →](pages/13_📁_Document_Hub.py)")
 c6.metric("Network", f"{INDUSTRY_NETWORK['total']:,}")
 
 # Pipeline value

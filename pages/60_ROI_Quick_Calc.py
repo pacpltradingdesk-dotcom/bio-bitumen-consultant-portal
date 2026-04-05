@@ -17,6 +17,8 @@ st.set_page_config(page_title="ROI Quick Calculator", page_icon="🎯", layout="
 init_state()
 cfg = get_config()
 
+st.page_link("pages/09_💰_Financial.py", label="← Back to Financial Model", icon="💰")
+
 st.title("ROI Quick Calculator")
 st.markdown(f"**{COMPANY['trade_name']} | Instant ROI Analysis — Change Any Slider, See Results Instantly**")
 st.markdown("---")

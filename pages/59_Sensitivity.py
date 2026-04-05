@@ -15,6 +15,8 @@ st.set_page_config(page_title="Sensitivity Analysis", page_icon="📊", layout="
 init_state()
 cfg = get_config()
 
+st.page_link("pages/09_💰_Financial.py", label="← Back to Financial Model", icon="💰")
+
 st.title("Advanced Sensitivity Analysis")
 st.markdown(f"**{cfg['capacity_tpd']:.0f} TPD | What drives profit? What kills it?**")
 st.markdown("---")
