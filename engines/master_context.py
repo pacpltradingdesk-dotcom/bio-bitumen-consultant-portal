@@ -64,9 +64,27 @@ def build_master_context(cfg):
     equity_ratio = cfg.get("equity_ratio", 0.4)
 
     # ── 5. DERIVED ───────────────────────────────────────────────
-    annual_output = capacity * 0.4 * working_days  # Oil yield 40%
+    oil_yield_pct = cfg.get("bio_oil_yield_pct", 32)
+    annual_output = capacity * (oil_yield_pct / 100) * working_days
     daily_biomass = capacity * 2.5  # Input ratio
     water_kld = max(5, int(capacity * 1.5))
+
+    # ── 6. BOQ DATA (82 items, 15 zones) ─────────────────────────
+    try:
+        from state_manager import calculate_boq
+        boq_items = calculate_boq(capacity)
+        boq_total_lac = sum(i["amount_lac"] for i in boq_items)
+        # Zone summary
+        zone_cats = {}
+        for item in boq_items:
+            cat = item["category"]
+            zone_cats[cat] = zone_cats.get(cat, 0) + item["amount_lac"]
+        zone_summary = "\n".join(f"  {cat}: Rs {cost:.1f} Lac ({len([i for i in boq_items if i['category']==cat])} items)"
+                                  for cat, cost in sorted(zone_cats.items()))
+    except Exception:
+        boq_items = []
+        boq_total_lac = 0
+        zone_summary = "BOQ not available"
 
     # ── BUILD CONTEXT TEXT ───────────────────────────────────────
     context = f"""
@@ -96,21 +114,27 @@ Regulatory Bodies:  {'GPCB' if state == 'Gujarat' else 'MPCB' if state == 'Mahar
 ═══ 2. PROCESS & CAPACITY ═══
 Plant Type:         Bio-Modified Bitumen (Pyrolysis + VG-30 Blending)
 Capacity:           {capacity:.0f} MT/Day (biomass input)
-Bio-Oil Output:     {capacity * 0.4:.1f} MT/Day (40% yield)
-Biochar Output:     {capacity * 0.3:.1f} MT/Day (30% yield)
-Syngas Output:      {capacity * 0.25:.1f} MT/Day (25% — captive fuel)
-Loss:               5%
+Bio-Oil Yield:      {cfg.get('bio_oil_yield_pct', 32)}% = {capacity * cfg.get('bio_oil_yield_pct', 32)/100:.1f} MT/Day
+Bio-Char Yield:     {cfg.get('bio_char_yield_pct', 28)}% = {capacity * cfg.get('bio_char_yield_pct', 28)/100:.1f} MT/Day
+Syngas Yield:       {cfg.get('syngas_yield_pct', 22)}% = {capacity * cfg.get('syngas_yield_pct', 22)/100:.1f} MT/Day (captive fuel)
+Process Loss:       {cfg.get('process_loss_pct', 18)}%
 Working Days:       {working_days}/year
 Operating Hours:    16 hrs/day (2 shifts)
 Biomass Source:     {biomass_source or 'NOT SET'}
 Daily Biomass Need: {daily_biomass:.0f} MT/day (at 2.5x input ratio)
 Annual Production:  {annual_output:.0f} MT of bio-bitumen output
+BOQ:                {len(boq_items)} items across 15 zones (gate to gate)
+BOQ Total Cost:     Rs {boq_total_lac:.1f} Lac ({boq_total_lac/100:.2f} Cr)
 
-═══ 3. UTILITIES ═══
+═══ 3. PLANT ZONES (15 areas) ═══
+{zone_summary}
+
+═══ 4. UTILITIES ═══
 Connected Load:     {power_kw} kW
 Water Requirement:  {water_kld} KLD (cooling + process + domestic)
 Fuel Source:        Syngas (captive) + DG backup
 Power Source:       {'GUVNL' if state == 'Gujarat' else 'State DISCOM'} HT Connection + {max(50, power_kw)} kVA DG
+Compressed Air:     {max(50, int(capacity * 5))} CFM
 
 ═══ 4. PLOT DIMENSIONS ═══
 Plot Area:          {int(site_area * 43560)} sq ft ({site_area} acres)
