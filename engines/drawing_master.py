@@ -255,32 +255,89 @@ DRAWING_REGISTRY = [
         "required_for": ["Fire NOC", "Factory License"],
     },
 
-    # ── FABRICATION (NEW) ───────────────────────────────────────
+    # ── FABRICATION — AI Concept + Human Final ─────────────────
     {
-        "id": "reactor_fabrication",
-        "name": "Reactor Fabrication / Shop Drawing",
+        "id": "reactor_fabrication_2d",
+        "name": "Reactor Fabrication — 2D Cross-Section (AI Concept)",
         "category": "Fabrication",
         "for_whom": "Heavy Engineering Workshop, Reactor Fabricator",
-        "purpose": "Tells welder exact steel grade, plate thickness, nozzle angles for reactor manufacturing",
-        "what_it_shows": "Steel plate thickness (mm), welding specifications, nozzle positions and sizes, "
-                         "flange ratings, internal baffles, thermocouple ports, pressure rating",
-        "ai_capable": False,
-        "ai_prompt": "",
+        "purpose": "Visual concept of reactor internals — for discussion with fabricator before final CAD",
+        "what_it_shows": "Cross-section showing shell, internal baffles, nozzle positions, thermocouple ports",
+        "ai_capable": True,
+        "dimension": "2D",
+        "ai_prompt": (
+            "Professional 2D engineering cross-section diagram of a batch pyrolysis reactor "
+            "for {capacity} TPD bio-bitumen plant. Show: cylindrical vessel cross-section, "
+            "12mm carbon steel shell wall, internal distribution baffles, inlet nozzle at top "
+            "(DN150), outlet nozzle at bottom (DN100), thermocouple ports (3 locations), "
+            "pressure relief valve at top, manhole (DN600), support saddles at base. "
+            "Include dimension lines showing: diameter 2.0m, length 4.5m, nozzle positions. "
+            "Technical engineering drawing style, black lines on white, dimensioned."
+        ),
         "required_for": ["Equipment Procurement", "Manufacturing"],
-        "note": "REQUIRES HUMAN: Mechanical engineer with ASME/IS standards for pressure vessel design",
+        "note": "AI CONCEPT — final fabrication drawing needs ASME-certified mechanical engineer",
     },
     {
-        "id": "tank_fabrication",
-        "name": "Storage Tank Fabrication Drawing",
+        "id": "reactor_fabrication_3d",
+        "name": "Reactor Assembly — 3D Cutaway View (AI Concept)",
+        "category": "Fabrication",
+        "for_whom": "Heavy Engineering Workshop, Investors, Bank Technical Appraiser",
+        "purpose": "3D visualization of reactor for investor presentations and fabricator briefing",
+        "what_it_shows": "3D cutaway showing internal components, material flow, heat zones",
+        "ai_capable": True,
+        "dimension": "3D",
+        "ai_prompt": (
+            "Highly detailed 3D cutaway cross-section rendering of an industrial batch "
+            "pyrolysis reactor for {capacity} TPD bio-bitumen plant. Show internal structure: "
+            "biomass feed zone at top, pyrolysis zone (450-550°C marked in red glow), "
+            "biochar collection at bottom, bio-oil vapor exit through side nozzle to condenser, "
+            "syngas exit at top. Show steel shell (grey), refractory lining (orange), "
+            "external thermic fluid heating coils (copper color), support legs, flanged "
+            "connections with gaskets. Photorealistic 3D rendering, engineering visualization "
+            "quality, soft studio lighting, transparent shell showing internals."
+        ),
+        "required_for": ["DPR", "Investor Pitch", "Equipment Procurement"],
+    },
+    {
+        "id": "tank_fabrication_2d",
+        "name": "Storage Tank — 2D Section Drawing (AI Concept)",
         "category": "Fabrication",
         "for_whom": "Tank Fabricator, Welding Inspector",
-        "purpose": "Manufacturing drawing for bitumen/bio-oil storage tanks",
-        "what_it_shows": "Tank diameter, height, plate thickness, nozzle schedule, manhole position, "
-                         "heating coil details, insulation specs, vent pipe, level gauge connection",
-        "ai_capable": False,
-        "ai_prompt": "",
+        "purpose": "Visual concept of storage tank design — for quotation and discussion",
+        "what_it_shows": "Tank section showing dimensions, nozzle schedule, heating coil, insulation",
+        "ai_capable": True,
+        "dimension": "2D",
+        "ai_prompt": (
+            "Professional 2D engineering section drawing of a heated bitumen storage tank "
+            "for {capacity} TPD plant. Vertical cylindrical tank. Show: diameter 3.0m, "
+            "height 4.0m, 8mm MS shell, conical roof with vent pipe, bottom outlet DN150, "
+            "internal steam heating coils (spiral pattern shown in cross-section), "
+            "50mm rock wool insulation on outside, level gauge connection (side), "
+            "manhole DN600 (side), temperature gauge port, drain valve at bottom. "
+            "Engineering drawing style with dimension lines, clean black on white."
+        ),
         "required_for": ["Equipment Procurement"],
-        "note": "REQUIRES HUMAN: Mechanical engineer with API-650 / IS-803 tank design standards",
+        "note": "AI CONCEPT — final tank design needs API-650/IS-803 certified engineer",
+    },
+    {
+        "id": "tank_fabrication_3d",
+        "name": "Tank Farm — 3D Assembly View (AI Concept)",
+        "category": "Fabrication",
+        "for_whom": "Tank Fabricator, Investors, PESO Authority",
+        "purpose": "3D visualization of complete tank farm with bund walls and safety features",
+        "what_it_shows": "Multiple tanks in 3D with bund wall, piping, walkways, fire protection",
+        "ai_capable": True,
+        "dimension": "3D",
+        "ai_prompt": (
+            "Photorealistic 3D rendering of a bio-bitumen tank farm for {capacity} TPD plant. "
+            "Show 3 vertical cylindrical storage tanks (silver/grey) inside a concrete bund "
+            "wall enclosure. Include: insulated tanks with aluminum cladding, interconnecting "
+            "pipe manifold with valves, pump skid, steel walkway with yellow safety railing "
+            "around tank tops, fire foam monitor at corner, bund wall drain valve, "
+            "tank name plates (T-201, T-202, T-203). Professional industrial 3D visualization, "
+            "soft daylight, clean concrete pad, OISD-117 compliant spacing."
+        ),
+        "required_for": ["PESO License", "DPR", "Investor Pitch"],
     },
 
     # ── UTILITY (NEW) ───────────────────────────────────────────
@@ -324,17 +381,45 @@ DRAWING_REGISTRY = [
 
     # ── OPERATIONS (NEW) ────────────────────────────────────────
     {
-        "id": "as_built",
-        "name": "As-Built Drawings (Post-Construction)",
+        "id": "as_built_concept_2d",
+        "name": "As-Built Template — 2D Master Layout (AI Concept)",
         "category": "Operations",
         "for_whom": "Plant Manager, Maintenance Engineer, Safety Auditors",
-        "purpose": "Final true map of actual built plant — for future maintenance and inspections",
-        "what_it_shows": "Actual positions of all equipment, pipes, cables as built (may differ from design), "
-                         "underground pipe/cable routes, valve tag numbers, instrument locations",
-        "ai_capable": False,
-        "ai_prompt": "",
+        "purpose": "Pre-construction template for as-built documentation — marked up after construction",
+        "what_it_shows": "Equipment tag numbers, pipe routes, valve IDs, instrument locations — template for field updates",
+        "ai_capable": True,
+        "dimension": "2D",
+        "ai_prompt": (
+            "Professional 2D as-built documentation template for {capacity} TPD bio-bitumen "
+            "plant on {length}m x {width}m plot. Top-down layout showing: all equipment with "
+            "tag numbers (R-101 Reactor, HE-101 Condenser, T-201 Storage, P-101 Pump, etc.), "
+            "pipe routes with line numbers (L-001, L-002), valve positions with IDs (V-001), "
+            "instrument locations (TI-001 temperature, PI-001 pressure, LI-001 level). "
+            "Include revision table box, title block, scale bar, North arrow. "
+            "Clean engineering master drawing style — meant to be updated post-construction."
+        ),
         "required_for": ["Plant Handover", "Annual Safety Audit", "Insurance"],
-        "note": "CREATED AFTER CONSTRUCTION: Site survey team updates original drawings to match reality",
+        "note": "AI generates TEMPLATE — field engineer updates with actual positions after construction",
+    },
+    {
+        "id": "maintenance_3d",
+        "name": "Maintenance Access — 3D Visualization",
+        "category": "Operations",
+        "for_whom": "Plant Manager, Maintenance Team",
+        "purpose": "Shows maintenance access paths, crane reach, lifting points for annual shutdowns",
+        "what_it_shows": "Equipment access walkways, crane positioning, maintenance platforms, chemical storage",
+        "ai_capable": True,
+        "dimension": "3D",
+        "ai_prompt": (
+            "3D visualization of maintenance access layout for {capacity} TPD bio-bitumen "
+            "plant. Show: steel walkways with yellow railings around reactor and tanks, "
+            "overhead crane beam (5-ton capacity) over reactor bay, maintenance platform "
+            "at 4m height with ladder access, tool storage room, chemical/spare parts "
+            "warehouse, forklift path (3m wide), crane approach road. Include safety "
+            "shower and eye wash station near chemical area. Professional industrial "
+            "3D rendering, well-lit, organized layout."
+        ),
+        "required_for": ["Operations Manual", "Maintenance Planning"],
     },
 ]
 
