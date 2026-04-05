@@ -22,7 +22,17 @@ DEFAULTS = {
     "oil_price_per_litre": 38,
     "char_price_per_kg": 10,
 
-    # Cost Inputs (EDITABLE)
+    # ── DPR SALE PRICES — Multiple Products (₹/tonne) ──
+    "sale_bio_bitumen_vg30": 44000,   # Blended bio-bitumen VG30
+    "sale_bio_bitumen_vg40": 48000,   # Blended bio-bitumen VG40
+    "sale_biochar_agri": 26000,       # Soil amendment grade
+    "sale_biochar_industrial": 32000, # Water filtration / sequestration
+    "sale_bio_oil_fuel": 22000,       # Surplus bio-oil as industrial fuel
+    "sale_biomass_pellets": 9000,     # 6-8mm pellets for co-firing
+    "sale_empty_drum": 280,           # Per drum return value
+    "sale_carbon_credit": 12500,      # Per voluntary credit unit ₹
+
+    # Cost Inputs (EDITABLE — legacy per-MT aggregates)
     "raw_material_cost_per_mt": 8000,  # Rs/MT output
     "power_cost_per_mt": 4500,
     "labour_cost_per_mt": 3000,
@@ -31,6 +41,48 @@ DEFAULTS = {
     "transport_cost_per_mt": 2000,
     "qc_cost_per_mt": 500,
     "misc_cost_per_mt": 1000,
+
+    # ── DPR RAW MATERIAL PRICES — Individual Feedstock (₹/tonne farm gate) ──
+    "price_rice_straw_loose": 1200,   # Punjab/Haryana loose
+    "price_rice_straw_baled": 2700,   # Compressed bale
+    "price_wheat_straw": 1700,        # UP/MP/Haryana
+    "price_bagasse": 1000,            # Ex-sugar mill Maharashtra/TN
+    "price_lignin": 4000,             # Kraft lignin from paper mills
+    "price_other_agro_waste": 900,    # Groundnut shells, mustard straw
+    "price_conv_bitumen": 45750,      # ₹/T ex-IOCL/BPCL VG30 bulk
+
+    # ── DPR FEEDSTOCK MIX WEIGHTS (must sum to 1.0) ──
+    "mix_rice_straw_loose": 0.35,
+    "mix_rice_straw_baled": 0.20,
+    "mix_wheat_straw": 0.15,
+    "mix_bagasse": 0.10,
+    "mix_lignin": 0.05,
+    "mix_other_agro_waste": 0.15,
+
+    # ── DPR PROCESS YIELD PARAMETERS (%) ──
+    "bio_oil_yield_pct": 32,          # % of feed → bio-oil (range 20-40, typical 32)
+    "bio_char_yield_pct": 28,         # % of feed → bio-char (range 20-38, typical 28)
+    "syngas_yield_pct": 22,           # % → syngas, internal fuel (range 10-30, typical 22)
+    "process_loss_pct": 18,           # % lost as moisture/flue gas (range 5-25, typical 18)
+
+    # ── DPR LANDING COST COMPONENTS (₹/tonne of agro waste) ──
+    "landing_baling": 350,            # Baling + compressing at source
+    "landing_primary_transport": 250, # Farm→collection depot (tractor)
+    "landing_depot_storage": 300,     # Semi-open storage at depot
+    "landing_long_haul": 480,         # Depot→plant long-distance truck
+    "landing_load_unload": 140,       # Loading + unloading combined
+    "landing_testing_misc": 65,       # Weighbridge, QC testing, misc
+    "bitumen_transport": 650,         # ₹/T for bitumen road/rail freight
+
+    # ── DPR PRODUCTION COST PARAMETERS (daily) ──
+    "electricity_rate": 7.5,          # ₹/kWh (varies by state 6.8-9.0)
+    "electricity_kwh_day": 1200,      # kWh consumed per day
+    "diesel_rate": 92,                # ₹/litre market price
+    "diesel_litres_day": 120,         # Litres used per day
+    "labour_daily_cost": 18000,       # ₹/day total all categories
+    "overheads_daily_cost": 12000,    # Plant overheads, admin, security, insurance
+    "chemicals_daily_cost": 2500,     # Catalysts, solvents, chemicals
+    "waste_loss_factor": 5,           # % added on top of production cost
 
     # Finance Inputs (EDITABLE)
     "interest_rate": 0.115,
@@ -52,6 +104,11 @@ DEFAULTS = {
     "bio_blend_pct": 20,               # 20% bio-oil in bitumen blend
     "num_shifts": 2,                   # 1/2/3 shifts per day
     "carbon_credit_rate_usd": 12,      # USD per tonne CO2
+
+    # ── DPR PROJECT IDENTITY ──
+    "dpr_version": "v1.0",
+    "prepared_by": "",
+    "report_date": "",
 
     # Location
     "state": "Uttar Pradesh",

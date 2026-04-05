@@ -1,7 +1,7 @@
 """
-Detailed Costing — Complete Cost-Per-Tonne Bifurcation
-=======================================================
-Landing cost, waste, packing, scrap, location multipliers, cost sheet.
+Detailed Costing — Complete Cost-Per-Tonne Bifurcation + Finished Goods + Annual P&L
+=====================================================================================
+All values computed from state_manager cfg. ZERO hardcoded outputs.
 """
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -9,13 +9,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-from state_manager import get_config, init_state
+from state_manager import get_config, init_state, format_inr
 from config import COMPANY
-from engines.detailed_costing import (
-    calculate_complete_cost_sheet, calculate_landing_cost,
-    calculate_waste_costs, calculate_packing_costs,
-    calculate_scrap_revenue, LOCATION_MULTIPLIERS, get_multiplier
-)
+from engines.detailed_costing import calculate_complete_cost_sheet, LOCATION_MULTIPLIERS
+from engines.dpr_financial_engine import calculate_finished_goods
 
 st.set_page_config(page_title="Detailed Costing", page_icon="📊", layout="wide")
 init_state()
@@ -31,131 +28,219 @@ st.title("Detailed Costing — Cost Per Tonne Bifurcation")
 st.markdown(f"**Complete cost breakdown for {cfg['capacity_tpd']:.0f} TPD plant in {cfg.get('state', 'Maharashtra')}**")
 st.markdown("---")
 
-# Calculate everything
+# Calculate everything from single source
 cs = calculate_complete_cost_sheet(cfg)
+fg = calculate_finished_goods(cfg, cs)
 
 # ══════════════════════════════════════════════════════════════════════
 # TOP KPIs
 # ══════════════════════════════════════════════════════════════════════
-k1, k2, k3, k4 = st.columns(4)
+k1, k2, k3, k4, k5 = st.columns(5)
 k1.metric("Net Cost/Tonne", f"₹{cs['net_cpt']:,}",
-          help="All-in cost per tonne of bio-bitumen blend after by-product credits")
-k2.metric("Sale Price/Tonne", f"₹{cs['sale_price_pt']:,}")
+          help="All-in cost per tonne after by-product credits")
+k2.metric("Sale Price/Tonne", f"₹{cs['sale_price_pt']:,}",
+          help="Weighted: 70% VG30 + 30% VG40")
 k3.metric("Margin/Tonne", f"₹{cs['margin_pt']:,}",
           delta=f"{cs['margin_pct']:.1f}%",
           delta_color="normal" if cs['margin_pt'] > 0 else "inverse")
-k4.metric("Daily Revenue", f"₹{cs['total_rev_daily']:,}")
+k4.metric("Daily Revenue", format_inr(cs['total_rev_daily']))
+k5.metric("Annual Net Profit", format_inr(cs['annual_pnl']['net_profit']),
+          delta=f"ROI {cs['annual_pnl']['roi_pct']:.1f}%")
 
 st.markdown("---")
 
 # ══════════════════════════════════════════════════════════════════════
-# 6 TABS
+# 8 TABS
 # ══════════════════════════════════════════════════════════════════════
-tab_sheet, tab_landing, tab_waste, tab_packing, tab_scrap, tab_location = st.tabs([
-    "📊 Cost Sheet", "🚛 Landing Cost", "♻️ Waste & Loss",
-    "📦 Packing", "💰 Scrap Revenue", "📍 Location Multipliers"
+tab_sheet, tab_rm, tab_bitumen, tab_landing, tab_production, tab_fg, tab_pnl, tab_location = st.tabs([
+    "📊 Cost Sheet", "🌾 Raw Materials", "🛢️ Bitumen Cost",
+    "🚛 Landing Cost", "⚙️ Production Cost",
+    "📦 Finished Goods", "📈 Annual P&L", "📍 Location Multipliers"
 ])
 
 # ── TAB: COST SHEET ──────────────────────────────────────────────────
 with tab_sheet:
     st.subheader("Complete Cost Sheet — ₹ per Tonne of Bio-Bitumen Blend")
-    st.caption(f"Location: {cs['state']} | Output: {cs['blend_total_tpd']} T/day blend | {cfg['capacity_tpd']:.0f} TPD feed")
+    st.caption(f"Location: {cs['state']} | Blend Output: {cs['blend_total_tpd']} T/day | "
+               f"Feed: {cfg['capacity_tpd']:.0f} TPD | Yields: Oil {cfg.get('bio_oil_yield_pct',32)}% / "
+               f"Char {cfg.get('bio_char_yield_pct',28)}% / Syngas {cfg.get('syngas_yield_pct',22)}%")
 
-    # Cost breakdown table
+    d = cs["blend_total_tpd"] if cs["blend_total_tpd"] > 0 else 1
     rows = []
     for i, (head, daily_cost) in enumerate(cs["cost_heads"], 1):
-        cpt = daily_cost / cs["blend_total_tpd"] if cs["blend_total_tpd"] > 0 else 0
-        pct = cpt / (cs["gross_daily"] / cs["blend_total_tpd"]) * 100 if cs["gross_daily"] > 0 else 0
+        cpt = daily_cost / d
+        pct = daily_cost / cs["gross_daily"] * 100 if cs["gross_daily"] > 0 else 0
         rows.append({"#": i, "Cost Head": head, "Daily ₹": f"₹{daily_cost:,.0f}",
-                      "₹/Tonne": f"₹{cpt:,.0f}", "% of Total": f"{pct:.1f}%"})
+                      "₹/Tonne": f"₹{cpt:,.0f}", "% of Gross": f"{pct:.1f}%"})
 
-    df = pd.DataFrame(rows)
-    st.dataframe(df, width="stretch", hide_index=True)
+    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
-    # Summary
-    d = cs["blend_total_tpd"] if cs["blend_total_tpd"] > 0 else 1
+    # Summary box
     st.markdown(f"""
     | | Amount |
     |---|---|
     | **GROSS COST / Tonne** | **₹{cs['gross_daily']/d:,.0f}** |
     | Less: By-product Credits | -₹{cs['by_product_credit']/d:,.0f} |
-    | Less: Scrap Income | -₹{cs['scrap_total']/d:,.0f} |
+    | Less: Scrap/Carbon Credits | -₹{cs['scrap_total']/d:,.0f} |
     | **NET COST / Tonne** | **₹{cs['net_cpt']:,}** |
-    | Sale Price | ₹{cs['sale_price_pt']:,} |
+    | Sale Price (70% VG30 + 30% VG40) | ₹{cs['sale_price_pt']:,} |
     | **MARGIN / Tonne** | **₹{cs['margin_pt']:,} ({cs['margin_pct']:.1f}%)** |
     """)
 
     # Cost breakdown pie chart
-    fig = go.Figure(data=[go.Pie(
-        labels=[h for h, _ in cs["cost_heads"]],
-        values=[c for _, c in cs["cost_heads"]],
-        hole=0.4,
-        marker=dict(colors=["#f59e0b", "#ef4444", "#38bdf8", "#a78bfa", "#34d399",
-                             "#fb923c", "#64748b", "#f472b6", "#94a3b8", "#4ade80"]),
-    )])
-    fig.update_layout(title="Cost Breakdown", template="plotly_white", height=350)
-    st.plotly_chart(fig, width="stretch")
+    c1, c2 = st.columns(2)
+    with c1:
+        fig = go.Figure(data=[go.Pie(
+            labels=[h for h, _ in cs["cost_heads"]],
+            values=[c for _, c in cs["cost_heads"]],
+            hole=0.4,
+            marker=dict(colors=["#f59e0b", "#ef4444", "#38bdf8", "#a78bfa", "#34d399",
+                                 "#fb923c", "#64748b", "#f472b6", "#94a3b8", "#4ade80"]),
+        )])
+        fig.update_layout(title="Cost Breakdown (10 Heads)", template="plotly_white", height=350)
+        st.plotly_chart(fig, use_container_width=True)
 
-# ── TAB: LANDING COST ────────────────────────────────────────────────
+    with c2:
+        rev_items = cs["revenue"]["items"]
+        fig2 = go.Figure(data=[go.Bar(
+            x=[i["product"].split("(")[0].strip() for i in rev_items],
+            y=[i["daily_rev"] for i in rev_items],
+            marker_color=["#f59e0b", "#fb923c", "#34d399", "#38bdf8", "#a78bfa", "#64748b"],
+        )])
+        fig2.update_layout(title="Revenue by Product (Daily ₹)", template="plotly_white", height=350,
+                           xaxis_tickangle=-30)
+        st.plotly_chart(fig2, use_container_width=True)
+
+# ── TAB: RAW MATERIALS ──────────────────────────────────────────────
+with tab_rm:
+    st.subheader("Raw Material — 6 Feedstock Blended Average")
+    st.caption(f"Location RM multiplier: {cs['rm']['rm_multiplier']:.2f}x ({cs['state']})")
+
+    rm_rows = []
+    for item in cs["rm"]["items"]:
+        rm_rows.append({
+            "Feedstock": item["feedstock"],
+            "Farm Gate ₹/T": f"₹{item['farm_gate_price']:,}",
+            "Mix %": f"{item['mix_pct']:.0f}%",
+            "Weighted ₹": f"₹{item['weighted_price']:,}",
+        })
+    st.dataframe(pd.DataFrame(rm_rows), use_container_width=True, hide_index=True)
+
+    r1, r2, r3 = st.columns(3)
+    r1.metric("Blended RM Price/T", f"₹{cs['rm']['blended_price']:,}")
+    r2.metric("Daily RM Cost", format_inr(cs['rm']['daily_cost']))
+    r3.metric("RM % of Gross Cost", f"{cs['rm']['daily_cost']/cs['gross_daily']*100:.1f}%" if cs['gross_daily'] > 0 else "0%")
+
+# ── TAB: BITUMEN COST ───────────────────────────────────────────────
+with tab_bitumen:
+    st.subheader("Conventional Bitumen — Landed Cost Breakdown")
+    st.caption(f"Need {cs['bitumen']['conv_bitumen_needed']:.1f} T/day of VG30 for {cfg.get('bio_blend_pct', 20)}% blend")
+
+    bit_rows = []
+    for name, amount in cs["bitumen"]["breakdown"]:
+        bit_rows.append({"Component": name, "₹/Tonne": f"₹{amount:,.0f}"})
+    st.dataframe(pd.DataFrame(bit_rows), use_container_width=True, hide_index=True)
+
+    b1, b2, b3 = st.columns(3)
+    b1.metric("Landed Price/T", f"₹{cs['bitumen']['landed_per_tonne']:,}")
+    b2.metric("Daily Bitumen Cost", format_inr(cs['bitumen']['daily_cost']))
+    b3.metric("Bitumen % of Gross", f"{cs['bitumen']['daily_cost']/cs['gross_daily']*100:.1f}%" if cs['gross_daily'] > 0 else "0%")
+
+# ── TAB: LANDING COST ───────────────────────────────────────────────
 with tab_landing:
     st.subheader("Agro Waste Landing Cost — Farm Gate to Plant Gate")
-    st.caption(f"Location: {cs['state']} | Transport multiplier: {cs['multiplier']['tr_in']:.2f}x")
+    st.caption(f"Transport multiplier: {cs['landing']['transport_multiplier']:.2f}x ({cs['state']})")
 
-    landing = cs["landing"]
-    landing_rows = []
-    for name, cost, editable in landing["items"]:
-        landing_rows.append({"Component": name, "₹/Tonne Feed": f"₹{cost:,.0f}"})
+    lc_rows = []
+    for name, cost, is_transport in cs["landing"]["items"]:
+        lc_rows.append({
+            "Component": name,
+            "₹/Tonne Feed": f"₹{cost:,.0f}",
+            "Transport Adjusted": "✅" if is_transport else "",
+        })
+    st.dataframe(pd.DataFrame(lc_rows), use_container_width=True, hide_index=True)
 
-    st.dataframe(pd.DataFrame(landing_rows), width="stretch", hide_index=True)
-    st.metric("TOTAL Landing Cost", f"₹{landing['total']:,}/tonne", help="Per tonne of agro waste at plant gate")
+    l1, l2, l3 = st.columns(3)
+    l1.metric("Agro Landing/T", f"₹{cs['landing']['lc_per_tonne_agro']:,}")
+    l2.metric("Agro Daily", format_inr(cs['landing']['lc_agro_daily']))
+    l3.metric("Bitumen Freight Daily", format_inr(cs['landing']['lc_bitumen_daily']))
 
-# ── TAB: WASTE & LOSS ────────────────────────────────────────────────
-with tab_waste:
-    st.subheader("Waste, Rejection & Process Losses")
+# ── TAB: PRODUCTION COST ────────────────────────────────────────────
+with tab_production:
+    st.subheader("Production Cost — Energy, Labour, Overheads, Chemicals")
 
-    waste = cs["waste"]
-    waste_rows = []
-    for name, stage, pct, tonnes, cost in waste["items"]:
-        waste_rows.append({"Loss Type": name, "Stage": stage, "% of Input": f"{pct}%",
-                            "T/day": f"{tonnes:.2f}", "Daily Cost ₹": f"₹{cost:,.0f}"})
+    prod_rows = []
+    for name, amount, formula in cs["production"]["items"]:
+        prod_rows.append({"Component": name, "Daily ₹": f"₹{amount:,}", "Formula": formula})
+    st.dataframe(pd.DataFrame(prod_rows), use_container_width=True, hide_index=True)
 
-    st.dataframe(pd.DataFrame(waste_rows), width="stretch", hide_index=True)
-    st.metric("Total Waste Cost/Day", f"₹{waste['total']:,}")
-    st.caption("These costs are absorbed into the product cost — they increase your effective cost per tonne")
+    p1, p2 = st.columns(2)
+    p1.metric("Total Production Cost/Day", format_inr(cs['production']['total']))
+    p2.metric("Syngas Credit/Day", format_inr(cs['production']['syngas_credit']),
+              help="Syngas used as internal fuel reduces net energy cost")
 
-# ── TAB: PACKING ─────────────────────────────────────────────────────
-with tab_packing:
-    st.subheader("Packing Cost Matrix — Net of Scrap Value")
+    # Waste & Packing summary
+    st.markdown("---")
+    w1, w2, w3 = st.columns(3)
+    w1.metric("Waste & Rejection/Day", format_inr(cs['waste']['total']),
+              help=f"Includes {cs['waste']['waste_factor_pct']}% loss factor on production cost")
+    w2.metric("Packing (Net)/Day", format_inr(cs['packing']['total']),
+              help="Gross packing minus scrap return value")
+    w3.metric("Outbound Delivery/Day", format_inr(cs['outbound']['total']),
+              help=f"₹{cs['outbound']['cost_per_tonne']:,}/T × {cs['blend_total_tpd']} T/day")
 
-    packing = cs["packing"]
-    pack_rows = []
-    for product, pack_type, cost, scrap, net, desc, units in packing["items"]:
-        pack_rows.append({"Product": product, "Pack Type": pack_type,
-                           "Pack Cost ₹": cost, "Scrap Value ₹": scrap,
-                           "Net ₹/unit": net, "Units/day": units,
-                           "Daily ₹": f"₹{net * units:,}"})
+# ── TAB: FINISHED GOODS ─────────────────────────────────────────────
+with tab_fg:
+    st.subheader("Finished Goods — Revenue by Product Stream")
+    st.caption(f"7 revenue streams | {cfg.get('working_days', 300)} operating days/year")
 
-    st.dataframe(pd.DataFrame(pack_rows), width="stretch", hide_index=True)
-    st.metric("Total Packing Cost/Day", f"₹{packing['total']:,}")
+    fg_rows = []
+    for item in fg["items"]:
+        fg_rows.append({
+            "Product": item["product"],
+            "Qty/Day": item["qty_per_day"],
+            "Sale Price ₹/T": item["sale_price"],
+            "Daily Revenue": f"₹{item['daily_revenue']:,}" if isinstance(item["daily_revenue"], (int, float)) else item["daily_revenue"],
+            "Annual Revenue": format_inr(item["annual_revenue"]) if isinstance(item["annual_revenue"], (int, float)) else item["annual_revenue"],
+            "% of Total": f"{item['pct_of_total']:.1f}%",
+            "Buyer Segment": item["buyer"],
+        })
+    st.dataframe(pd.DataFrame(fg_rows), use_container_width=True, hide_index=True)
 
-# ── TAB: SCRAP REVENUE ───────────────────────────────────────────────
-with tab_scrap:
-    st.subheader("Scrap & By-Product Revenue")
-    st.caption("These credits REDUCE your effective cost of production")
+    f1, f2, f3 = st.columns(3)
+    f1.metric("Total Daily Revenue", format_inr(fg["total_daily"]))
+    f2.metric("Total Annual Revenue", format_inr(fg["total_annual"]))
+    f3.metric("Annual Revenue (Cr)", f"₹ {fg['total_annual_cr']:.2f} Cr")
 
-    scrap = cs["scrap"]
-    scrap_rows = []
-    for item, qty, price, income, buyer in scrap["items"]:
-        scrap_rows.append({"Item": item, "Qty/day": qty, "Rate ₹": f"₹{price:,}",
-                            "Daily Income ₹": f"₹{income:,}", "Buyer": buyer})
+# ── TAB: ANNUAL P&L ─────────────────────────────────────────────────
+with tab_pnl:
+    st.subheader("Annual Profit & Loss Statement")
+    pnl = cs["annual_pnl"]
 
-    st.dataframe(pd.DataFrame(scrap_rows), width="stretch", hide_index=True)
-    st.metric("Total Scrap Income/Day", f"₹{scrap['total']:,}")
+    pnl_rows = [
+        {"Line Item": "Revenue", "₹ Annual": format_inr(pnl["revenue"]), "% of Revenue": "100.0%"},
+        {"Line Item": "Less: Cost of Goods Sold (COGS)", "₹ Annual": format_inr(-pnl["cogs"]), "% of Revenue": f"{pnl['cogs']/pnl['revenue']*100:.1f}%" if pnl["revenue"] > 0 else ""},
+        {"Line Item": "Add: Scrap & By-product Credits", "₹ Annual": format_inr(pnl["scrap_credit"]), "% of Revenue": f"{pnl['scrap_credit']/pnl['revenue']*100:.1f}%" if pnl["revenue"] > 0 else ""},
+        {"Line Item": "GROSS PROFIT", "₹ Annual": format_inr(pnl["gross_profit"]), "% of Revenue": f"{pnl['gross_margin_pct']:.1f}%"},
+        {"Line Item": "---", "₹ Annual": "---", "% of Revenue": "---"},
+        {"Line Item": "Less: Depreciation", "₹ Annual": format_inr(-pnl["depreciation"]), "% of Revenue": ""},
+        {"Line Item": "Less: Interest on Term Loan", "₹ Annual": format_inr(-pnl["interest"]), "% of Revenue": ""},
+        {"Line Item": "Less: Selling & Admin (2%)", "₹ Annual": format_inr(-pnl["sga"]), "% of Revenue": ""},
+        {"Line Item": "EBT (Earnings Before Tax)", "₹ Annual": format_inr(pnl["ebt"]), "% of Revenue": ""},
+        {"Line Item": f"Less: Tax @ {cfg.get('tax_rate', 0.25)*100:.0f}%", "₹ Annual": format_inr(-pnl["tax"]), "% of Revenue": ""},
+        {"Line Item": "NET PROFIT (PAT)", "₹ Annual": format_inr(pnl["net_profit"]), "% of Revenue": f"{pnl['net_margin_pct']:.1f}%"},
+    ]
+    st.dataframe(pd.DataFrame(pnl_rows), use_container_width=True, hide_index=True)
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Gross Margin", f"{pnl['gross_margin_pct']:.1f}%")
+    m2.metric("Net Margin", f"{pnl['net_margin_pct']:.1f}%")
+    m3.metric("ROI", f"{pnl['roi_pct']:.1f}%")
+    m4.metric("Payback", f"{pnl['payback_years']:.1f} yrs" if pnl['payback_years'] < 100 else "N/A")
 
 # ── TAB: LOCATION MULTIPLIERS ───────────────────────────────────────
 with tab_location:
     st.subheader("Location Cost Multipliers — 9 States")
-    st.caption("Select different location to see cost impact across all parameters")
 
     loc_rows = []
     for state_name, mult in LOCATION_MULTIPLIERS.items():
@@ -166,16 +251,15 @@ with tab_location:
             "Transport In": f"{mult['tr_in']:.2f}x",
             "Transport Out": f"{mult['tr_out']:.2f}x",
             "Energy": f"{mult['energy']:.2f}x",
+            "Elec Rate": f"₹{mult['elec_rate']}/kWh",
         })
+    st.dataframe(pd.DataFrame(loc_rows), use_container_width=True, hide_index=True)
 
-    st.dataframe(pd.DataFrame(loc_rows), width="stretch", hide_index=True)
-
-    # Current state highlight
     current_mult = cs["multiplier"]
     st.info(f"**Current: {cs['state']}** — RM: {current_mult['rm']:.2f}x | Labour: {current_mult['lb']:.2f}x | "
             f"Transport: {current_mult['tr_in']:.2f}x | Energy: {current_mult['energy']:.2f}x")
 
-# ── Export + Print ───────────────────────────────────────────────────
+# ── Export ───────────────────────────────────────────────────────────
 st.markdown("---")
 ex1, ex2 = st.columns(2)
 with ex1:
@@ -185,11 +269,15 @@ with ex1:
         wb = Workbook()
         ws = wb.active
         ws.title = "Cost Sheet"
-        ws.cell(row=1, column=1, value="Bio-Bitumen Cost Sheet")
+        ws.cell(row=1, column=1, value="Bio-Bitumen Complete Cost Sheet")
         ws.cell(row=2, column=1, value=f"Capacity: {cfg['capacity_tpd']:.0f} TPD | State: {cs['state']}")
+        ws.cell(row=3, column=1, value="Cost Head")
+        ws.cell(row=3, column=2, value="Daily ₹")
+        ws.cell(row=3, column=3, value="₹/Tonne")
         for i, (head, cost) in enumerate(cs["cost_heads"], 4):
             ws.cell(row=i, column=1, value=head)
             ws.cell(row=i, column=2, value=round(cost))
+            ws.cell(row=i, column=3, value=round(cost / d))
         buf = io.BytesIO()
         wb.save(buf)
         buf.seek(0)
@@ -201,4 +289,4 @@ with ex2:
         _stc.html("<script>window.print();</script>", height=0)
 
 st.markdown("---")
-st.caption(f"{COMPANY['name']} | Detailed Costing Engine | All values auto-update from project config")
+st.caption(f"{COMPANY['name']} | DPR Detailed Costing Engine | All values auto-update from project config")
