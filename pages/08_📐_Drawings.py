@@ -139,9 +139,16 @@ else:
         with col_info:
             st.caption(f"File: {d['filename']} | Size: {d['size_kb']:.0f} KB")
         with col_dl:
-            with open(d["path"], "rb") as f:
-                st.download_button("Download", f.read(), d["filename"],
-                                    mime="image/png", key=f"dl_{i}")
+            try:
+                if os.path.exists(d["path"]):
+                    with open(d["path"], "rb") as f:
+                        file_bytes = f.read()
+                    st.download_button("⬇️ Download", file_bytes, d["filename"],
+                                        mime="image/png", key=f"dl_{i}")
+                else:
+                    st.error("File missing")
+            except Exception as e:
+                st.error(f"Error: {e}")
         st.markdown("---")
 
 # ── Complete Register ─────────────────────────────────────────────────

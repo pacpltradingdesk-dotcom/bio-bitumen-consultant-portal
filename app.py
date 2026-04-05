@@ -111,6 +111,30 @@ try:
 except Exception:
     pass
 
+# API Status in sidebar
+st.sidebar.markdown("---")
+st.sidebar.markdown("**API Status**")
+try:
+    from engines.ai_engine import is_ai_available, get_active_provider
+    if is_ai_available():
+        provider = get_active_provider()
+        st.sidebar.markdown(f"🟢 AI: **{provider.upper()}** active")
+    else:
+        st.sidebar.markdown("🔴 AI: No API keys")
+except Exception:
+    st.sidebar.markdown("⚪ AI: Not configured")
+
+# Free APIs status
+try:
+    api_count = 0
+    from engines.free_apis import _read_cache
+    for name in ["weather_vadodara", "fx_rates_USD", "india_gdp"]:
+        if _read_cache(name, ttl=7200):
+            api_count += 1
+    st.sidebar.markdown(f"🟢 Free APIs: {api_count}/3 cached"  if api_count > 0 else "🟡 APIs: Refreshing...")
+except Exception:
+    pass
+
 # ══════════════════════════════════════════════════════════════════════
 # HERO BANNER
 # ══════════════════════════════════════════════════════════════════════
