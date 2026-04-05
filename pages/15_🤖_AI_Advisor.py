@@ -576,8 +576,6 @@ except Exception:
 # Chat input
 if prompt := st.chat_input("Ask about bio-bitumen plant setup, subsidies, loans, safety, carbon credits..."):
     st.session_state["chat_history"].append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
 
     # Try built-in first for quick structured answers
     response = answer_question(prompt)
@@ -585,13 +583,15 @@ if prompt := st.chat_input("Ask about bio-bitumen plant setup, subsidies, loans,
     # If built-in gives default/generic response AND AI is available, use AI
     if ai_on and ("I can help with" in response or "25+ topic areas" in response):
         with st.spinner("AI thinking..."):
-            ai_response, used_provider = ai_chat(prompt, st.session_state["chat_history"], cfg)
-            if ai_response and used_provider != "none":
-                response = ai_response + f"\n\n*— Powered by {used_provider.upper()}*"
+            try:
+                ai_response, used_provider = ai_chat(prompt, st.session_state["chat_history"], cfg)
+                if ai_response and used_provider != "none":
+                    response = ai_response + f"\n\n*— Powered by {used_provider.upper()}*"
+            except Exception as e:
+                st.error(f"AI call failed: {e}")
 
     st.session_state["chat_history"].append({"role": "assistant", "content": response})
-    with st.chat_message("assistant"):
-        st.markdown(response)
+    st.rerun()
 
 # Controls
 ctrl1, ctrl2 = st.columns(2)

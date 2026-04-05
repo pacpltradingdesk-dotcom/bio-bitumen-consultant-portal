@@ -124,23 +124,28 @@ st.markdown("---")
 # ══════════════════════════════════════════════════════════════════════
 st.subheader("3. Test API Connection")
 
-if st.button("Test Both APIs", key="test_apis"):
-    with st.spinner("Testing API connections..."):
-        results = test_api_connection()
+if st.button("Test Both APIs", type="primary", key="test_apis"):
+    with st.spinner("Testing API connections... (may take 10-15 seconds)"):
+        try:
+            results = test_api_connection()
+        except Exception as e:
+            st.error(f"Test failed: {e}")
+            results = {}
 
-    for provider, info in results.items():
-        status = info["status"]
-        icon = "✅" if status == "OK" else ("⚠️" if status == "No key" else "❌")
-        color = "#00AA44" if status == "OK" else ("#FF8800" if status == "No key" else "#CC3333")
+    if results:
+        for provider, info in results.items():
+            status = info.get("status", "UNKNOWN")
+            icon = "✅" if status == "OK" else ("⚠️" if status == "No key" else "❌")
+            color = "#00AA44" if status == "OK" else ("#FF8800" if status == "No key" else "#CC3333")
+            model = info.get("model", "")
+            resp = info.get("response", "")[:60]
 
-        st.markdown(f"""
-        <div style="background: {color}10; border-left: 4px solid {color}; padding: 10px 15px;
-                    border-radius: 0 8px 8px 0; margin-bottom: 10px;">
-            <strong>{icon} {provider.upper()}</strong> — {status}
-            {f' | Model: {info["model"]}' if info["model"] else ''}
-            {f' | Response: {info["response"][:60]}' if info.get("response") else ''}
-        </div>
-        """, unsafe_allow_html=True)
+            if status == "OK":
+                st.success(f"{icon} {provider.upper()} Connected — Model: {model} — Response: {resp}")
+            elif status == "No key":
+                st.warning(f"{icon} {provider.upper()} — No API key configured")
+            else:
+                st.error(f"{icon} {provider.upper()} Failed — {resp}")
 
 st.markdown("---")
 
@@ -177,12 +182,22 @@ if available:
     st.subheader("5. Quick AI Test")
     test_prompt = st.text_input("Ask AI anything:", placeholder="What is the best state for bio-bitumen plant?",
                                  key="test_prompt")
-    if test_prompt and st.button("Ask AI", key="test_ask"):
-        with st.spinner("Thinking..."):
-            from engines.ai_engine import ask_ai
-            response, provider = ask_ai(test_prompt,
-                "You are a bio-bitumen industry expert. Answer concisely in 3-4 sentences.")
-        st.markdown(f"**{provider.upper()}:** {response}")
+    if st.button("Ask AI", type="primary", key="test_ask"):
+        if not test_prompt:
+            st.warning("Please type a question first.")
+        else:
+            with st.spinner("AI is thinking... (5-15 seconds)"):
+                try:
+                    from engines.ai_engine import ask_ai
+                    response, provider = ask_ai(test_prompt,
+                        "You are a bio-bitumen industry expert. Answer concisely in 3-4 sentences.")
+                    if response:
+                        st.markdown(f"**{provider.upper()}:**")
+                        st.markdown(response)
+                    else:
+                        st.error("No response received. Check API keys.")
+                except Exception as e:
+                    st.error(f"AI call failed: {e}")
 
 st.markdown("---")
 st.caption(f"{COMPANY['name']} | AI Settings | Keys stored locally, never uploaded to GitHub")

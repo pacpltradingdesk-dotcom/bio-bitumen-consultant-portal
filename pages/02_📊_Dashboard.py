@@ -42,7 +42,7 @@ st.markdown(f"""
 ### {COMPANY['trade_name']} — Executive Dashboard
 **ONE-POINT SOLUTION: Land Selection > Plant Setup > Financial Closure > Sales Network**
 """)
-st.caption(f"Last refreshed: {now.strftime('%d %b %Y %I:%M %p')}")
+st.caption(f"{now.strftime('%A, %d %B %Y')} | Last refreshed: {now.strftime('%I:%M %p IST')}")
 st.markdown("---")
 
 cfg = get_config()

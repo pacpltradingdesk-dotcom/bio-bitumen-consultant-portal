@@ -104,11 +104,12 @@ components = {
     "Config Consistency": "ok" if config_ok else "warning",
     "Drawing Files": "ok" if drawings_ok else "warning",
     "Database Health": "ok" if db_ok else "error",
-    "Health Worker": "ok" if worker_on else "warning",
-    "Auto-Updater": "ok" if updater_on else "warning",
+    "Health Worker": "ok" if worker_on else "stopped",
+    "Auto-Updater": "ok" if updater_on else "stopped",
 }
 
 healthy = sum(1 for v in components.values() if v == "ok")
+stopped = sum(1 for v in components.values() if v == "stopped")
 warnings = sum(1 for v in components.values() if v == "warning")
 errors = sum(1 for v in components.values() if v == "error")
 overall_score = int(healthy / len(components) * 100)
@@ -134,13 +135,20 @@ with score_col:
 
 with detail_col:
     for comp, status in components.items():
-        icon = "✅" if status == "ok" else ("⚠️" if status == "warning" else "❌")
-        color = "#00AA44" if status == "ok" else ("#FF8800" if status == "warning" else "#CC3333")
+        if status == "ok":
+            icon, label = "✅", "OK"
+        elif status == "stopped":
+            icon, label = "⏸️", "Stopped — click Start"
+        elif status == "warning":
+            icon, label = "⚠️", "WARNING"
+        else:
+            icon, label = "❌", "ERROR"
+        color = {"ok": "#00AA44", "stopped": "#888888", "warning": "#FF8800"}.get(status, "#CC3333")
         st.markdown(f"""
         <div style="display: flex; align-items: center; padding: 4px 0;">
             <span style="font-size: 1.2em; margin-right: 8px;">{icon}</span>
             <span style="flex: 1;">{comp}</span>
-            <span style="color: {color}; font-weight: bold;">{status.upper()}</span>
+            <span style="color: {color}; font-weight: bold;">{label}</span>
         </div>
         """, unsafe_allow_html=True)
 

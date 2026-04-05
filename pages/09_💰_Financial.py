@@ -202,27 +202,45 @@ with col_output:
     # NEW — Advanced Financial Metrics
     st.markdown("**Bank-Grade Metrics**")
     bk1, bk2, bk3 = st.columns(3)
-    bk1.metric("NPV", f"Rs {cfg.get('npv_lac', 0):.1f} Lac")
-    bk2.metric("Debt-Equity", f"{cfg.get('debt_equity_ratio', 0):.2f}x")
-    bk3.metric("Current Ratio", f"{cfg.get('current_ratio', 0):.2f}")
+    npv_v = cfg.get('npv_lac', 0)
+    bk1.metric("NPV", f"Rs {npv_v:.0f}L" if abs(npv_v) < 100 else f"Rs {npv_v/100:.1f}Cr",
+               help="Net Present Value — Today's worth of all future profits. Positive = good investment")
+    bk2.metric("D/E Ratio", f"{cfg.get('debt_equity_ratio', 0):.2f}x",
+               help="Debt-Equity Ratio — Loan ÷ Equity. Lower = safer for lender")
+    bk3.metric("Current Ratio", f"{cfg.get('current_ratio', 0):.2f}",
+               help="Current Assets ÷ Current Liabilities — measures short-term liquidity")
 
     bk4, bk5, bk6 = st.columns(3)
-    bk4.metric("Net Worth (Yr5)", f"Rs {cfg.get('net_worth_yr5_lac', 0):.0f} Lac")
-    bk5.metric("Carbon Credits", f"Rs {cfg.get('carbon_credit_annual_lac', 0):.1f} Lac/yr")
-    bk6.metric("Working Capital", f"Rs {cfg.get('working_capital_lac', 0):.1f} Lac")
+    nw = cfg.get('net_worth_yr5_lac', 0)
+    bk4.metric("Net Worth Yr5", f"Rs {nw:.0f}L" if nw < 100 else f"Rs {nw/100:.1f}Cr",
+               help="Total equity + retained profits built up by Year 5")
+    cc = cfg.get('carbon_credit_annual_lac', 0)
+    bk5.metric("Carbon Credits", f"Rs {cc:.1f}L/yr",
+               help="Annual revenue from selling CO2 offset certificates on carbon market")
+    wc = cfg.get('working_capital_lac', 0)
+    bk6.metric("Working Capital", f"Rs {wc:.0f}L",
+               help="Cash needed for daily operations — typically 2-3 months of costs")
 
-    # DSCR Schedule
+    # DSCR Schedule — Fix G3: Color each year individually, not blanket red
     dscr_sched = cfg.get("dscr_schedule", [])
     if dscr_sched:
         st.markdown("**DSCR Schedule (all 7 years)**")
-        dscr_text = " | ".join([f"Yr{i+1}: {d:.2f}x" for i, d in enumerate(dscr_sched)])
-        min_dscr = min(dscr_sched)
-        if min_dscr >= 1.5:
-            st.success(f"{dscr_text}")
-        elif min_dscr >= 1.0:
-            st.warning(f"{dscr_text}")
-        else:
-            st.error(f"{dscr_text}")
+        dscr_parts = []
+        for i, d in enumerate(dscr_sched):
+            if d >= 1.5:
+                dscr_parts.append(f'<span style="color:#00AA44;font-weight:bold">Yr{i+1}: {d:.2f}x</span>')
+            elif d >= 1.0:
+                dscr_parts.append(f'<span style="color:#FF8800;font-weight:bold">Yr{i+1}: {d:.2f}x</span>')
+            else:
+                dscr_parts.append(f'<span style="color:#CC3333;font-weight:bold">Yr{i+1}: {d:.2f}x</span>')
+        st.markdown(" | ".join(dscr_parts), unsafe_allow_html=True)
+        st.caption("Green ≥ 1.5x (healthy) | Orange 1.0-1.5x (watch) | Red < 1.0x (risk)")
+
+    # H7: CGTMSE notice
+    loan_lac_val = cfg.get("loan_cr", 0) * 100
+    if loan_lac_val > 500:
+        remain = loan_lac_val - 500
+        st.info(f"Loan exceeds Rs 5 Cr CGTMSE limit. Consider: Rs 5 Cr under CGTMSE (collateral-free) + Rs {remain:.0f}L with collateral.")
 
 st.markdown("---")
 
