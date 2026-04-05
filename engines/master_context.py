@@ -69,7 +69,16 @@ def build_master_context(cfg):
     daily_biomass = capacity * 2.5  # Input ratio
     water_kld = max(5, int(capacity * 1.5))
 
-    # ── 6. BOQ DATA (82 items, 15 zones) ─────────────────────────
+    # ── 6. PLANT ENGINEERING DATA ────────────────────────────────
+    try:
+        from engines.plant_engineering import get_plant_engineering
+        eng_data = get_plant_engineering(cfg)
+        eng_comp = eng_data.get("computed", {})
+    except Exception:
+        eng_data = {"safety_clearances": {}, "total_motor_kw": 0, "machinery_count": 15}
+        eng_comp = {}
+
+    # ── 7. BOQ DATA (82 items, 15 zones) ─────────────────────────
     try:
         from state_manager import calculate_boq
         boq_items = calculate_boq(capacity)
@@ -142,9 +151,12 @@ Estimated Layout:   {int((site_area * 43560) ** 0.5 * 1.2):.0f}m x {int((site_ar
 Internal Road:      6m wide
 Equipment Clearance: 2m all sides
 Pipe Rack Height:   4.5m
-Reactor Safety Zone: 5m radius
-Fire Spacing:       4m between tanks (OISD-117)
-Green Belt:         3m boundary
+Reactor Safety Zone: {eng_data.get('safety_clearances',{}).get('reactor_to_boundary_m',15)}m to boundary
+Fire Spacing:       {eng_data.get('safety_clearances',{}).get('bio_oil_tank_to_building_m',7.5)}m tanks-to-building (OISD-118)
+Green Belt:         {eng_data.get('safety_clearances',{}).get('green_belt_min_m',5)}m boundary
+Total Motor Load:   {eng_data.get('total_motor_kw',0)} kW ({eng_data.get('machinery_count',15)} major equipment)
+Key Equipment:      Reactor {eng_comp.get('reactor_dia_m',1.5)}m dia × {eng_comp.get('reactor_ht_m',4.5)}m | Dryer {eng_comp.get('dryer_dia_m',1.2)}m × {eng_comp.get('dryer_len_m',6)}m
+Standards:          IS 2825 (vessels), IS 732 (electrical), NBC 2016 (fire), IS 14489 (safety)
 
 ═══ 5. FINANCIAL (VERIFIED CALCULATIONS) ═══
 Total Investment:   Rs {investment_cr:.2f} Crore (Rs {investment_cr*100:.0f} Lac)
