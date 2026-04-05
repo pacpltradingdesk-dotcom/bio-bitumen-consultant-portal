@@ -24,6 +24,13 @@ st.markdown("---")
 
 cfg = get_config()
 
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
+
 # ── State-wise Biomass Availability ──────────────────────────────────
 st.subheader("State-wise Biomass Availability (Million MT/Year)")
 

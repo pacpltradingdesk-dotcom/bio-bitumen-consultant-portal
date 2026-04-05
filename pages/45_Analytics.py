@@ -21,6 +21,13 @@ from engines.auto_doc_sync import get_sync_log
 st.set_page_config(page_title="Analytics & BI", page_icon="📊", layout="wide")
 init_state()
 cfg = get_config()
+
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
 init_db()
 st.title("Analytics & Business Intelligence")
 st.markdown("**Pipeline | Revenue Forecast | Conversion | Geographic | Executive Summary**")

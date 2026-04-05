@@ -13,6 +13,13 @@ st.set_page_config(page_title="Engineering Drawings", page_icon="📐", layout="
 init_state()
 cfg = get_config()
 
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
+
 st.sidebar.markdown("---")
 if st.sidebar.button("Print This Page", key="print_page"):
     import streamlit.components.v1 as _stc; _stc.html('<script>window.print();</script>', height=0)

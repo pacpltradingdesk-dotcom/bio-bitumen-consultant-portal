@@ -22,6 +22,13 @@ st.set_page_config(page_title="System & Calculations", page_icon="🔧", layout=
 init_state()
 cfg = get_config()
 
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
+
 st.title("System Architecture & Calculation Methodology")
 st.markdown("**100% Transparent: Every Formula, Data Source, Engine, and API Documented**")
 st.markdown("---")
@@ -411,3 +418,46 @@ with tab_accuracy:
 
 st.markdown("---")
 st.caption(f"{COMPANY['name']} | System Architecture & Methodology Documentation | v2.0")
+
+
+# ── Export ────────────────────────────────────────────────────────
+st.markdown("---")
+_ex1, _ex2 = st.columns(2)
+with _ex1:
+    if st.button("Download Excel", type="primary", key="exp_xl_72Sys"):
+        try:
+            import io
+            from openpyxl import Workbook
+            _wb = Workbook()
+            _ws = _wb.active
+            _ws.title = "Export"
+            _ws.cell(row=1, column=1, value="Bio Bitumen Export")
+            _ws.cell(row=2, column=1, value=f"Capacity: {cfg.get('capacity_tpd',20):.0f} TPD")
+            _ws.cell(row=3, column=1, value=f"Investment: Rs {cfg.get('investment_cr',8):.2f} Cr")
+            _ws.cell(row=4, column=1, value=f"ROI: {cfg.get('roi_pct',0):.1f}%")
+            _buf = io.BytesIO()
+            _wb.save(_buf)
+            _buf.seek(0)
+            st.download_button("Download", _buf.getvalue(), "export.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xl_72Sys")
+        except Exception as _e:
+            st.error(f"Export failed: {_e}")
+with _ex2:
+    if st.button("Print", key="exp_prt_72Sys"):
+        import streamlit.components.v1 as _stc
+        _stc.html("<script>window.print();</script>", height=0)
+
+
+# ── AI Assist ────────────────────────────────────────────────────
+try:
+    from engines.ai_engine import is_ai_available, ask_ai
+    if is_ai_available():
+        with st.expander("AI Assist"):
+            if st.button("Generate AI Summary", type="primary", key="ai_72Sys"):
+                with st.spinner("AI working..."):
+                    _p = f"Summarize this section for a {cfg.get('capacity_tpd',20):.0f} TPD bio-bitumen plant in {cfg.get('state','')}. Investment Rs {cfg.get('investment_cr',8):.2f} Cr. Professional consultant format."
+                    _r, _pv = ask_ai(_p, "Senior industrial consultant.", 800)
+                if _r:
+                    st.markdown(_r)
+except Exception:
+    pass

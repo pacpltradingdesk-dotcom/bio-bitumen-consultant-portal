@@ -14,6 +14,13 @@ from config import (CAPACITY_KEYS, CAPACITY_LABELS, FILE_TYPES,
 st.set_page_config(page_title="Document Library", page_icon="📚", layout="wide")
 init_state()
 cfg = get_config()
+
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
 st.title("Document Library")
 
 # Load index
@@ -23,6 +30,11 @@ st.markdown("---")
 
 # ── Filters (Sidebar) ────────────────────────────────────────────────
 with st.sidebar:
+    st.markdown("---")
+    if st.button("Print Page", key="print_pg"):
+        import streamlit.components.v1 as _stc
+        _stc.html("<script>window.print();</script>", height=0)
+
     st.header("Filters")
 
     search = st.text_input("Search filename", placeholder="e.g. DPR, Bank Loan, Safety...")
@@ -138,3 +150,18 @@ with col3:
     st.dataframe(folder_counts.reset_index().rename(
         columns={"top_folder": "Folder", "count": "Count"}),
         hide_index=True, width="stretch")
+
+
+# ── AI Assist ────────────────────────────────────────────────────
+try:
+    from engines.ai_engine import is_ai_available, ask_ai
+    if is_ai_available():
+        with st.expander("AI Assist"):
+            if st.button("Generate AI Summary", type="primary", key="ai_41Fil"):
+                with st.spinner("AI working..."):
+                    _p = f"Summarize this section for a {cfg.get('capacity_tpd',20):.0f} TPD bio-bitumen plant in {cfg.get('state','')}. Investment Rs {cfg.get('investment_cr',8):.2f} Cr. Professional consultant format."
+                    _r, _pv = ask_ai(_p, "Senior industrial consultant.", 800)
+                if _r:
+                    st.markdown(_r)
+except Exception:
+    pass

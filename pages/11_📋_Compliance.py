@@ -17,6 +17,13 @@ from config import LICENSE_TYPES, STATES
 st.set_page_config(page_title="Compliance Tracker", page_icon="📋", layout="wide")
 init_state()
 cfg = get_config()
+
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
 init_db()
 st.sidebar.markdown("---")
 if st.sidebar.button("Print This Page", key="print_page"):

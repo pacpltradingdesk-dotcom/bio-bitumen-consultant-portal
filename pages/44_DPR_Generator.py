@@ -28,6 +28,13 @@ st.markdown("---")
 
 cfg = get_config()
 
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
+
 # ── Current Config Display ────────────────────────────────────────────
 st.info(
     f"**Current Config:** {cfg['capacity_tpd']:.0f} MT/Day | "

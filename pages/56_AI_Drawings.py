@@ -17,6 +17,13 @@ st.set_page_config(page_title="AI 3D Drawings", page_icon="🎨", layout="wide")
 init_state()
 cfg = get_config()
 
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
+
 st.title("AI-Generated 3D Drawings & Renders")
 st.markdown(f"**Professional 3D renders for {cfg['capacity_tpd']:.0f} TPD plant — powered by Pollinations AI (FREE)**")
 st.markdown("---")
@@ -158,3 +165,18 @@ with tab_custom:
     - **Earthing:** "Earthing layout for industrial plant showing earth pits at 4 corners, 25x3mm GI strip connecting all equipment, copper earth rods"
     - **Building elevation:** "Front elevation of pre-engineered steel building 30m x 15m x 8m height, metal roof sheets, wall cladding, roller shutter door 5m wide, ventilation louvers"
     """)
+
+
+# ── AI Assist ────────────────────────────────────────────────────
+try:
+    from engines.ai_engine import is_ai_available, ask_ai
+    if is_ai_available():
+        with st.expander("AI Assist"):
+            if st.button("Generate AI Summary", type="primary", key="ai_56AI"):
+                with st.spinner("AI working..."):
+                    _p = f"Summarize this section for a {cfg.get('capacity_tpd',20):.0f} TPD bio-bitumen plant in {cfg.get('state','')}. Investment Rs {cfg.get('investment_cr',8):.2f} Cr. Professional consultant format."
+                    _r, _pv = ask_ai(_p, "Senior industrial consultant.", 800)
+                if _r:
+                    st.markdown(_r)
+except Exception:
+    pass

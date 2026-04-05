@@ -27,6 +27,13 @@ st.markdown("**100+ Topics | Bio-Bitumen Plant Setup | Financial, Technical, Leg
 st.markdown("---")
 
 cfg = get_config()
+
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
 plants = get_all_known_plants()
 
 # ══════════════════════════════════════════════════════════════════════

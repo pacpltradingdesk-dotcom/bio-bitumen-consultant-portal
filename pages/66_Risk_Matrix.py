@@ -17,6 +17,13 @@ st.set_page_config(page_title="Risk Assessment", page_icon="⚠️", layout="wid
 init_state()
 cfg = get_config()
 
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
+
 st.title("Risk Assessment Matrix")
 st.markdown("**20 Project Risks | Probability x Impact Heatmap | Mitigation Strategies**")
 st.markdown("---")

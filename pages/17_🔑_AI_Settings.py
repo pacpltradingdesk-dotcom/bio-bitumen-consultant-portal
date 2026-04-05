@@ -17,6 +17,13 @@ st.set_page_config(page_title="AI Settings", page_icon="🔑", layout="wide")
 init_state()
 cfg = get_config()
 
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
+
 st.sidebar.markdown("---")
 if st.sidebar.button("Print This Page", key="print_page"):
     import streamlit.components.v1 as _stc; _stc.html('<script>window.print();</script>', height=0)
@@ -201,3 +208,31 @@ if available:
 
 st.markdown("---")
 st.caption(f"{COMPANY['name']} | AI Settings | Keys stored locally, never uploaded to GitHub")
+
+
+# ── Export ────────────────────────────────────────────────────────
+st.markdown("---")
+_ex1, _ex2 = st.columns(2)
+with _ex1:
+    if st.button("Download Excel", type="primary", key="exp_xl_17🔑A"):
+        try:
+            import io
+            from openpyxl import Workbook
+            _wb = Workbook()
+            _ws = _wb.active
+            _ws.title = "Export"
+            _ws.cell(row=1, column=1, value="Bio Bitumen Export")
+            _ws.cell(row=2, column=1, value=f"Capacity: {cfg.get('capacity_tpd',20):.0f} TPD")
+            _ws.cell(row=3, column=1, value=f"Investment: Rs {cfg.get('investment_cr',8):.2f} Cr")
+            _ws.cell(row=4, column=1, value=f"ROI: {cfg.get('roi_pct',0):.1f}%")
+            _buf = io.BytesIO()
+            _wb.save(_buf)
+            _buf.seek(0)
+            st.download_button("Download", _buf.getvalue(), "export.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xl_17🔑A")
+        except Exception as _e:
+            st.error(f"Export failed: {_e}")
+with _ex2:
+    if st.button("Print", key="exp_prt_17🔑A"):
+        import streamlit.components.v1 as _stc
+        _stc.html("<script>window.print();</script>", height=0)

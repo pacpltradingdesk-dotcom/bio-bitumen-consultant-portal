@@ -25,6 +25,13 @@ st.markdown("---")
 
 cfg = get_config()
 
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
+
 # ── Default Equipment Database ────────────────────────────────────────
 # VERIFIED supplier data from Verified_Supplier_Price_Research_March2026.md
 DEFAULT_EQUIPMENT = [
@@ -162,3 +169,31 @@ try:
         st.info("Add API keys in AI Settings to enable AI procurement tools")
 except Exception:
     pass
+
+
+# ── Export ────────────────────────────────────────────────────────
+st.markdown("---")
+_ex1, _ex2 = st.columns(2)
+with _ex1:
+    if st.button("Download Excel", type="primary", key="exp_xl_10🏭P"):
+        try:
+            import io
+            from openpyxl import Workbook
+            _wb = Workbook()
+            _ws = _wb.active
+            _ws.title = "Export"
+            _ws.cell(row=1, column=1, value="Bio Bitumen Export")
+            _ws.cell(row=2, column=1, value=f"Capacity: {cfg.get('capacity_tpd',20):.0f} TPD")
+            _ws.cell(row=3, column=1, value=f"Investment: Rs {cfg.get('investment_cr',8):.2f} Cr")
+            _ws.cell(row=4, column=1, value=f"ROI: {cfg.get('roi_pct',0):.1f}%")
+            _buf = io.BytesIO()
+            _wb.save(_buf)
+            _buf.seek(0)
+            st.download_button("Download", _buf.getvalue(), "export.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xl_10🏭P")
+        except Exception as _e:
+            st.error(f"Export failed: {_e}")
+with _ex2:
+    if st.button("Print", key="exp_prt_10🏭P"):
+        import streamlit.components.v1 as _stc
+        _stc.html("<script>window.print();</script>", height=0)

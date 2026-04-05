@@ -19,6 +19,13 @@ st.set_page_config(page_title="AI Plant Layouts", page_icon="🏗️", layout="w
 init_state()
 cfg = get_config()
 
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
+
 st.title("AI Plant Layout Generator")
 st.markdown("**Professional 3D Industrial Layouts — Powered by OpenAI DALL-E 3**")
 st.caption("Generate presentation-ready plant visualizations for investor decks, bank proposals, and client meetings")

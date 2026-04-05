@@ -19,6 +19,13 @@ init_db()
 init_state()
 cfg = get_config()
 
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
+
 st.title("Meeting Planner & Contact Hub")
 st.markdown("**Auto-Generated Briefs | Agenda Templates | Notes & Follow-ups**")
 st.markdown("---")

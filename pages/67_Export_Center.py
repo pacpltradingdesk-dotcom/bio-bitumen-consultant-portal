@@ -22,6 +22,13 @@ init_db()
 init_state()
 cfg = get_config()
 
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
+
 st.title("Export Center")
 st.markdown("**One-Click Export for All Dashboard Data — CSV, Excel, Text Reports**")
 st.markdown("---")
