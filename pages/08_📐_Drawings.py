@@ -173,6 +173,23 @@ if matrix_rows:
 
 st.caption("Change capacity in Plant Design → auto-selects nearest available drawings here")
 
+# ── Download ALL as ZIP ──────────────────────────────────────────────
+st.markdown("---")
+st.subheader("Bulk Download")
+if filtered:
+    if st.button("Download All Filtered Drawings as ZIP", type="primary", key="dl_zip_draw"):
+        import zipfile, io
+        zip_buf = io.BytesIO()
+        file_count = 0
+        with zipfile.ZipFile(zip_buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for d in filtered:
+                if os.path.exists(d["path"]):
+                    zf.write(d["path"], d["filename"])
+                    file_count += 1
+        zip_buf.seek(0)
+        cap_label = sel_cap if sel_cap != "ALL" else f"{cfg['capacity_tpd']:.0f}TPD"
+        st.download_button(f"Download ZIP ({file_count} files)", zip_buf.getvalue(),
+                            f"Drawings_{cap_label}.zip", "application/zip", key="dl_zip_draw_btn")
 
 # ── AI Skill: Drawing Checklist ──────────────────────────────────────
 st.markdown("---")
