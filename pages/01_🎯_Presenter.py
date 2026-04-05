@@ -23,6 +23,13 @@ from config import (COMPANY, STATES, STATE_SCORES, LOCATION_WEIGHTS, STATE_COSTS
 st.set_page_config(page_title="Consultant Presenter", page_icon="🎯", layout="wide")
 init_state()
 cfg = get_config()
+# Fix metric truncation
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
 
 TOTAL_SLIDES = 15  # 0-14
 

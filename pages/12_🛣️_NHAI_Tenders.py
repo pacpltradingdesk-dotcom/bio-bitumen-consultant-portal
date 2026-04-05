@@ -17,6 +17,13 @@ from config import COMPANY, NHAI_TENDERS, STATES
 st.set_page_config(page_title="NHAI Tender Tracker", page_icon="🛣️", layout="wide")
 init_state()
 cfg = get_config()
+# Fix metric truncation
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
 
 st.sidebar.markdown("---")
 if st.sidebar.button("Print This Page", key="print_page"):

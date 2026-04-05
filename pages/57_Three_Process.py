@@ -14,6 +14,13 @@ from config import STATE_COSTS
 st.set_page_config(page_title="3 Process Models", page_icon="🔄", layout="wide")
 init_state()
 cfg = get_config()
+# Fix metric truncation
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
 
 st.title("Three Process Model Comparison")
 st.markdown("**Compare: Full Chain vs Blending Only vs Raw Output — Same capacity, different economics**")
@@ -134,3 +141,7 @@ try:
                     st.markdown(_r)
 except Exception:
     pass
+
+# ROI Disclaimer
+st.info("📊 ROI shown here is **gross operating ROI** (EBITDA/Investment) before full loan repayment. "
+        "For bank-standard net ROI after debt service, see Financial Model page.")

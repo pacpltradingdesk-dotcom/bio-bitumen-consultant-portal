@@ -155,7 +155,8 @@ if st.button("GENERATE ALL DOCUMENTS", type="primary", key="gen_all"):
         generate_financial_report_pdf(pdf_fin, cfg, COMPANY)
         results[f"Financial_{cfg['capacity_tpd']:.0f}MT.pdf"] = pdf_fin
 
-        st.success(f"Generated **{len(results)} documents** in: `{output_dir}`")
+        from utils.page_helpers import safe_path
+        st.success(f"Generated **{len(results)} documents** in: {safe_path(output_dir)}")
 
         for fname, path in results.items():
             if isinstance(path, str) and os.path.exists(path):

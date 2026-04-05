@@ -43,6 +43,13 @@ except Exception:
 st.markdown("---")
 
 cfg = get_config()
+# Fix metric truncation
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
 
 # ═══════════════════════════════════════════════════════════════════
 # INPUT SHEET (LEFT) → AUTO OUTPUTS (RIGHT)

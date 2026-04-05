@@ -15,6 +15,13 @@ from config import COMPANY, ENVIRONMENTAL_FACTORS
 st.set_page_config(page_title="Environmental Impact", page_icon="🌱", layout="wide")
 init_state()
 cfg = get_config()
+# Fix metric truncation
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
 ef = ENVIRONMENTAL_FACTORS
 
 st.title("Environmental Impact Dashboard")

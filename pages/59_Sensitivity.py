@@ -14,6 +14,13 @@ from engines.three_process_model import calculate_process
 st.set_page_config(page_title="Sensitivity Analysis", page_icon="📊", layout="wide")
 init_state()
 cfg = get_config()
+# Fix metric truncation
+try:
+    from utils.page_helpers import fix_metric_truncation
+    fix_metric_truncation()
+except Exception:
+    pass
+
 
 st.page_link("pages/09_💰_Financial.py", label="← Back to Financial Model", icon="💰")
 
@@ -267,3 +274,6 @@ try:
                     st.markdown(_r)
 except Exception:
     pass
+
+# ROI Disclaimer
+st.caption("📊 Base ROI uses simplified operating formula. For bank-standard ROI, see Financial Model.")

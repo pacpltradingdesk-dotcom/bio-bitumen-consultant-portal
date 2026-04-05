@@ -93,6 +93,7 @@ with tab_stakeholder:
                         img_url, info = generate_layout_image(prompt, "1792x1024")
                     if img_url:
                         st.image(img_url, caption=d['name'], use_container_width=True)
+                        st.caption("⚠️ AI-generated image — text labels may be approximate. For precise engineering drawings, use Drawings section.")
                         fname = f"{d['id']}_{int(cfg['capacity_tpd'])}TPD.png"
                         saved = save_layout_image(img_url, fname)
                         if saved:
@@ -158,6 +159,7 @@ with tab_custom:
             st.success("Layout generated successfully!")
             st.image(img_url, caption=f"{plant_type} — {capacity} TPD — {visual_style}",
                      use_container_width=True)
+            st.caption("⚠️ AI-generated image — text labels may be approximate. For precise engineering drawings, use Drawings section.")
 
             # Save button
             filename = f"{plant_type.replace(' ','_')}_{capacity}TPD_{visual_style.replace(' ','_')}.png"
@@ -198,6 +200,7 @@ with tab_docs:
         if img_url:
             st.success(f"{doc_type} generated!")
             st.image(img_url, caption=doc_type, use_container_width=True)
+            st.caption("⚠️ AI-generated — text labels approximate. Use Drawings section for precise engineering.")
 
             fname = f"{doc_type.replace(' ','_').replace('(','').replace(')','')}" \
                     f"_{int(cfg['capacity_tpd'])}TPD.png"
