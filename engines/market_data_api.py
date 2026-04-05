@@ -22,7 +22,7 @@ def _cache_path(name):
 def _read_cache(name):
     path = _cache_path(name)
     if os.path.exists(path):
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
         if time.time() - data.get("timestamp", 0) < CACHE_TTL:
             return data.get("payload")
@@ -31,7 +31,7 @@ def _read_cache(name):
 
 def _write_cache(name, payload):
     path = _cache_path(name)
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump({"timestamp": time.time(), "payload": payload}, f)
 
 

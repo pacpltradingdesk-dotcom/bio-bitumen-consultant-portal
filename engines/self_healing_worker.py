@@ -32,7 +32,7 @@ def _log_repair(action, status, detail=""):
         _repair_history.pop(0)
     try:
         os.makedirs(str(DATA_DIR), exist_ok=True)
-        with open(str(REPAIR_LOG), "w") as f:
+        with open(str(REPAIR_LOG), "w", encoding="utf-8") as f:
             json.dump(_repair_history[-100:], f, indent=2)
     except Exception:
         pass
@@ -188,7 +188,7 @@ def auto_repair(results):
         market_cache = DATA_DIR / "api_cache_crude_oil.json"
         if market_cache.exists():
             import json
-            with open(str(market_cache)) as f:
+            with open(str(market_cache), encoding="utf-8") as f:
                 data = json.load(f)
             age = time.time() - data.get("timestamp", 0)
             if age > 7200:  # Older than 2 hours
@@ -251,7 +251,7 @@ def get_repair_history():
         return list(reversed(_repair_history[-50:]))
     try:
         if REPAIR_LOG.exists():
-            with open(str(REPAIR_LOG)) as f:
+            with open(str(REPAIR_LOG), encoding="utf-8") as f:
                 return list(reversed(json.load(f)))
     except Exception:
         pass

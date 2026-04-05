@@ -157,11 +157,11 @@ def sync_all_documents(cfg, company):
     try:
         log = []
         if SYNC_LOG.exists():
-            with open(str(SYNC_LOG)) as f:
+            with open(str(SYNC_LOG), encoding="utf-8") as f:
                 log = json.load(f)
         log.append(log_entry)
         log = log[-50:]  # Keep last 50
-        with open(str(SYNC_LOG), "w") as f:
+        with open(str(SYNC_LOG), "w", encoding="utf-8") as f:
             json.dump(log, f, indent=2)
     except Exception:
         pass
@@ -190,7 +190,7 @@ def get_sync_log():
     """Get sync history."""
     try:
         if SYNC_LOG.exists():
-            with open(str(SYNC_LOG)) as f:
+            with open(str(SYNC_LOG), encoding="utf-8") as f:
                 return json.load(f)
     except Exception:
         pass

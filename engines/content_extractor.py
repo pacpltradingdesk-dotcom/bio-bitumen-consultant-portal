@@ -85,7 +85,7 @@ def build_content_index():
     """Build an index mapping each document to its dashboard module with key content."""
     if os.path.exists(CACHE_FILE):
         try:
-            with open(CACHE_FILE, "r") as f:
+            with open(CACHE_FILE, "r", encoding="utf-8") as f:
                 cached = json.load(f)
             if len(cached) > 100:  # Only use cache if substantial
                 return cached
@@ -154,7 +154,7 @@ def build_content_index():
     # Save cache
     try:
         os.makedirs(os.path.dirname(CACHE_FILE), exist_ok=True)
-        with open(CACHE_FILE, "w") as f:
+        with open(CACHE_FILE, "w", encoding="utf-8") as f:
             json.dump(index, f, indent=2)
     except Exception:
         pass

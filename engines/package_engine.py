@@ -123,7 +123,7 @@ def build_package(customer, capacity, document_paths, customize=False, plant=Non
         "customized": customize,
     }
     manifest_path = package_dir / "PACKAGE_MANIFEST.json"
-    with open(str(manifest_path), "w") as f:
+    with open(str(manifest_path), "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
 
     return str(package_dir)
