@@ -584,7 +584,7 @@ try:
                 st.warning("AI analysis could not be generated. Check API settings.")
     else:
         st.info("Add API keys in AI Settings to enable AI-powered financial analysis.")
-        st.page_link("pages/17_🔑_AI_Settings.py", label="Go to AI Settings", icon="🔑")
+        st.page_link("pages/83_🔑_AI_Settings.py", label="Go to AI Settings", icon="🔑")
 except Exception:
     pass
 
@@ -592,9 +592,9 @@ except Exception:
 st.markdown("---")
 st.subheader("Related Tools")
 ql1, ql2, ql3, ql4 = st.columns(4)
-ql1.page_link("pages/60_ROI_Quick_Calc.py", label="ROI Calc", icon="🎯")
-ql2.page_link("pages/61_Loan_EMI.py", label="EMI Calc", icon="🏦")
-ql3.page_link("pages/62_Capacity_Compare.py", label="Compare", icon="⚖️")
-ql4.page_link("pages/17_🔑_AI_Settings.py", label="AI Setup", icon="🔑")
+ql1.page_link("pages/36_ROI_Quick_Calc.py", label="ROI Calc", icon="🎯")
+ql2.page_link("pages/33_Loan_EMI.py", label="EMI Calc", icon="🏦")
+ql3.page_link("pages/37_Capacity_Compare.py", label="Compare", icon="⚖️")
+ql4.page_link("pages/83_🔑_AI_Settings.py", label="AI Setup", icon="🔑")
 
 st.caption("All values auto-calculate when ANY input changes. This model is bank-ready and investor-grade.")

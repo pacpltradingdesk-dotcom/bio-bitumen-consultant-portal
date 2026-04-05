@@ -297,9 +297,9 @@ except Exception:
 # ── Quick Links ──────────────────────────────────────────────────────
 st.markdown("---")
 ql1, ql2, ql3 = st.columns(3)
-ql1.page_link("pages/12_🛣️_NHAI_Tenders.py", label="NHAI Tender Tracker", icon="🛣️")
-ql2.page_link("pages/63_Competitor_Intel.py", label="Competitor Intelligence", icon="🕵️")
-ql3.page_link("pages/71_Weather_Site.py", label="Weather & Site Analysis", icon="🌤️")
+ql1.page_link("pages/43_🛣️_NHAI_Tenders.py", label="NHAI Tender Tracker", icon="🛣️")
+ql2.page_link("pages/72_Competitor_Intel.py", label="Competitor Intelligence", icon="🕵️")
+ql3.page_link("pages/75_Weather_Site.py", label="Weather & Site Analysis", icon="🌤️")
 
 st.caption(f"Data: Yahoo Finance (crude), Frankfurter/ECB (FX), World Bank (GDP), ExchangeRate-API (multi-FX) | Updated: {market.get('last_updated', 'N/A')}")
 

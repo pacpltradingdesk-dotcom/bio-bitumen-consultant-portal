@@ -70,11 +70,11 @@ c3.metric("States", "18")
 with c4:
     st.metric("Customers", len(customers))
     if len(customers) == 0:
-        st.caption("[Add →](pages/14_👥_Customers.py)")
+        st.caption("[Add →](pages/11_👥_Customers.py)")
 with c5:
     st.metric("Packages", len(packages))
     if len(packages) == 0:
-        st.caption("[Create →](pages/13_📁_Document_Hub.py)")
+        st.caption("[Create →](pages/61_📁_Document_Hub.py)")
 c6.metric("Network", f"{INDUSTRY_NETWORK['total']:,}")
 
 # Pipeline value
@@ -237,13 +237,13 @@ with act_col:
 
 with action_col:
     st.subheader("Quick Actions")
-    st.page_link("pages/60_ROI_Quick_Calc.py", label="ROI Calculator", icon="🎯")
-    st.page_link("pages/61_Loan_EMI.py", label="Loan EMI Calculator", icon="🏦")
-    st.page_link("pages/62_Capacity_Compare.py", label="Compare Capacities", icon="⚖️")
-    st.page_link("pages/09_💰_Financial.py", label="Financial Model", icon="💰")
-    st.page_link("pages/44_DPR_Generator.py", label="Generate DPR", icon="📄")
-    st.page_link("pages/12_🛣️_NHAI_Tenders.py", label="NHAI Tenders", icon="🛣️")
-    st.page_link("pages/15_🤖_AI_Advisor.py", label="AI Advisor", icon="🤖")
+    st.page_link("pages/36_ROI_Quick_Calc.py", label="ROI Calculator", icon="🎯")
+    st.page_link("pages/33_Loan_EMI.py", label="Loan EMI Calculator", icon="🏦")
+    st.page_link("pages/37_Capacity_Compare.py", label="Compare Capacities", icon="⚖️")
+    st.page_link("pages/30_💰_Financial.py", label="Financial Model", icon="💰")
+    st.page_link("pages/60_DPR_Generator.py", label="Generate DPR", icon="📄")
+    st.page_link("pages/43_🛣️_NHAI_Tenders.py", label="NHAI Tenders", icon="🛣️")
+    st.page_link("pages/81_🤖_AI_Advisor.py", label="AI Advisor", icon="🤖")
 
 # ── Footer ───────────────────────────────────────────────────────────
 st.markdown("---")

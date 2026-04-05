@@ -23,7 +23,7 @@ except Exception:
     pass
 
 
-st.page_link("pages/09_💰_Financial.py", label="← Back to Financial Model", icon="💰")
+st.page_link("pages/30_💰_Financial.py", label="← Back to Financial Model", icon="💰")
 
 st.title("State-wise Profitability Analysis")
 st.markdown(f"**All 18 states ranked — {cfg['capacity_tpd']:.0f} TPD | Which state gives BEST ROI?**")

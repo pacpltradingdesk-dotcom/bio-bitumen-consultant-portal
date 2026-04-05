@@ -25,7 +25,7 @@ except Exception:
     pass
 
 
-st.page_link("pages/09_💰_Financial.py", label="← Back to Financial Model", icon="💰")
+st.page_link("pages/30_💰_Financial.py", label="← Back to Financial Model", icon="💰")
 
 st.title("Capacity Comparison Tool")
 st.markdown("**Compare 2-3 plant capacities side-by-side — Investment, ROI, Profit, Break-Even**")

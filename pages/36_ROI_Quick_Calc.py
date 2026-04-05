@@ -24,7 +24,7 @@ except Exception:
     pass
 
 
-st.page_link("pages/09_💰_Financial.py", label="← Back to Financial Model", icon="💰")
+st.page_link("pages/30_💰_Financial.py", label="← Back to Financial Model", icon="💰")
 
 st.title("ROI Quick Calculator")
 st.markdown(f"**{COMPANY['trade_name']} | Instant ROI Analysis — Change Any Slider, See Results Instantly**")
@@ -194,9 +194,9 @@ st.plotly_chart(fig_compare, width="stretch")
 st.markdown("---")
 st.subheader("Next Steps")
 n1, n2, n3 = st.columns(3)
-n1.page_link("pages/09_💰_Financial.py", label="Open Full Financial Model", icon="💰")
-n2.page_link("pages/44_DPR_Generator.py", label="Generate DPR Report", icon="📄")
-n3.page_link("pages/50_Client_Journey.py", label="Start Client Journey", icon="🧭")
+n1.page_link("pages/30_💰_Financial.py", label="Open Full Financial Model", icon="💰")
+n2.page_link("pages/60_DPR_Generator.py", label="Generate DPR Report", icon="📄")
+n3.page_link("pages/14_Client_Journey.py", label="Start Client Journey", icon="🧭")
 
 st.markdown("---")
 st.caption(f"{COMPANY['name']} | {COMPANY['owner']} | {COMPANY['phone']}")

@@ -41,7 +41,7 @@ except Exception:
 
 if not has_key:
     st.error("OpenAI API key required for DALL-E 3 image generation. Go to AI Settings to add your key.")
-    st.page_link("pages/17_🔑_AI_Settings.py", label="Go to AI Settings", icon="🔑")
+    st.page_link("pages/83_🔑_AI_Settings.py", label="Go to AI Settings", icon="🔑")
     st.stop()
 
 st.success("OpenAI API connected — DALL-E 3 ready")
@@ -53,7 +53,7 @@ is_valid, master_context, missing_popup = validate_before_generation(cfg)
 if not is_valid:
     st.error("Missing required project data! Fill these before generating professional layouts:")
     st.markdown(missing_popup)
-    st.page_link("pages/03_📝_Project_Setup.py", label="Go to Project Setup", icon="📝")
+    st.page_link("pages/10_📝_Project_Setup.py", label="Go to Project Setup", icon="📝")
     st.caption("AI will NOT guess missing values — all inputs must be provided for accurate output")
 
 # Show what data is being used

@@ -22,7 +22,7 @@ except Exception:
     pass
 
 
-st.page_link("pages/09_💰_Financial.py", label="← Back to Financial Model", icon="💰")
+st.page_link("pages/30_💰_Financial.py", label="← Back to Financial Model", icon="💰")
 
 st.title("Advanced Sensitivity Analysis")
 st.markdown(f"**{cfg['capacity_tpd']:.0f} TPD | What drives profit? What kills it?**")

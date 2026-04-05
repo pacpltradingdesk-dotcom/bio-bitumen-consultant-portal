@@ -47,7 +47,7 @@ if not customers:
     fig.update_layout(template="plotly_white",height=350)
     st.plotly_chart(fig,width="stretch")
     st.caption("Add a customer to create a real project timeline")
-    st.page_link("pages/14_👥_Customers.py", label="Go to Customer Manager", icon="👥")
+    st.page_link("pages/11_👥_Customers.py", label="Go to Customer Manager", icon="👥")
     st.stop()
 
 # ══════════════════════════════════════════════════════════════════════

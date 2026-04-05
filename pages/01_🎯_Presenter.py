@@ -222,7 +222,7 @@ elif slide == 2:
     tender_df.columns = ["Project", "State", "Budget (Cr)", "Bitumen (MT)", "Deadline"]
     st.dataframe(tender_df, width="stretch", hide_index=True)
 
-    st.page_link("pages/04_📈_Market.py", label="See Full Market Intelligence", icon="📈")
+    st.page_link("pages/13_📈_Market.py", label="See Full Market Intelligence", icon="📈")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 3: RAW MATERIAL
@@ -249,7 +249,7 @@ elif slide == 3:
         st.markdown("- Rice Straw, Sugarcane Bagasse, Cotton Stalk, Groundnut Shell")
         st.markdown(f"- Daily requirement: ~{cfg['capacity_tpd']*2.5:.0f} MT for {cfg['capacity_tpd']:.0f} TPD plant")
 
-    st.page_link("pages/06_🌾_Raw_Material.py", label="See Full Raw Material Analysis", icon="🌾")
+    st.page_link("pages/24_🌾_Raw_Material.py", label="See Full Raw Material Analysis", icon="🌾")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 4: LOCATION & FEASIBILITY
@@ -283,7 +283,7 @@ elif slide == 4:
     | Bitumen Demand | {sc.get('bitumen_demand_mt', 200000):,} MT/yr |
     """)
 
-    st.page_link("pages/05_📍_Location.py", label="See Full Location Analysis", icon="📍")
+    st.page_link("pages/12_📍_Location.py", label="See Full Location Analysis", icon="📍")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 5: TECHNOLOGY
@@ -304,7 +304,7 @@ elif slide == 5:
     - India became FIRST country to commercially produce bio-bitumen (Jan 2026)
     """)
 
-    st.page_link("pages/51_Technology.py", label="See Technology Details", icon="🔬")
+    st.page_link("pages/20_Technology.py", label="See Technology Details", icon="🔬")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 6: PROCESS FLOW
@@ -331,7 +331,7 @@ elif slide == 6:
     for step, desc in steps:
         st.markdown(f"**{step}** — {desc}")
 
-    st.page_link("pages/53_Process_Flow.py", label="See Detailed Process Flow", icon="🔄")
+    st.page_link("pages/22_Process_Flow.py", label="See Detailed Process Flow", icon="🔄")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 7: PLANT LAYOUT
@@ -370,7 +370,7 @@ elif slide == 7:
     fig_area.update_layout(template="plotly_white", height=300)
     st.plotly_chart(fig_area, width="stretch")
 
-    st.page_link("pages/08_📐_Drawings.py", label="See All Engineering Drawings", icon="📐")
+    st.page_link("pages/50_📐_Drawings.py", label="See All Engineering Drawings", icon="📐")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 8: FINANCIAL MODEL
@@ -408,7 +408,7 @@ elif slide == 8:
                            barmode="group", template="plotly_white", height=400)
         st.plotly_chart(fig, width="stretch")
 
-    st.page_link("pages/09_💰_Financial.py", label="Open Full Financial Model (Editable)", icon="💰")
+    st.page_link("pages/30_💰_Financial.py", label="Open Full Financial Model (Editable)", icon="💰")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 9: ROI & PROFITABILITY
@@ -443,7 +443,7 @@ elif slide == 9:
     p3.metric("DSCR Yr3", f"{cfg.get('dscr_yr3', 0):.2f}x")
     p4.metric("Annual Revenue Yr5", f"Rs {cfg.get('revenue_yr5_lac', 0):.0f} Lac")
 
-    st.page_link("pages/60_ROI_Quick_Calc.py", label="Interactive ROI Calculator", icon="🎯")
+    st.page_link("pages/36_ROI_Quick_Calc.py", label="Interactive ROI Calculator", icon="🎯")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 10: COMPLIANCE & LICENSES
@@ -462,7 +462,7 @@ elif slide == 10:
         st.markdown(f"- **{lt['name']}** — {lt['authority']} (~{lt['typical_days']} days)")
 
     st.markdown(f"\n*...and {len(mandatory)-12} more. We handle ALL compliance for you.*")
-    st.page_link("pages/11_📋_Compliance.py", label="Full Compliance Tracker", icon="📋")
+    st.page_link("pages/40_📋_Compliance.py", label="Full Compliance Tracker", icon="📋")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 11: SUBSIDY & GOVERNMENT SUPPORT
@@ -521,7 +521,7 @@ elif slide == 12:
     fig.update_layout(template="plotly_white", height=450)
     st.plotly_chart(fig, width="stretch")
 
-    st.page_link("pages/64_Project_Gantt.py", label="Customer-Specific Timeline", icon="📅")
+    st.page_link("pages/54_Project_Gantt.py", label="Customer-Specific Timeline", icon="📅")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 13: RISK ANALYSIS
@@ -542,7 +542,7 @@ elif slide == 13:
         with st.expander(f"{sev} {r['category']}: {r['risk'][:60]} (Score: {r['score']}/25)"):
             st.markdown(f"**Mitigation:** {r['mitigation']}")
 
-    st.page_link("pages/66_Risk_Matrix.py", label="Full Risk Matrix", icon="⚠️")
+    st.page_link("pages/42_Risk_Matrix.py", label="Full Risk Matrix", icon="⚠️")
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 14: FINAL PROPOSAL & DOCUMENTS
@@ -577,14 +577,14 @@ elif slide == 14:
     st.subheader("Generate Submission-Ready Documents")
 
     d1, d2, d3 = st.columns(3)
-    d1.page_link("pages/13_📁_Document_Hub.py", label="Generate ALL Documents (ZIP)", icon="📁")
-    d2.page_link("pages/44_DPR_Generator.py", label="Generate DPR", icon="📄")
-    d3.page_link("pages/61_Loan_EMI.py", label="Loan EMI Calculator", icon="🏦")
+    d1.page_link("pages/61_📁_Document_Hub.py", label="Generate ALL Documents (ZIP)", icon="📁")
+    d2.page_link("pages/60_DPR_Generator.py", label="Generate DPR", icon="📄")
+    d3.page_link("pages/33_Loan_EMI.py", label="Loan EMI Calculator", icon="🏦")
 
     d4, d5, d6 = st.columns(3)
-    d4.page_link("pages/67_Export_Center.py", label="Export All Data", icon="📤")
-    d5.page_link("pages/03_📝_Project_Setup.py", label="Edit Project Details", icon="📝")
-    d6.page_link("pages/15_🤖_AI_Advisor.py", label="Ask AI Advisor", icon="🤖")
+    d4.page_link("pages/62_Export_Center.py", label="Export All Data", icon="📤")
+    d5.page_link("pages/10_📝_Project_Setup.py", label="Edit Project Details", icon="📝")
+    d6.page_link("pages/81_🤖_AI_Advisor.py", label="Ask AI Advisor", icon="🤖")
 
     st.markdown("---")
     st.markdown(f"""
@@ -644,10 +644,10 @@ with nav5:
 # Action buttons
 st.markdown("---")
 act1, act2, act3, act4 = st.columns(4)
-act1.page_link("pages/13_📁_Document_Hub.py", label="Docs", icon="📄")
-act2.page_link("pages/09_💰_Financial.py", label="Finance", icon="💰")
-act3.page_link("pages/15_🤖_AI_Advisor.py", label="AI", icon="🤖")
-act4.page_link("pages/03_📝_Project_Setup.py", label="Setup", icon="📝")
+act1.page_link("pages/61_📁_Document_Hub.py", label="Docs", icon="📄")
+act2.page_link("pages/30_💰_Financial.py", label="Finance", icon="💰")
+act3.page_link("pages/81_🤖_AI_Advisor.py", label="AI", icon="🤖")
+act4.page_link("pages/10_📝_Project_Setup.py", label="Setup", icon="📝")
 
 # ══════════════════════════════════════════════════════════════════════
 # AI MEETING COPILOT (Sidebar — Available on EVERY slide)
@@ -736,7 +736,7 @@ try:
     else:
         st.sidebar.markdown("---")
         st.sidebar.info("Add API keys in AI Settings for AI Meeting Copilot")
-        st.sidebar.page_link("pages/17_🔑_AI_Settings.py", label="AI Settings", icon="🔑")
+        st.sidebar.page_link("pages/83_🔑_AI_Settings.py", label="AI Settings", icon="🔑")
 except Exception:
     pass
 

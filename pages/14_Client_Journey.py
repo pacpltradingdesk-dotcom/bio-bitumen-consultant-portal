@@ -174,8 +174,8 @@ elif step_idx == 1:
 
     if selected_type == "new_investor":
         st.markdown("### Full Feasibility — Location, Raw Material, Market")
-        st.page_link("pages/05_📍_Location.py", label="📍 Location Feasibility (18 States Scored)", icon="📍")
-        st.page_link("pages/06_🌾_Raw_Material.py", label="🌾 Raw Material Analysis", icon="🌾")
+        st.page_link("pages/12_📍_Location.py", label="📍 Location Feasibility (18 States Scored)", icon="📍")
+        st.page_link("pages/24_🌾_Raw_Material.py", label="🌾 Raw Material Analysis", icon="🌾")
         st.markdown(f"""
         **For your {cfg['capacity_tpd']:.0f} TPD plant:**
         - Land required: **{int(cfg['capacity_tpd'] * 520):,} sq ft**
@@ -200,7 +200,7 @@ elif step_idx == 1:
         - You need: Pyrolysis reactor + Blending unit
         - Your margin will be **HIGHEST** because input cost is lowest
         """)
-        st.page_link("pages/06_🌾_Raw_Material.py", label="🌾 See Biomass Availability Data", icon="🌾")
+        st.page_link("pages/24_🌾_Raw_Material.py", label="🌾 See Biomass Availability Data", icon="🌾")
     elif selected_type == "pyrolysis_owner":
         st.markdown("""
         ### You're Already 60% There
@@ -220,8 +220,8 @@ elif step_idx == 2:
             with st.expander(f"STAGE {stage['stage']}: {stage['name']}", expanded=stage['stage'] == 1):
                 st.markdown(stage['description'])
                 st.markdown(f"**CAPEX:** {stage['capex']} | **Manpower:** {stage['manpower']} | **Space:** {stage.get('space', stage.get('network', 'N/A'))}")
-        st.page_link("pages/07_⚙️_Plant_Design.py", label="⚙️ Full Plant Design (5-100 TPD)", icon="⚙️")
-        st.page_link("pages/53_Process_Flow.py", label="🔄 13-Step Process Flow", icon="🔄")
+        st.page_link("pages/23_⚙️_Plant_Design.py", label="⚙️ Full Plant Design (5-100 TPD)", icon="⚙️")
+        st.page_link("pages/22_Process_Flow.py", label="🔄 13-Step Process Flow", icon="🔄")
 
     elif selected_type == "bitumen_owner":
         st.markdown("""
@@ -250,7 +250,7 @@ elif step_idx == 2:
 
         **Your advantage:** Raw material cost near ZERO = HIGHEST margin in the chain
         """)
-        st.page_link("pages/51_Technology.py", label="🔬 CSIR-CRRI Technology Details", icon="🔬")
+        st.page_link("pages/20_Technology.py", label="🔬 CSIR-CRRI Technology Details", icon="🔬")
 
     elif selected_type == "pyrolysis_owner":
         st.markdown("""
@@ -266,7 +266,7 @@ elif step_idx == 2:
         **Prince provides VG-30 supply:** 2.4 Lakh MT/yr contract with Getka Energy (Iraq/USA)
         """)
 
-    st.page_link("pages/08_📐_Drawings.py", label="📐 View All Engineering Drawings (117)", icon="📐")
+    st.page_link("pages/50_📐_Drawings.py", label="📐 View All Engineering Drawings (117)", icon="📐")
 
 # ── STEP 4: FINANCIAL BENEFIT ────────────────────────────────────────
 elif step_idx == 3:
@@ -326,7 +326,7 @@ elif step_idx == 3:
         | Payback | — | **8-12 months** |
         """)
 
-    st.page_link("pages/09_💰_Financial.py", label="💰 Open Full Financial Model (Editable)", icon="💰")
+    st.page_link("pages/30_💰_Financial.py", label="💰 Open Full Financial Model (Editable)", icon="💰")
 
     # Common: 7-year chart
     if cfg.get("roi_timeline"):
@@ -383,7 +383,7 @@ elif step_idx == 4:
         | Week 13+ | Commercial production + sales |
         """)
 
-    st.page_link("pages/54_Timeline.py", label="📅 Detailed Project Timeline", icon="📅")
+    st.page_link("pages/53_Timeline.py", label="📅 Detailed Project Timeline", icon="📅")
 
 # ── STEP 6: COMPLIANCE ───────────────────────────────────────────────
 elif step_idx == 5:
@@ -406,7 +406,7 @@ elif step_idx == 5:
         - **NHAI material approval** (for road project supply)
         """)
 
-    st.page_link("pages/11_📋_Compliance.py", label="📋 Full Compliance Tracker (25 Licenses)", icon="📋")
+    st.page_link("pages/40_📋_Compliance.py", label="📋 Full Compliance Tracker (25 Licenses)", icon="📋")
 
 # ── STEP 7: EXECUTION ────────────────────────────────────────────────
 elif step_idx == 6:
@@ -479,10 +479,10 @@ elif step_idx == 7:
 
     st.markdown("### Generate Your Documents NOW")
     doc_cols = st.columns(4)
-    doc_cols[0].page_link("pages/44_DPR_Generator.py", label="📄 Generate DPR", icon="📄")
-    doc_cols[1].page_link("pages/09_💰_Financial.py", label="💰 Financial Model", icon="💰")
-    doc_cols[2].page_link("pages/08_📐_Drawings.py", label="📐 All Drawings", icon="📐")
-    doc_cols[3].page_link("pages/15_🤖_AI_Advisor.py", label="🤖 Ask AI", icon="🤖")
+    doc_cols[0].page_link("pages/60_DPR_Generator.py", label="📄 Generate DPR", icon="📄")
+    doc_cols[1].page_link("pages/30_💰_Financial.py", label="💰 Financial Model", icon="💰")
+    doc_cols[2].page_link("pages/50_📐_Drawings.py", label="📐 All Drawings", icon="📐")
+    doc_cols[3].page_link("pages/81_🤖_AI_Advisor.py", label="🤖 Ask AI", icon="🤖")
 
     st.markdown("---")
     st.markdown(f"""

@@ -49,7 +49,7 @@ try:
     if not _valid:
         st.error("Missing required project data for professional document output:")
         st.markdown(_missing)
-        st.page_link("pages/03_📝_Project_Setup.py", label="Fill Project Setup", icon="📝")
+        st.page_link("pages/10_📝_Project_Setup.py", label="Fill Project Setup", icon="📝")
 except Exception:
     pass
 
@@ -108,7 +108,7 @@ else:
                     st.rerun()
 
     with lc2:
-        st.page_link("pages/03_📝_Project_Setup.py", label="Go to Full Project Setup", icon="📝")
+        st.page_link("pages/10_📝_Project_Setup.py", label="Go to Full Project Setup", icon="📝")
         st.caption("Set client name, project name, site address, and all details")
 
 st.markdown("---")
