@@ -81,7 +81,7 @@ SLIDE_TITLES = [
 
 # Header with slide counter
 client_name = cfg.get("client_name", "")
-header_text = f"**{COMPANY['trade_name']}** | Presenting to: **{client_name}**" if client_name else f"**{COMPANY['trade_name']}** — Consultant Presenter"
+header_text = f"<strong>{COMPANY['trade_name']}</strong> | Presenting to: <strong>{client_name}</strong>" if client_name else f"<strong>{COMPANY['trade_name']}</strong> — Consultant Presenter"
 
 st.markdown(f"""
 <div style="background: #003366; padding: 10px 20px; border-radius: 10px; margin-bottom: 10px;
@@ -636,10 +636,10 @@ with nav5:
 # Action buttons
 st.markdown("---")
 act1, act2, act3, act4 = st.columns(4)
-act1.page_link("pages/13_📁_Document_Hub.py", label="Generate Documents", icon="📄")
-act2.page_link("pages/09_💰_Financial.py", label="Edit Financials", icon="💰")
-act3.page_link("pages/15_🤖_AI_Advisor.py", label="AI Advisor", icon="🤖")
-act4.page_link("pages/03_📝_Project_Setup.py", label="Edit Project Info", icon="📝")
+act1.page_link("pages/13_📁_Document_Hub.py", label="Docs", icon="📄")
+act2.page_link("pages/09_💰_Financial.py", label="Finance", icon="💰")
+act3.page_link("pages/15_🤖_AI_Advisor.py", label="AI", icon="🤖")
+act4.page_link("pages/03_📝_Project_Setup.py", label="Setup", icon="📝")
 
 # ══════════════════════════════════════════════════════════════════════
 # AI MEETING COPILOT (Sidebar — Available on EVERY slide)

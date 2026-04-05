@@ -191,3 +191,40 @@ n3.page_link("pages/50_Client_Journey.py", label="Start Client Journey", icon="�
 
 st.markdown("---")
 st.caption(f"{COMPANY['name']} | {COMPANY['owner']} | {COMPANY['phone']}")
+
+# ── Export Section ────────────────────────────────────────────────────
+st.markdown("---")
+st.subheader("Export")
+exp1, exp2, exp3 = st.columns(3)
+with exp1:
+    if st.button("Download Excel", type="primary", key="exp_xl_calc"):
+        try:
+            import io, pandas as pd
+            from openpyxl import Workbook
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Calculator Output"
+            ws.cell(row=1, column=1, value="Bio Bitumen Calculator Export")
+            ws.cell(row=2, column=1, value=f"Capacity: {cfg['capacity_tpd']:.0f} TPD")
+            ws.cell(row=3, column=1, value=f"Investment: Rs {cfg['investment_cr']:.2f} Cr")
+            ws.cell(row=4, column=1, value=f"ROI: {cfg['roi_pct']:.1f}%")
+            ws.cell(row=5, column=1, value=f"IRR: {cfg['irr_pct']:.1f}%")
+            buf = io.BytesIO()
+            wb.save(buf)
+            buf.seek(0)
+            st.download_button("Download", buf.getvalue(), "calculator_export.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xl_c")
+        except Exception as e:
+            st.error(f"Export failed: {e}")
+with exp2:
+    if st.button("Download CSV", key="exp_csv_calc"):
+        import pandas as pd
+        data = {"Metric": ["Capacity", "Investment", "ROI", "IRR", "DSCR", "Break-Even", "Monthly Profit"],
+                "Value": [f"{cfg['capacity_tpd']:.0f} TPD", f"Rs {cfg['investment_cr']:.2f} Cr",
+                          f"{cfg['roi_pct']:.1f}%", f"{cfg['irr_pct']:.1f}%", f"{cfg['dscr_yr3']:.2f}x",
+                          f"{cfg['break_even_months']} months", f"Rs {cfg['monthly_profit_lac']:.1f} Lac"]}
+        st.download_button("Download", pd.DataFrame(data).to_csv(index=False), "calculator_export.csv", "text/csv", key="dl_csv_c")
+with exp3:
+    if st.button("Print", key="exp_print_calc"):
+        import streamlit.components.v1 as _stc
+        _stc.html("<script>window.print();</script>", height=0)

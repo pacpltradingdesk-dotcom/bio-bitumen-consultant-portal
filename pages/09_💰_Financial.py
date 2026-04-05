@@ -110,6 +110,17 @@ with col_input:
     if bio_blend != cfg["bio_blend_pct"]: changes["bio_blend_pct"] = bio_blend
     if shifts != cfg["num_shifts"]: changes["num_shifts"] = shifts
     if carbon_rate != cfg["carbon_credit_rate_usd"]: changes["carbon_credit_rate_usd"] = carbon_rate
+    if syngas_val != cfg.get("syngas_value_per_mt", 1250): changes["syngas_value_per_mt"] = syngas_val
+
+    # Input validation
+    if sell_price <= 0:
+        st.error("Selling price must be greater than zero!")
+        st.stop()
+    if tpd <= 0:
+        st.error("Capacity must be greater than zero!")
+        st.stop()
+    if sell_price < cfg.get("total_variable_cost_per_mt", 0):
+        st.warning(f"Selling price (Rs {sell_price:,}) is BELOW variable cost (Rs {cfg.get('total_variable_cost_per_mt',0):,}) — project will make a LOSS!")
 
     if changes:
         update_fields(changes)
@@ -132,8 +143,50 @@ with col_output:
 
     st.markdown("**Costs**")
     ot1, ot2 = st.columns(2)
-    ot1.metric("Variable Cost/MT", f"Rs {cfg['total_variable_cost_per_mt']:,.0f}")
-    ot2.metric("Profit/MT", f"Rs {cfg['profit_per_mt']:,.0f}")
+    ot1.metric("Variable Cost/MT", f"Rs {cfg['total_variable_cost_per_mt']:,.0f}",
+               help="Sum of all variable costs: Raw Material + Power + Labour + Chemical + Packaging + Transport + QC + Misc")
+    ot2.metric("Profit/MT", f"Rs {cfg['profit_per_mt']:,.0f}",
+               help="Selling Price minus Total Variable Cost per MT")
+
+    # Fix #11: Show full cost breakdown
+    with st.expander("Cost Breakdown (all components visible)"):
+        cost_items = [
+            ("Raw Material", cfg.get("raw_material_cost_per_mt", 0)),
+            ("Power & Fuel", cfg.get("power_cost_per_mt", 0)),
+            ("Labour", cfg.get("labour_cost_per_mt", 0)),
+            ("Chemicals", cfg.get("chemical_cost_per_mt", 0)),
+            ("Packaging", cfg.get("packaging_cost_per_mt", 0)),
+            ("Transport", cfg.get("transport_cost_per_mt", 0)),
+            ("QC & Testing", cfg.get("qc_cost_per_mt", 0)),
+            ("Miscellaneous", cfg.get("misc_cost_per_mt", 0)),
+        ]
+        for name, val in cost_items:
+            st.markdown(f"- {name}: **Rs {val:,}/MT**")
+        st.markdown(f"**TOTAL: Rs {sum(v for _,v in cost_items):,}/MT**")
+        model_total = cfg.get("total_variable_cost_per_mt", 0)
+        visible_total = sum(v for _, v in cost_items)
+        if model_total != visible_total:
+            st.warning(f"Model uses Rs {model_total:,}/MT but visible inputs sum to Rs {visible_total:,}/MT. Difference: Rs {model_total - visible_total:,}")
+
+    # Fix #12: CAPEX Investment Breakdown
+    with st.expander("Investment Breakdown (CAPEX details)"):
+        p = cfg.get("plant_data", {})
+        capex_items = [
+            ("Civil & Building", p.get("civil_lac", cfg["investment_lac"] * 0.15)),
+            ("Machinery & Equipment", p.get("mach_lac", cfg["investment_lac"] * 0.55)),
+            ("GST on Machinery (18%)", p.get("gst_mach_lac", cfg["investment_lac"] * 0.10)),
+            ("Working Capital", cfg.get("working_capital_lac", cfg["investment_lac"] * 0.08)),
+            ("Interest During Construction", p.get("idc_lac", cfg["investment_lac"] * 0.04)),
+            ("Pre-operative Expenses", p.get("preop_lac", cfg["investment_lac"] * 0.03)),
+            ("Contingency (5%)", p.get("cont_lac", cfg["investment_lac"] * 0.03)),
+            ("Security Deposit", p.get("sec_lac", cfg["investment_lac"] * 0.02)),
+        ]
+        for name, val in capex_items:
+            st.markdown(f"- {name}: **Rs {val:.1f} Lac**")
+        capex_total = sum(v for _, v in capex_items)
+        st.markdown(f"**TOTAL CAPEX: Rs {capex_total:.1f} Lac (Rs {capex_total/100:.2f} Cr)**")
+        if abs(capex_total - cfg["investment_lac"]) > 10:
+            st.info(f"Model investment: Rs {cfg['investment_lac']:.1f} Lac. Breakdown total: Rs {capex_total:.1f} Lac. Difference due to interpolation adjustments.")
 
     st.markdown("**Key Metrics**")
     ok1, ok2, ok3 = st.columns(3)
@@ -356,12 +409,25 @@ with exp1:
 
 # PDF Export
 with exp2:
-    if st.button("Export to PDF"):
-        st.page_link("pages/13_📁_Document_Hub.py", label="Go to DPR Generator", icon="📄")
+    if st.button("Export to PDF", type="primary", key="exp_pdf"):
+        with st.spinner("Generating PDF..."):
+            try:
+                from engines.report_generator_engine import generate_dpr_pdf
+                from config import COMPANY as _CO
+                pdf_path = os.path.join(os.path.dirname(__file__), "..", "data", "test_outputs", "_fin_export.pdf")
+                os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
+                generate_dpr_pdf(pdf_path, cfg, _CO)
+                with open(pdf_path, "rb") as _pf:
+                    st.download_button("Download PDF", _pf.read(),
+                        f"Financial_{cfg['capacity_tpd']:.0f}TPD.pdf", "application/pdf", key="dl_fin_pdf")
+            except Exception as e:
+                st.error(f"PDF generation failed: {e}")
 
 # Print
 with exp3:
-    st.markdown("**Print:** Use browser Ctrl+P to print this page")
+    if st.button("Print Page", key="exp_print"):
+        import streamlit.components.v1 as _stc
+        _stc.html("<script>window.print();</script>", height=0)
 
 st.markdown("---")
 
@@ -380,7 +446,7 @@ scen_col1, scen_col2 = st.columns(2)
 with scen_col1:
     st.markdown("**Save Current Scenario**")
     scenario_name = st.text_input("Scenario Name", placeholder="e.g., Conservative / Optimistic / Bank Presentation", key="scen_name")
-    if st.button("Save Scenario", key="save_scen") and scenario_name:
+    if st.button("Save Scenario", key="save_scen", type="primary") and scenario_name:
         config_snapshot = {
             "capacity_tpd": cfg["capacity_tpd"],
             "working_days": cfg["working_days"],
@@ -479,9 +545,9 @@ except Exception:
 st.markdown("---")
 st.subheader("Related Tools")
 ql1, ql2, ql3, ql4 = st.columns(4)
-ql1.page_link("pages/60_ROI_Quick_Calc.py", label="ROI Quick Calculator", icon="🎯")
-ql2.page_link("pages/61_Loan_EMI.py", label="Loan EMI Calculator", icon="🏦")
-ql3.page_link("pages/62_Capacity_Compare.py", label="Capacity Comparison", icon="⚖️")
-ql4.page_link("pages/17_🔑_AI_Settings.py", label="AI Settings", icon="🔑")
+ql1.page_link("pages/60_ROI_Quick_Calc.py", label="ROI Calc", icon="🎯")
+ql2.page_link("pages/61_Loan_EMI.py", label="EMI Calc", icon="🏦")
+ql3.page_link("pages/62_Capacity_Compare.py", label="Compare", icon="⚖️")
+ql4.page_link("pages/17_🔑_AI_Settings.py", label="AI Setup", icon="🔑")
 
 st.caption("All values auto-calculate when ANY input changes. This model is bank-ready and investor-grade.")

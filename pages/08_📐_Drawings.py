@@ -120,9 +120,13 @@ else:
     for i, d in enumerate(filtered):
         st.markdown(f"### {d['type']} — {d['capacity']}")
         try:
-            st.image(d["path"], width="stretch")
+            import os as _os
+            if _os.path.exists(d["path"]):
+                st.image(d["path"], width="stretch")
+            else:
+                st.warning(f"Drawing file not found: {d['filename']}")
         except Exception:
-            st.error(f"Cannot display: {d['filename']}")
+            st.warning(f"Cannot display: {d['filename']}")
 
         col_info, col_dl = st.columns([3, 1])
         with col_info:
