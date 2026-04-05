@@ -197,46 +197,237 @@ def format_inr_lac(lac_amount):
 # BOQ AUTO-CALCULATOR — Generates equipment list from capacity
 # ══════════════════════════════════════════════════════════════════════
 def calculate_boq(tpd):
-    """Auto-generate Bill of Quantities based on plant capacity."""
-    scale = tpd / 20  # 20 TPD as reference
+    """Auto-generate comprehensive Bill of Quantities based on plant capacity.
+    Covers EVERYTHING: gate to gate — unloading, processing, packing, office, lab,
+    weighbridge, compound wall, store, parking, roads, utilities, safety, admin.
+    65+ items across 15 zones, auto-scaled from capacity.
+    """
+    s = tpd / 20  # Scale factor (20 TPD = 1.0x reference)
 
     boq = [
-        {"item": "Pyrolysis Reactor", "spec": f"{tpd:.0f} TPD Continuous", "qty": max(1, int(tpd/10)),
-         "unit": "Nos", "rate_lac": round(35 * max(1, tpd/10), 1), "category": "Machinery"},
-        {"item": "Biomass Shredder", "spec": "5-10 TPH Hammer Mill", "qty": max(1, int(scale)),
-         "unit": "Nos", "rate_lac": round(8 * scale, 1), "category": "Machinery"},
-        {"item": "Rotary Dryer", "spec": f"{tpd*1.5:.0f} kg/hr", "qty": 1,
-         "unit": "Nos", "rate_lac": round(18 * scale, 1), "category": "Machinery"},
-        {"item": "Bio-Oil Condenser", "spec": "Shell & Tube Type", "qty": max(1, int(tpd/15)),
-         "unit": "Nos", "rate_lac": round(5 * scale, 1), "category": "Machinery"},
-        {"item": "Bitumen Heating Tank", "spec": f"{tpd*2:.0f} MT capacity", "qty": 2,
-         "unit": "Nos", "rate_lac": round(8 * scale, 1), "category": "Machinery"},
-        {"item": "High Shear Mixer", "spec": "Bio-oil + VG30 blending", "qty": 1,
-         "unit": "Nos", "rate_lac": round(12 * scale, 1), "category": "Machinery"},
-        {"item": "Colloid Mill", "spec": "Fine dispersion unit", "qty": 1,
-         "unit": "Nos", "rate_lac": round(6 * scale, 1), "category": "Machinery"},
-        {"item": "Storage Tanks (Bitumen)", "spec": f"{tpd*3:.0f} MT heated", "qty": 2,
-         "unit": "Nos", "rate_lac": round(10 * scale, 1), "category": "Storage"},
-        {"item": "Bio-Oil Storage Tank", "spec": f"{tpd*2:.0f} KL", "qty": 2,
-         "unit": "Nos", "rate_lac": round(5 * scale, 1), "category": "Storage"},
-        {"item": "DG Set", "spec": f"{max(50, int(tpd*5))} kVA", "qty": 1,
-         "unit": "Nos", "rate_lac": round(8 * scale, 1), "category": "Electrical"},
-        {"item": "Electrical Panel + HT", "spec": "Complete distribution", "qty": 1,
-         "unit": "Lot", "rate_lac": round(15 * scale, 1), "category": "Electrical"},
-        {"item": "Weighbridge", "spec": "60 MT Electronic", "qty": 1,
-         "unit": "Nos", "rate_lac": 6, "category": "Civil"},
-        {"item": "Lab Equipment", "spec": "Complete QC Lab", "qty": 1,
-         "unit": "Lot", "rate_lac": round(15 * scale, 1), "category": "Quality"},
-        {"item": "Fire Safety System", "spec": "Hydrants + Extinguishers", "qty": 1,
-         "unit": "Lot", "rate_lac": round(8 * scale, 1), "category": "Safety"},
-        {"item": "Pollution Control", "spec": "Bag filter + Scrubber + Stack", "qty": 1,
-         "unit": "Lot", "rate_lac": round(12 * scale, 1), "category": "Environment"},
-        {"item": "Pipe Rack & Piping", "spec": "MS + SS piping complete", "qty": 1,
-         "unit": "Lot", "rate_lac": round(10 * scale, 1), "category": "Piping"},
-        {"item": "Civil & Building", "spec": f"{int(tpd*150)} sq ft PEB + RCC", "qty": 1,
-         "unit": "Lot", "rate_lac": round(40 * scale, 1), "category": "Civil"},
-        {"item": "Road & Compound Wall", "spec": "Internal roads + boundary", "qty": 1,
-         "unit": "Lot", "rate_lac": round(8 * scale, 1), "category": "Civil"},
+        # ══════════════════════════════════════════════════════════════
+        # ZONE 1 — GATE, SECURITY & WEIGHBRIDGE
+        # ══════════════════════════════════════════════════════════════
+        {"item": "Main Gate (MS Sliding)", "spec": f"{max(6,int(tpd/3))}m wide motorized", "qty": 1,
+         "unit": "Nos", "rate_lac": round(2.5 * max(1, s*0.6), 1), "category": "A. Gate & Security"},
+        {"item": "Security Guard Booth", "spec": "Prefab cabin with AC", "qty": 1,
+         "unit": "Nos", "rate_lac": 1.5, "category": "A. Gate & Security"},
+        {"item": "Boom Barrier", "spec": "Automatic with sensor", "qty": 2,
+         "unit": "Nos", "rate_lac": 0.8, "category": "A. Gate & Security"},
+        {"item": "CCTV System", "spec": f"{max(8, int(tpd/2))} cameras + DVR + monitor", "qty": 1,
+         "unit": "Lot", "rate_lac": round(2.5 * max(1, s*0.7), 1), "category": "A. Gate & Security"},
+        {"item": "Weighbridge", "spec": "60 MT Electronic (ESSAE/Avery)", "qty": 1,
+         "unit": "Nos", "rate_lac": 6.0, "category": "A. Gate & Security"},
+        {"item": "Weighbridge Cabin + Software", "spec": "With printer & ticket system", "qty": 1,
+         "unit": "Nos", "rate_lac": 1.5, "category": "A. Gate & Security"},
+
+        # ══════════════════════════════════════════════════════════════
+        # ZONE 2 — RAW MATERIAL RECEIVING & STORAGE
+        # ══════════════════════════════════════════════════════════════
+        {"item": "Unloading Ramp/Platform", "spec": f"RCC platform for {max(2,int(tpd/5))} trucks", "qty": 1,
+         "unit": "Nos", "rate_lac": round(3 * s, 1), "category": "B. RM Receiving"},
+        {"item": "RM Storage Shed (Open)", "spec": f"{int(tpd*100)} sq ft covered semi-open", "qty": 1,
+         "unit": "Lot", "rate_lac": round(5 * s, 1), "category": "B. RM Receiving"},
+        {"item": "RM Storage Shed (Closed)", "spec": f"{int(tpd*50)} sq ft closed godown", "qty": 1,
+         "unit": "Lot", "rate_lac": round(4 * s, 1), "category": "B. RM Receiving"},
+        {"item": "Belt Conveyor (RM to Shredder)", "spec": f"{max(10, int(tpd*1.5))}m, 5 TPH", "qty": 1,
+         "unit": "Nos", "rate_lac": round(3.5 * s, 1), "category": "B. RM Receiving"},
+        {"item": "Front-End Loader", "spec": "1.5 T capacity wheel loader", "qty": max(1, int(s)),
+         "unit": "Nos", "rate_lac": round(8 * max(1, s*0.7), 1), "category": "B. RM Receiving"},
+
+        # ══════════════════════════════════════════════════════════════
+        # ZONE 3 — PRE-PROCESSING
+        # ══════════════════════════════════════════════════════════════
+        {"item": "Biomass Shredder", "spec": f"{max(3, int(tpd/4))} TPH Hammer Mill", "qty": max(1, int(s)),
+         "unit": "Nos", "rate_lac": round(8 * max(1, s), 1), "category": "C. Pre-Processing"},
+        {"item": "Rotary Dryer", "spec": f"{int(tpd*60)} kg/hr capacity", "qty": 1,
+         "unit": "Nos", "rate_lac": round(18 * s, 1), "category": "C. Pre-Processing"},
+        {"item": "Pelletizer / Briquette Press", "spec": f"{max(2, int(tpd/5))} TPH", "qty": max(1, int(s*0.8)),
+         "unit": "Nos", "rate_lac": round(6 * max(1, s*0.8), 1), "category": "C. Pre-Processing"},
+        {"item": "Magnetic Separator", "spec": "Remove metal contaminants", "qty": 1,
+         "unit": "Nos", "rate_lac": round(1.5 * max(1, s*0.5), 1), "category": "C. Pre-Processing"},
+        {"item": "Screw Conveyor (to Reactor)", "spec": f"{max(8, int(tpd))}m enclosed", "qty": 1,
+         "unit": "Nos", "rate_lac": round(2.5 * s, 1), "category": "C. Pre-Processing"},
+
+        # ══════════════════════════════════════════════════════════════
+        # ZONE 4 — PYROLYSIS REACTOR
+        # ══════════════════════════════════════════════════════════════
+        {"item": "Pyrolysis Reactor", "spec": f"{tpd:.0f} TPD Continuous Rotary", "qty": max(1, int(tpd/10)),
+         "unit": "Nos", "rate_lac": round(35 * max(1, tpd/10), 1), "category": "D. Reactor Zone"},
+        {"item": "Reactor Feed Hopper", "spec": f"{int(tpd*2)} MT capacity", "qty": max(1, int(tpd/10)),
+         "unit": "Nos", "rate_lac": round(2 * max(1, s*0.6), 1), "category": "D. Reactor Zone"},
+        {"item": "Char Discharge System", "spec": "Water-sealed screw cooler", "qty": max(1, int(tpd/10)),
+         "unit": "Nos", "rate_lac": round(3 * max(1, s*0.7), 1), "category": "D. Reactor Zone"},
+        {"item": "Syngas Burner + Flare", "spec": "For process heat recovery", "qty": 1,
+         "unit": "Nos", "rate_lac": round(4 * s, 1), "category": "D. Reactor Zone"},
+        {"item": "Temperature Control Panel", "spec": "PLC + HMI for reactor", "qty": 1,
+         "unit": "Nos", "rate_lac": round(5 * max(1, s*0.8), 1), "category": "D. Reactor Zone"},
+
+        # ══════════════════════════════════════════════════════════════
+        # ZONE 5 — CONDENSATION & OIL RECOVERY
+        # ══════════════════════════════════════════════════════════════
+        {"item": "Bio-Oil Condenser", "spec": "Shell & Tube Type SS304", "qty": max(1, int(tpd/15)),
+         "unit": "Nos", "rate_lac": round(5 * s, 1), "category": "E. Oil Recovery"},
+        {"item": "Cooling Tower", "spec": f"{max(10, int(tpd*2))} TR capacity", "qty": 1,
+         "unit": "Nos", "rate_lac": round(4 * s, 1), "category": "E. Oil Recovery"},
+        {"item": "Oil-Water Separator", "spec": "Gravity + coalescer type", "qty": 1,
+         "unit": "Nos", "rate_lac": round(3 * max(1, s*0.7), 1), "category": "E. Oil Recovery"},
+        {"item": "Bio-Oil Collection Tank", "spec": f"{int(tpd*3)} KL SS tank", "qty": 2,
+         "unit": "Nos", "rate_lac": round(3 * s, 1), "category": "E. Oil Recovery"},
+
+        # ══════════════════════════════════════════════════════════════
+        # ZONE 6 — BLENDING SECTION (Bio-Oil + Bitumen)
+        # ══════════════════════════════════════════════════════════════
+        {"item": "Bitumen Heating Tank", "spec": f"{int(tpd*2)} MT heated to 160°C", "qty": 2,
+         "unit": "Nos", "rate_lac": round(8 * s, 1), "category": "F. Blending"},
+        {"item": "High Shear Mixer", "spec": "Bio-oil + VG30 inline blending", "qty": 1,
+         "unit": "Nos", "rate_lac": round(12 * s, 1), "category": "F. Blending"},
+        {"item": "Colloid Mill", "spec": "Fine dispersion 0.1 micron", "qty": 1,
+         "unit": "Nos", "rate_lac": round(6 * s, 1), "category": "F. Blending"},
+        {"item": "Bitumen Transfer Pump", "spec": "Gear pump 160°C rated", "qty": 2,
+         "unit": "Nos", "rate_lac": round(2 * max(1, s*0.7), 1), "category": "F. Blending"},
+
+        # ══════════════════════════════════════════════════════════════
+        # ZONE 7 — STORAGE TANKS
+        # ══════════════════════════════════════════════════════════════
+        {"item": "Finished Bitumen Tank (Heated)", "spec": f"{int(tpd*3)} MT with heating coils", "qty": 2,
+         "unit": "Nos", "rate_lac": round(10 * s, 1), "category": "G. Storage"},
+        {"item": "Bio-Oil Bulk Storage", "spec": f"{int(tpd*5)} KL MS tank", "qty": 2,
+         "unit": "Nos", "rate_lac": round(5 * s, 1), "category": "G. Storage"},
+        {"item": "Bio-Char Storage Silo", "spec": f"{int(tpd*4)} MT capacity", "qty": 1,
+         "unit": "Nos", "rate_lac": round(4 * s, 1), "category": "G. Storage"},
+        {"item": "Diesel Storage Tank", "spec": "5 KL underground + dispensing", "qty": 1,
+         "unit": "Nos", "rate_lac": 3.0, "category": "G. Storage"},
+
+        # ══════════════════════════════════════════════════════════════
+        # ZONE 8 — PACKING & DISPATCH
+        # ══════════════════════════════════════════════════════════════
+        {"item": "Bitumen Drum Filling Machine", "spec": "180 kg MS drum auto-fill", "qty": 1,
+         "unit": "Nos", "rate_lac": round(4 * max(1, s*0.7), 1), "category": "H. Packing & Dispatch"},
+        {"item": "Bio-Char Bagging Machine", "spec": "50 kg HDPE bag filler + sealer", "qty": 1,
+         "unit": "Nos", "rate_lac": round(3 * max(1, s*0.6), 1), "category": "H. Packing & Dispatch"},
+        {"item": "Tanker Loading Arm", "spec": "Bottom loading for bulk bitumen", "qty": 1,
+         "unit": "Nos", "rate_lac": round(5 * max(1, s*0.7), 1), "category": "H. Packing & Dispatch"},
+        {"item": "Loading Bay / Dispatch Area", "spec": f"RCC platform for {max(2, int(tpd/8))} trucks", "qty": 1,
+         "unit": "Lot", "rate_lac": round(4 * s, 1), "category": "H. Packing & Dispatch"},
+        {"item": "Forklift", "spec": "3T diesel/electric", "qty": max(1, int(s)),
+         "unit": "Nos", "rate_lac": round(6 * max(1, s*0.7), 1), "category": "H. Packing & Dispatch"},
+        {"item": "Parking Area (Truck/Visitor)", "spec": f"For {max(5, int(tpd/2))} vehicles", "qty": 1,
+         "unit": "Lot", "rate_lac": round(3 * s, 1), "category": "H. Packing & Dispatch"},
+
+        # ══════════════════════════════════════════════════════════════
+        # ZONE 9 — ELECTRICAL & POWER
+        # ══════════════════════════════════════════════════════════════
+        {"item": "HT/LT Transformer", "spec": f"{max(100, int(tpd*8))} kVA", "qty": 1,
+         "unit": "Nos", "rate_lac": round(8 * s, 1), "category": "I. Electrical"},
+        {"item": "DG Set (Standby)", "spec": f"{max(50, int(tpd*5))} kVA Kirloskar/Cummins", "qty": 1,
+         "unit": "Nos", "rate_lac": round(8 * s, 1), "category": "I. Electrical"},
+        {"item": "MCC + PCC Panels", "spec": "Motor control + power control", "qty": 1,
+         "unit": "Lot", "rate_lac": round(8 * s, 1), "category": "I. Electrical"},
+        {"item": "Electrical Cabling & Earthing", "spec": "HT/LT cables + earthing grid", "qty": 1,
+         "unit": "Lot", "rate_lac": round(7 * s, 1), "category": "I. Electrical"},
+        {"item": "Street Lighting (Plant)", "spec": f"{max(10, int(tpd))} LED high-mast lights", "qty": 1,
+         "unit": "Lot", "rate_lac": round(2 * max(1, s*0.6), 1), "category": "I. Electrical"},
+
+        # ══════════════════════════════════════════════════════════════
+        # ZONE 10 — UTILITIES
+        # ══════════════════════════════════════════════════════════════
+        {"item": "Pipe Rack & Process Piping", "spec": "MS + SS piping complete", "qty": 1,
+         "unit": "Lot", "rate_lac": round(10 * s, 1), "category": "J. Utilities"},
+        {"item": "Compressed Air System", "spec": f"{max(5, int(tpd/3))} HP screw compressor + dryer", "qty": 1,
+         "unit": "Nos", "rate_lac": round(3 * max(1, s*0.7), 1), "category": "J. Utilities"},
+        {"item": "Water Supply System", "spec": "Borewell + OHT + distribution", "qty": 1,
+         "unit": "Lot", "rate_lac": round(4 * s, 1), "category": "J. Utilities"},
+        {"item": "ETP (Effluent Treatment)", "spec": f"{max(5, int(tpd/2))} KLD capacity", "qty": 1,
+         "unit": "Nos", "rate_lac": round(5 * s, 1), "category": "J. Utilities"},
+        {"item": "Sewage & Septic System", "spec": "Septic tank + soak pit", "qty": 1,
+         "unit": "Lot", "rate_lac": 2.0, "category": "J. Utilities"},
+
+        # ══════════════════════════════════════════════════════════════
+        # ZONE 11 — LAB & QUALITY CONTROL
+        # ══════════════════════════════════════════════════════════════
+        {"item": "Penetration Tester (IS:1203)", "spec": "Bitumen penetration 0-300", "qty": 1,
+         "unit": "Nos", "rate_lac": 1.2, "category": "K. Laboratory"},
+        {"item": "Softening Point Apparatus", "spec": "Ring & Ball (IS:1205)", "qty": 1,
+         "unit": "Nos", "rate_lac": 0.8, "category": "K. Laboratory"},
+        {"item": "Viscosity Bath", "spec": "Kinematic viscosity (IS:1206)", "qty": 1,
+         "unit": "Nos", "rate_lac": 1.5, "category": "K. Laboratory"},
+        {"item": "Ductility Tester", "spec": "IS:1208 standard", "qty": 1,
+         "unit": "Nos", "rate_lac": 1.0, "category": "K. Laboratory"},
+        {"item": "Flash Point Apparatus", "spec": "Cleveland Open Cup (IS:1209)", "qty": 1,
+         "unit": "Nos", "rate_lac": 0.8, "category": "K. Laboratory"},
+        {"item": "Moisture Oven & Balance", "spec": "Hot air oven + precision balance", "qty": 1,
+         "unit": "Nos", "rate_lac": 0.6, "category": "K. Laboratory"},
+        {"item": "Marshall Stability Tester", "spec": "For bitumen mix design", "qty": 1,
+         "unit": "Nos", "rate_lac": 2.5, "category": "K. Laboratory"},
+        {"item": "Lab Furniture & Glassware", "spec": "Benches, fume hood, glassware set", "qty": 1,
+         "unit": "Lot", "rate_lac": 3.0, "category": "K. Laboratory"},
+
+        # ══════════════════════════════════════════════════════════════
+        # ZONE 12 — SAFETY & ENVIRONMENT
+        # ══════════════════════════════════════════════════════════════
+        {"item": "Fire Fighting System", "spec": "Hydrant network + hose reels", "qty": 1,
+         "unit": "Lot", "rate_lac": round(6 * s, 1), "category": "L. Safety & Environment"},
+        {"item": "Fire Extinguishers", "spec": "ABC/CO2/Foam (as per NBC)", "qty": max(10, int(tpd)),
+         "unit": "Nos", "rate_lac": round(0.03 * max(10, tpd), 1), "category": "L. Safety & Environment"},
+        {"item": "Pollution Control (Bag Filter)", "spec": "Pulse jet bag filter + ID fan", "qty": 1,
+         "unit": "Nos", "rate_lac": round(6 * s, 1), "category": "L. Safety & Environment"},
+        {"item": "Scrubber + Stack", "spec": f"Wet scrubber + {max(15, int(tpd))}m chimney stack", "qty": 1,
+         "unit": "Nos", "rate_lac": round(5 * s, 1), "category": "L. Safety & Environment"},
+        {"item": "Gas Detection System", "spec": "H2S, CO, LEL sensors + alarm", "qty": 1,
+         "unit": "Lot", "rate_lac": round(2 * max(1, s*0.6), 1), "category": "L. Safety & Environment"},
+        {"item": "Emergency Eyewash + Shower", "spec": "SS gravity-fed stations", "qty": max(2, int(s*2)),
+         "unit": "Nos", "rate_lac": round(0.3 * max(2, s*2), 1), "category": "L. Safety & Environment"},
+        {"item": "PPE Kit (Initial Stock)", "spec": "Helmets, gloves, boots, goggles, vests", "qty": max(15, int(tpd*1.2)),
+         "unit": "Sets", "rate_lac": round(0.05 * max(15, tpd*1.2), 1), "category": "L. Safety & Environment"},
+
+        # ══════════════════════════════════════════════════════════════
+        # ZONE 13 — CIVIL & BUILDING WORKS
+        # ══════════════════════════════════════════════════════════════
+        {"item": "Main Plant Building (PEB)", "spec": f"{int(tpd*80)} sq ft pre-engineered", "qty": 1,
+         "unit": "Lot", "rate_lac": round(25 * s, 1), "category": "M. Civil Works"},
+        {"item": "Office Building (RCC)", "spec": f"{max(400, int(tpd*20))} sq ft 2-floor", "qty": 1,
+         "unit": "Lot", "rate_lac": round(8 * max(1, s*0.7), 1), "category": "M. Civil Works"},
+        {"item": "Lab Building", "spec": f"{max(300, int(tpd*15))} sq ft", "qty": 1,
+         "unit": "Lot", "rate_lac": round(4 * max(1, s*0.6), 1), "category": "M. Civil Works"},
+        {"item": "Control Room", "spec": f"{max(200, int(tpd*10))} sq ft AC room", "qty": 1,
+         "unit": "Lot", "rate_lac": round(3 * max(1, s*0.6), 1), "category": "M. Civil Works"},
+        {"item": "Canteen & Rest Room", "spec": f"For {max(15, int(tpd*1.2))} workers", "qty": 1,
+         "unit": "Lot", "rate_lac": round(3 * max(1, s*0.6), 1), "category": "M. Civil Works"},
+        {"item": "Toilet Block (M/F)", "spec": "As per Factory Act", "qty": 1,
+         "unit": "Lot", "rate_lac": round(2.5 * max(1, s*0.5), 1), "category": "M. Civil Works"},
+        {"item": "Compound Wall", "spec": f"{int(max(200, tpd*30))} RFT RCC/brick", "qty": 1,
+         "unit": "Lot", "rate_lac": round(6 * s, 1), "category": "M. Civil Works"},
+        {"item": "Internal Roads (CC/Bitumen)", "spec": f"{int(max(300, tpd*25))} sqm", "qty": 1,
+         "unit": "Lot", "rate_lac": round(5 * s, 1), "category": "M. Civil Works"},
+        {"item": "Drainage & Storm Water", "spec": "RCC channel + catch pits", "qty": 1,
+         "unit": "Lot", "rate_lac": round(2.5 * s, 1), "category": "M. Civil Works"},
+        {"item": "Green Belt / Landscaping", "spec": f"{int(max(500, tpd*40))} sqm plantation", "qty": 1,
+         "unit": "Lot", "rate_lac": round(1.5 * max(1, s*0.5), 1), "category": "M. Civil Works"},
+
+        # ══════════════════════════════════════════════════════════════
+        # ZONE 14 — OFFICE & ADMIN
+        # ══════════════════════════════════════════════════════════════
+        {"item": "Office Furniture", "spec": "Desks, chairs, cabinets, meeting table", "qty": 1,
+         "unit": "Lot", "rate_lac": round(3 * max(1, s*0.6), 1), "category": "N. Office & Admin"},
+        {"item": "IT Equipment", "spec": "Computers, printer, scanner, UPS, LAN", "qty": 1,
+         "unit": "Lot", "rate_lac": round(3 * max(1, s*0.5), 1), "category": "N. Office & Admin"},
+        {"item": "Air Conditioning (Office+Lab)", "spec": f"{max(3, int(tpd/5))} split units", "qty": 1,
+         "unit": "Lot", "rate_lac": round(2 * max(1, s*0.5), 1), "category": "N. Office & Admin"},
+        {"item": "Signage & Safety Boards", "spec": "Plant signs, safety notices, directions", "qty": 1,
+         "unit": "Lot", "rate_lac": 0.5, "category": "N. Office & Admin"},
+        {"item": "Worker Lockers & Benches", "spec": f"For {max(15, int(tpd*1.2))} staff", "qty": 1,
+         "unit": "Lot", "rate_lac": round(1 * max(1, s*0.5), 1), "category": "N. Office & Admin"},
+
+        # ══════════════════════════════════════════════════════════════
+        # ZONE 15 — MAINTENANCE WORKSHOP
+        # ══════════════════════════════════════════════════════════════
+        {"item": "Workshop Tools & Equipment", "spec": "Welding, grinding, cutting, hand tools", "qty": 1,
+         "unit": "Lot", "rate_lac": round(3 * max(1, s*0.6), 1), "category": "O. Maintenance"},
+        {"item": "Spare Parts Store", "spec": f"{max(100, int(tpd*8))} sq ft with racks", "qty": 1,
+         "unit": "Lot", "rate_lac": round(2 * max(1, s*0.5), 1), "category": "O. Maintenance"},
+        {"item": "Overhead Crane / Hoist", "spec": f"{max(2, int(tpd/5))} T capacity", "qty": 1,
+         "unit": "Nos", "rate_lac": round(4 * max(1, s*0.7), 1), "category": "O. Maintenance"},
     ]
 
     for item in boq:
