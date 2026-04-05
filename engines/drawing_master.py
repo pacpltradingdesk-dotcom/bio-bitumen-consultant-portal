@@ -214,6 +214,128 @@ DRAWING_REGISTRY = [
         "required_for": ["Electrical Estimation", "Construction Planning"],
         "note": "CONCEPT ONLY — actual cable sizing needs electrical engineer",
     },
+
+    # ── MUNICIPAL & BUILDING (NEW) ──────────────────────────────
+    {
+        "id": "architectural_elevation",
+        "name": "Architectural Elevations & Building Drawings",
+        "category": "Municipal & Building",
+        "for_whom": "Municipal Corporation (VMC), Town Planning Department, Civil Architect",
+        "purpose": "Building permit — admin office, factory shed height, parking, restrooms",
+        "what_it_shows": "Building elevations (front/side/rear), shed height, office layout, parking, restrooms, gate",
+        "ai_capable": True,
+        "ai_prompt": (
+            "Architectural elevation drawings for {capacity} TPD bio-bitumen plant facility. "
+            "Show front elevation of: main factory shed (PEB structure, 10m height), admin office "
+            "(2-storey, modern industrial), security gatehouse, weighbridge cabin. Include parking "
+            "for 10 vehicles, worker restrooms, canteen. Clean architectural rendering style, "
+            "professional building submission quality with height dimensions marked."
+        ),
+        "required_for": ["Building Permit", "Municipal Approval"],
+    },
+
+    # ── FIRE & SAFETY (NEW) ─────────────────────────────────────
+    {
+        "id": "fire_hydrant_system",
+        "name": "Fire Hydrant & Emergency Response Layout",
+        "category": "Fire & Safety",
+        "for_whom": "Gujarat Fire Services, Fire NOC Authority, Fire Safety Contractor",
+        "purpose": "Fire NOC application — shows complete fire protection system",
+        "what_it_shows": "Underground fire water tank, fire ring main piping, hydrant positions, foam monitors, "
+                         "emergency exits, evacuation routes, assembly point, fire alarm panel location",
+        "ai_capable": True,
+        "ai_prompt": (
+            "Professional fire hydrant and emergency response layout for {capacity} TPD "
+            "bio-bitumen plant on {length}m x {width}m plot. Show: underground fire water "
+            "tank (50,000L), red fire ring main pipeline around entire plant, fire hydrant "
+            "positions (every 30m), foam monitors near bitumen tank farm, emergency exit "
+            "routes (green arrows), assembly point location, fire alarm panel in security "
+            "cabin, emergency vehicle access road (6m wide). Fire safety drawing style."
+        ),
+        "required_for": ["Fire NOC", "Factory License"],
+    },
+
+    # ── FABRICATION (NEW) ───────────────────────────────────────
+    {
+        "id": "reactor_fabrication",
+        "name": "Reactor Fabrication / Shop Drawing",
+        "category": "Fabrication",
+        "for_whom": "Heavy Engineering Workshop, Reactor Fabricator",
+        "purpose": "Tells welder exact steel grade, plate thickness, nozzle angles for reactor manufacturing",
+        "what_it_shows": "Steel plate thickness (mm), welding specifications, nozzle positions and sizes, "
+                         "flange ratings, internal baffles, thermocouple ports, pressure rating",
+        "ai_capable": False,
+        "ai_prompt": "",
+        "required_for": ["Equipment Procurement", "Manufacturing"],
+        "note": "REQUIRES HUMAN: Mechanical engineer with ASME/IS standards for pressure vessel design",
+    },
+    {
+        "id": "tank_fabrication",
+        "name": "Storage Tank Fabrication Drawing",
+        "category": "Fabrication",
+        "for_whom": "Tank Fabricator, Welding Inspector",
+        "purpose": "Manufacturing drawing for bitumen/bio-oil storage tanks",
+        "what_it_shows": "Tank diameter, height, plate thickness, nozzle schedule, manhole position, "
+                         "heating coil details, insulation specs, vent pipe, level gauge connection",
+        "ai_capable": False,
+        "ai_prompt": "",
+        "required_for": ["Equipment Procurement"],
+        "note": "REQUIRES HUMAN: Mechanical engineer with API-650 / IS-803 tank design standards",
+    },
+
+    # ── UTILITY (NEW) ───────────────────────────────────────────
+    {
+        "id": "hvac_layout",
+        "name": "HVAC Layout (Control Room & Ventilation)",
+        "category": "Utilities",
+        "for_whom": "HVAC Contractor, Plant Operations Team",
+        "purpose": "Air conditioning for control room, exhaust ventilation for gas areas",
+        "what_it_shows": "AC unit positions for PLC room, industrial exhaust fans near scrubber/condenser, "
+                         "fresh air intake positions, duct routing, temperature zones",
+        "ai_capable": True,
+        "ai_prompt": (
+            "HVAC and ventilation layout for {capacity} TPD bio-bitumen plant. Show: "
+            "split AC units in PLC control room and admin office, industrial exhaust fans "
+            "near gas scrubber and condenser area, fresh air intake louvers, duct routing "
+            "paths on ceiling, temperature zone marking (hot zone near reactor in red, "
+            "cool zone in blue). Clean technical layout style."
+        ),
+        "required_for": ["MEP Design", "Construction Planning"],
+    },
+    {
+        "id": "drainage_network",
+        "name": "Underground Drainage & Effluent Network",
+        "category": "Utilities",
+        "for_whom": "Civil Plumber, GPCB (Pollution Control Board)",
+        "purpose": "Two separate drain systems: rainwater + oily-water sewer to oil trap",
+        "what_it_shows": "Stormwater drain (to boundary), oily-water drain (to oil interceptor), "
+                         "oil trap/interceptor location, drain slopes, manhole positions, ETP connection",
+        "ai_capable": True,
+        "ai_prompt": (
+            "Underground drainage network layout for {capacity} TPD bio-bitumen plant on "
+            "{length}m x {width}m plot. Show TWO separate drainage systems: (1) Stormwater "
+            "drain (blue dashed lines) sloping to boundary outlet, (2) Oily-water sewer "
+            "(red dashed lines) from tank farm and process area to oil interceptor pit then "
+            "to sealed collection tank. Show manhole positions, drain slopes (1:100), "
+            "oil trap detail. Technical drainage drawing style."
+        ),
+        "required_for": ["CTE Application", "Environmental Clearance"],
+    },
+
+    # ── OPERATIONS (NEW) ────────────────────────────────────────
+    {
+        "id": "as_built",
+        "name": "As-Built Drawings (Post-Construction)",
+        "category": "Operations",
+        "for_whom": "Plant Manager, Maintenance Engineer, Safety Auditors",
+        "purpose": "Final true map of actual built plant — for future maintenance and inspections",
+        "what_it_shows": "Actual positions of all equipment, pipes, cables as built (may differ from design), "
+                         "underground pipe/cable routes, valve tag numbers, instrument locations",
+        "ai_capable": False,
+        "ai_prompt": "",
+        "required_for": ["Plant Handover", "Annual Safety Audit", "Insurance"],
+        "note": "CREATED AFTER CONSTRUCTION: Site survey team updates original drawings to match reality",
+    },
 ]
 
 # Group by category
