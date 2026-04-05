@@ -105,6 +105,17 @@ DEFAULTS = {
     "num_shifts": 2,                   # 1/2/3 shifts per day
     "carbon_credit_rate_usd": 12,      # USD per tonne CO2
 
+    # ── SITE & DRAWING SETTINGS ──
+    "plot_length_m": 120,              # Plot length in metres
+    "plot_width_m": 80,                # Plot width in metres
+    "seismic_zone": "III",             # IS 1893: II, III, IV, V
+    "flood_prone": False,              # True = raise plinths +600mm
+    "build_type": "peb",               # peb (PEB sheds) or rcc (full RCC)
+    "operating_hours": 16,             # Hours per day (2 shifts = 16)
+    "drawing_scale": "1:100",          # Default drawing scale
+    "paper_size": "A1",                # A0, A1, A2, A3
+    "pyrolysis_temp_C": 500,           # Operating temperature
+
     # ── DPR PROJECT IDENTITY ──
     "dpr_version": "v1.0",
     "prepared_by": "",

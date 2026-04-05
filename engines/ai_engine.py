@@ -31,7 +31,7 @@ def load_ai_config():
         except Exception:
             pass
     return {
-        "openai_key": "", "claude_key": "", "gemini_key": "", "deepseek_key": "",
+        "openai_key": "", "claude_key": "", "gemini_key": "", "deepseek_key": "", "groq_key": "",
         "preferred_provider": "openai",
         "openai_model": "gpt-4o-mini",
         "claude_model": "claude-sonnet-4-20250514",
@@ -201,6 +201,35 @@ def _call_deepseek(prompt, system_prompt="", max_tokens=2000):
 
 
 # ══════════════════════════════════════════════════════════════════════
+# GROQ API (Free, ultra-fast — llama-3.3-70b)
+# Get free key at console.groq.com
+# ══════════════════════════════════════════════════════════════════════
+def _call_groq(prompt, system_prompt="", max_tokens=2000):
+    """Call Groq API — free tier, fastest inference."""
+    cfg = load_ai_config()
+    api_key = cfg.get("groq_key", "")
+    if not api_key:
+        return None
+    try:
+        import requests
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+        resp = requests.post("https://api.groq.com/openai/v1/chat/completions",
+                              headers=headers, timeout=30,
+                              json={"model": "llama-3.3-70b-versatile", "messages": messages,
+                                    "max_tokens": max_tokens})
+        data = resp.json()
+        if "choices" in data:
+            return data["choices"][0]["message"]["content"]
+        return None
+    except Exception:
+        return None
+
+
+# ══════════════════════════════════════════════════════════════════════
 # BUILT-IN OFFLINE ENGINE (always works, zero internet)
 # ══════════════════════════════════════════════════════════════════════
 def _call_offline(prompt, system_prompt="", max_tokens=2000):
@@ -272,15 +301,17 @@ def ask_ai(prompt, system_prompt="", max_tokens=2000):
     # Build fallback chain based on preference
     chain = []
     if pref == "openai":
-        chain = ["openai", "claude", "gemini", "deepseek", "gemini-free", "offline"]
+        chain = ["openai", "claude", "gemini", "deepseek", "groq", "gemini-free", "offline"]
     elif pref == "claude":
-        chain = ["claude", "openai", "gemini", "deepseek", "gemini-free", "offline"]
+        chain = ["claude", "openai", "gemini", "deepseek", "groq", "gemini-free", "offline"]
     elif pref == "gemini":
-        chain = ["gemini", "openai", "claude", "deepseek", "gemini-free", "offline"]
+        chain = ["gemini", "openai", "claude", "deepseek", "groq", "gemini-free", "offline"]
     elif pref == "deepseek":
-        chain = ["deepseek", "openai", "claude", "gemini", "gemini-free", "offline"]
+        chain = ["deepseek", "openai", "claude", "gemini", "groq", "gemini-free", "offline"]
+    elif pref == "groq":
+        chain = ["groq", "openai", "claude", "gemini", "deepseek", "gemini-free", "offline"]
     else:
-        chain = ["openai", "claude", "gemini", "deepseek", "gemini-free", "offline"]
+        chain = ["openai", "claude", "gemini", "deepseek", "groq", "gemini-free", "offline"]
 
     for provider in chain:
         try:
@@ -292,6 +323,8 @@ def ask_ai(prompt, system_prompt="", max_tokens=2000):
                 result = _call_gemini(prompt, system_prompt, max_tokens, use_free=False)
             elif provider == "deepseek":
                 result = _call_deepseek(prompt, system_prompt, max_tokens)
+            elif provider == "groq":
+                result = _call_groq(prompt, system_prompt, max_tokens)
             elif provider == "gemini-free":
                 result = _call_gemini(prompt, system_prompt, max_tokens, use_free=True)
             elif provider == "offline":
@@ -467,6 +500,8 @@ def ai_orchestrator(question, cfg=None):
                     result = _call_gemini(question, system, use_free=False)
                 elif provider == "deepseek":
                     result = _call_deepseek(question, system)
+                elif provider == "groq":
+                    result = _call_groq(question, system)
                 elif provider == "gemini-free":
                     result = _call_gemini(question, system, use_free=True)
                 elif provider == "offline":
@@ -515,6 +550,13 @@ def test_api_connection():
         results["deepseek"] = {"status": "OK" if r else "FAILED", "model": "deepseek-chat"}
     else:
         results["deepseek"] = {"status": "No key", "model": ""}
+
+    # Groq
+    if cfg.get("groq_key"):
+        r = _call_groq("Say 'OK' in 1 word.", max_tokens=5)
+        results["groq"] = {"status": "OK" if r else "FAILED", "model": "llama-3.3-70b-versatile"}
+    else:
+        results["groq"] = {"status": "No key", "model": ""}
 
     # Gemini free
     r = _call_gemini("Say 'OK' in 1 word.", max_tokens=5, use_free=True)
