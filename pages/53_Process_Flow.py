@@ -121,3 +121,22 @@ plot_length = max(40, cfg['capacity_tpd'] * 2)
 plot_width = max(25, cfg['capacity_tpd'] * 1.2)
 st.metric("Plot Dimensions", f"{plot_length:.0f}m x {plot_width:.0f}m ({plot_length * plot_width:.0f} sqm / {plot_length * plot_width * 10.764 / 43560:.2f} acres)")
 st.caption("Based on 30 TPD reference: 60m x 35m (2,100 sqm). Scaled linearly for other capacities.")
+
+
+# ── AI Skill: Process Optimization ──────────────────────────────────────
+st.markdown("---")
+try:
+    from engines.ai_engine import is_ai_available, ask_ai
+    if is_ai_available():
+        with st.expander("🤖 AI: Process Optimization"):
+            if st.button("Generate", type="primary", key="ai_53Proce"):
+                with st.spinner("AI working..."):
+                    _p = f"As a senior bio-bitumen consultant, generate: Process Optimization. "
+                    _p += f"Plant: {cfg.get('capacity_tpd',20):.0f} TPD, Investment: Rs {cfg.get('investment_cr',8):.2f} Cr, "
+                    _p += f"Location: {cfg.get('location','')}, {cfg.get('state','')}. "
+                    _p += "Be specific with numbers. Professional format."
+                    _r, _pv = ask_ai(_p, "Senior industrial consultant.", 1000)
+                if _r:
+                    st.markdown(_r)
+except Exception:
+    pass

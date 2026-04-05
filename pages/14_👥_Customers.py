@@ -173,3 +173,22 @@ with tab_add:
                 })
                 st.success(f"Added **{name}** (ID: {cid})")
                 st.rerun()
+
+
+# ── AI Skill: Client Outreach Email ──────────────────────────────────────
+st.markdown("---")
+try:
+    from engines.ai_engine import is_ai_available, ask_ai
+    if is_ai_available():
+        with st.expander("🤖 AI: Client Outreach Email"):
+            if st.button("Generate", type="primary", key="ai_14👥Cus"):
+                with st.spinner("AI working..."):
+                    _p = f"As a senior bio-bitumen consultant, generate: Client Outreach Email. "
+                    _p += f"Plant: {cfg.get('capacity_tpd',20):.0f} TPD, Investment: Rs {cfg.get('investment_cr',8):.2f} Cr, "
+                    _p += f"Location: {cfg.get('location','')}, {cfg.get('state','')}. "
+                    _p += "Be specific with numbers. Professional format."
+                    _r, _pv = ask_ai(_p, "Senior industrial consultant.", 1000)
+                if _r:
+                    st.markdown(_r)
+except Exception:
+    pass

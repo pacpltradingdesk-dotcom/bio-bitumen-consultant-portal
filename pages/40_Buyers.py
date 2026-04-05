@@ -84,3 +84,22 @@ with tab_bulk:
     """)
 
 st.caption("Sources: NHAI tender portal, GEM (Government e-Marketplace), State PWD websites, Industry reports")
+
+
+# ── AI Skill: Buyer Pitch Script ──────────────────────────────────────
+st.markdown("---")
+try:
+    from engines.ai_engine import is_ai_available, ask_ai
+    if is_ai_available():
+        with st.expander("🤖 AI: Buyer Pitch Script"):
+            if st.button("Generate", type="primary", key="ai_40Buyer"):
+                with st.spinner("AI working..."):
+                    _p = f"As a senior bio-bitumen consultant, generate: Buyer Pitch Script. "
+                    _p += f"Plant: {cfg.get('capacity_tpd',20):.0f} TPD, Investment: Rs {cfg.get('investment_cr',8):.2f} Cr, "
+                    _p += f"Location: {cfg.get('location','')}, {cfg.get('state','')}. "
+                    _p += "Be specific with numbers. Professional format."
+                    _r, _pv = ask_ai(_p, "Senior industrial consultant.", 1000)
+                if _r:
+                    st.markdown(_r)
+except Exception:
+    pass

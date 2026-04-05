@@ -295,3 +295,22 @@ ql2.page_link("pages/63_Competitor_Intel.py", label="Competitor Intelligence", i
 ql3.page_link("pages/71_Weather_Site.py", label="Weather & Site Analysis", icon="🌤️")
 
 st.caption(f"Data: Yahoo Finance (crude), Frankfurter/ECB (FX), World Bank (GDP), ExchangeRate-API (multi-FX) | Updated: {market.get('last_updated', 'N/A')}")
+
+
+# ── AI Skill: Market Analysis ──────────────────────────────────────
+st.markdown("---")
+try:
+    from engines.ai_engine import is_ai_available, ask_ai
+    if is_ai_available():
+        with st.expander("🤖 AI: Market Analysis"):
+            if st.button("Generate", type="primary", key="ai_04📈Mar"):
+                with st.spinner("AI working..."):
+                    _p = f"As a senior bio-bitumen consultant, generate: Market Analysis. "
+                    _p += f"Plant: {cfg.get('capacity_tpd',20):.0f} TPD, Investment: Rs {cfg.get('investment_cr',8):.2f} Cr, "
+                    _p += f"Location: {cfg.get('location','')}, {cfg.get('state','')}. "
+                    _p += "Be specific with numbers. Professional format."
+                    _r, _pv = ask_ai(_p, "Senior industrial consultant.", 1000)
+                if _r:
+                    st.markdown(_r)
+except Exception:
+    pass

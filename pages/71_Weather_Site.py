@@ -260,3 +260,22 @@ if effective_days != current_days:
         st.rerun()
 else:
     st.success(f"Financial Model already uses {current_days} days — matches weather data")
+
+
+# ── AI Skill: Construction Calendar ──────────────────────────────────────
+st.markdown("---")
+try:
+    from engines.ai_engine import is_ai_available, ask_ai
+    if is_ai_available():
+        with st.expander("🤖 AI: Construction Calendar"):
+            if st.button("Generate", type="primary", key="ai_71Weath"):
+                with st.spinner("AI working..."):
+                    _p = f"As a senior bio-bitumen consultant, generate: Construction Calendar. "
+                    _p += f"Plant: {cfg.get('capacity_tpd',20):.0f} TPD, Investment: Rs {cfg.get('investment_cr',8):.2f} Cr, "
+                    _p += f"Location: {cfg.get('location','')}, {cfg.get('state','')}. "
+                    _p += "Be specific with numbers. Professional format."
+                    _r, _pv = ask_ai(_p, "Senior industrial consultant.", 1000)
+                if _r:
+                    st.markdown(_r)
+except Exception:
+    pass

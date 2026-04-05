@@ -89,3 +89,22 @@ total_calendar = max(l["Start"] + l["Duration"] for _, l in licenses.iterrows())
 st.info(f"**Total calendar time for all licenses:** ~{total_calendar} months (many run in parallel, so effective time is 12-14 months)")
 
 st.caption("Timeline based on actual project experience. Durations may vary by state.")
+
+
+# ── AI Skill: Timeline Risk Analysis ──────────────────────────────────────
+st.markdown("---")
+try:
+    from engines.ai_engine import is_ai_available, ask_ai
+    if is_ai_available():
+        with st.expander("🤖 AI: Timeline Risk Analysis"):
+            if st.button("Generate", type="primary", key="ai_54Timel"):
+                with st.spinner("AI working..."):
+                    _p = f"As a senior bio-bitumen consultant, generate: Timeline Risk Analysis. "
+                    _p += f"Plant: {cfg.get('capacity_tpd',20):.0f} TPD, Investment: Rs {cfg.get('investment_cr',8):.2f} Cr, "
+                    _p += f"Location: {cfg.get('location','')}, {cfg.get('state','')}. "
+                    _p += "Be specific with numbers. Professional format."
+                    _r, _pv = ask_ai(_p, "Senior industrial consultant.", 1000)
+                if _r:
+                    st.markdown(_r)
+except Exception:
+    pass

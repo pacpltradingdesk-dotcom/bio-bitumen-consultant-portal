@@ -165,3 +165,22 @@ if matrix_rows:
     st.dataframe(pd.DataFrame(matrix_rows), width="stretch", hide_index=True)
 
 st.caption("Change capacity in Plant Design → auto-selects nearest available drawings here")
+
+
+# ── AI Skill: Drawing Checklist ──────────────────────────────────────
+st.markdown("---")
+try:
+    from engines.ai_engine import is_ai_available, ask_ai
+    if is_ai_available():
+        with st.expander("🤖 AI: Drawing Checklist"):
+            if st.button("Generate", type="primary", key="ai_08📐Dra"):
+                with st.spinner("AI working..."):
+                    _p = f"As a senior bio-bitumen consultant, generate: Drawing Checklist. "
+                    _p += f"Plant: {cfg.get('capacity_tpd',20):.0f} TPD, Investment: Rs {cfg.get('investment_cr',8):.2f} Cr, "
+                    _p += f"Location: {cfg.get('location','')}, {cfg.get('state','')}. "
+                    _p += "Be specific with numbers. Professional format."
+                    _r, _pv = ask_ai(_p, "Senior industrial consultant.", 1000)
+                if _r:
+                    st.markdown(_r)
+except Exception:
+    pass
