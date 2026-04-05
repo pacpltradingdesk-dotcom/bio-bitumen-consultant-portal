@@ -37,8 +37,51 @@ def get_plants():
 
 
 def get_plant(key):
-    """Return a single plant dict by capacity key (e.g. '20MT')."""
-    return PLANTS[key]
+    """Return a single plant dict by capacity key (e.g. '20MT').
+    If key not in PLANTS (e.g. '25MT'), interpolate from nearest neighbors."""
+    if key in PLANTS:
+        return PLANTS[key]
+
+    # Interpolate for missing capacities (e.g. 25MT between 20MT and 30MT)
+    try:
+        tpd = int(key.replace("MT", ""))
+        sorted_keys = sorted(PLANTS.keys(), key=lambda k: int(k.replace("MT", "")))
+        sorted_tpds = [int(k.replace("MT", "")) for k in sorted_keys]
+
+        # Find bracketing capacities
+        lower_key, upper_key = sorted_keys[0], sorted_keys[-1]
+        for i, t in enumerate(sorted_tpds):
+            if t <= tpd:
+                lower_key = sorted_keys[i]
+            if t >= tpd:
+                upper_key = sorted_keys[i]
+                break
+
+        lower = PLANTS[lower_key]
+        upper = PLANTS[upper_key]
+        lower_tpd = int(lower_key.replace("MT", ""))
+        upper_tpd = int(upper_key.replace("MT", ""))
+
+        if lower_tpd == upper_tpd:
+            return dict(lower)
+
+        # Linear interpolation factor
+        f = (tpd - lower_tpd) / (upper_tpd - lower_tpd)
+
+        interpolated = {}
+        for k in lower:
+            lv, uv = lower[k], upper[k]
+            if isinstance(lv, (int, float)) and isinstance(uv, (int, float)):
+                val = lv + (uv - lv) * f
+                interpolated[k] = round(val, 2) if isinstance(lv, float) else int(round(val))
+            else:
+                interpolated[k] = lv  # Use lower for non-numeric (strings)
+
+        interpolated["label"] = f"{tpd} MT/Day"
+        return interpolated
+    except Exception:
+        # Fallback to 20MT
+        return PLANTS.get("20MT", list(PLANTS.values())[0])
 
 
 def get_comparison_df():

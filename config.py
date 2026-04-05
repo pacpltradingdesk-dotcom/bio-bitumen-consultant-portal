@@ -14,16 +14,17 @@ SUBMISSION_DIR = DOC_ROOT / "READY_FOR_SUBMISSION"
 STATE_FORMS_DIR = DOC_ROOT / "STATE_WISE_APPLICATION_FORMS"
 
 # ── CAPACITY KEYS ─────────────────────────────────────────────────────
-CAPACITY_KEYS = ["05MT", "10MT", "15MT", "20MT", "30MT", "40MT", "50MT"]
+CAPACITY_KEYS = ["05MT", "10MT", "15MT", "20MT", "25MT", "30MT", "40MT", "50MT"]
 
 CAPACITY_LABELS = {
-    "05MT": "5 MT/Day — INR 1.5 Cr",
-    "10MT": "10 MT/Day — INR 3.0 Cr",
-    "15MT": "15 MT/Day — INR 4.5 Cr",
+    "05MT": "5 MT/Day — INR 2.0 Cr",
+    "10MT": "10 MT/Day — INR 4.0 Cr",
+    "15MT": "15 MT/Day — INR 6.0 Cr",
     "20MT": "20 MT/Day — INR 8.0 Cr",
+    "25MT": "25 MT/Day — INR 10.0 Cr",
     "30MT": "30 MT/Day — INR 12.0 Cr",
-    "40MT": "40 MT/Day — INR 14.0 Cr",
-    "50MT": "50 MT/Day — INR 16.0 Cr",
+    "40MT": "40 MT/Day — INR 16.0 Cr",
+    "50MT": "50 MT/Day — INR 20.0 Cr",
 }
 
 # ── SUBMISSION CATEGORIES (12 types) ──────────────────────────────────
