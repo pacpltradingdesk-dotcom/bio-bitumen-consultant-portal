@@ -57,7 +57,54 @@ with st.expander("Project Context — Data used for all AI generations"):
 st.markdown("---")
 
 # ══════════════════════════════════════════════════════════════════════
-# TAB 1: CUSTOM LAYOUT | TAB 2: DOCUMENT DRAWINGS | TAB 3: GALLERY
+# DRAWING REGISTRY — Who needs what
+# ══════════════════════════════════════════════════════════════════════
+from engines.drawing_master import (DRAWING_REGISTRY, DRAWING_CATEGORIES,
+    get_drawings_for_stakeholder, build_prompt_with_context, get_scope_of_work_drawings)
+
+tab_stakeholder, tab_custom, tab_docs, tab_gallery, tab_scope = st.tabs([
+    "By Stakeholder", "Custom Layout", "Document Drawings", "Gallery", "Scope of Work"
+])
+
+# ── TAB: BY STAKEHOLDER ─────────────────────────────────────────────
+with tab_stakeholder:
+    st.subheader("Drawings by Stakeholder — Who Needs What")
+    st.caption("Select who you're preparing for — see exactly what drawings they need and why")
+
+    stakeholder = st.selectbox("Preparing drawings for:",
+        ["Bank", "Investor", "Government", "Engineer", "Contractor"], key="dal_stakeholder")
+
+    drawings = get_drawings_for_stakeholder(stakeholder)
+
+    for d in drawings:
+        with st.expander(f"{'🟢' if d['ai_capable'] else '🔴'} {d['name']} — for {d['for_whom']}"):
+            st.markdown(f"**Purpose:** {d['purpose']}")
+            st.markdown(f"**What it must show:** {d['what_it_shows']}")
+            st.markdown(f"**Required for:** {', '.join(d.get('required_for', []))}")
+            if d.get("note"):
+                st.warning(d["note"])
+
+            if d["ai_capable"]:
+                prompt = build_prompt_with_context(d, cfg)
+                st.text_area(f"DALL-E Prompt", value=prompt, height=100, key=f"prompt_{d['id']}")
+
+                if st.button(f"Generate {d['name']}", type="primary", key=f"gen_{d['id']}"):
+                    with st.spinner(f"Generating {d['name']}... (30-60 seconds)"):
+                        img_url, info = generate_layout_image(prompt, "1792x1024")
+                    if img_url:
+                        st.image(img_url, caption=d['name'], use_container_width=True)
+                        fname = f"{d['id']}_{int(cfg['capacity_tpd'])}TPD.png"
+                        saved = save_layout_image(img_url, fname)
+                        if saved:
+                            with open(saved, "rb") as f:
+                                st.download_button(f"Download", f.read(), fname, "image/png", key=f"dl_{d['id']}")
+                    else:
+                        st.error(f"Failed: {info}")
+            else:
+                st.info("This drawing requires a human CAD engineer. AI can generate concept only.")
+
+# ══════════════════════════════════════════════════════════════════════
+# TAB: CUSTOM LAYOUT | DOCUMENT DRAWINGS | GALLERY (existing tabs)
 # ══════════════════════════════════════════════════════════════════════
 tab_custom, tab_docs, tab_gallery = st.tabs(["Custom Layout", "Document Drawings", "Gallery"])
 
@@ -203,7 +250,42 @@ with tab_gallery:
                 except Exception:
                     st.warning(f"Cannot display: {layout['name']}")
     else:
-        st.info("No AI-generated layouts yet. Use Custom Layout or Document Drawings tab to generate.")
+        st.info("No AI-generated layouts yet. Use tabs above to generate.")
+
+# ── TAB: SCOPE OF WORK ──────────────────────────────────────────────
+with tab_scope:
+    st.subheader("Complete Drawing Scope — For Client Proposal")
+    st.caption("Include this in your consulting proposal to show the client exactly what drawings you'll provide")
+
+    import pandas as pd
+    scope_data = get_scope_of_work_drawings()
+    scope_df = pd.DataFrame(scope_data)
+    st.dataframe(scope_df, width="stretch", hide_index=True)
+
+    st.markdown(f"""
+    ### Drawing Delivery Summary
+    - **Total Drawings:** {len(DRAWING_REGISTRY)}
+    - **AI-Generated (Concept):** {sum(1 for d in DRAWING_REGISTRY if d['ai_capable'])} drawings
+    - **Human CAD Required:** {sum(1 for d in DRAWING_REGISTRY if not d['ai_capable'])} drawings
+    - **For Bank/Investor:** {len(get_drawings_for_stakeholder('Bank'))} drawings
+    - **For Government:** {len(get_drawings_for_stakeholder('Government'))} drawings
+    - **For Engineers:** {len(get_drawings_for_stakeholder('Engineer'))} drawings
+    - **For Contractors:** {len(get_drawings_for_stakeholder('Contractor'))} drawings
+
+    ### Important Note for Client:
+    AI-generated drawings are **CONCEPT STAGE** — professional quality for presentations,
+    bank proposals, and initial approvals. For actual **CONSTRUCTION**, these concepts
+    will be converted to precise CAD drawings by a licensed engineer.
+    """)
+
+    # Export scope as Excel
+    if st.button("Download Scope as Excel", type="primary", key="dl_scope"):
+        import io
+        buf = io.BytesIO()
+        scope_df.to_excel(buf, index=False, sheet_name="Drawing Scope")
+        buf.seek(0)
+        st.download_button("Download", buf.getvalue(), "Drawing_Scope_of_Work.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_scope_xl")
 
 st.markdown("---")
 st.caption(f"{COMPANY['name']} | AI Layout Engine — Powered by OpenAI DALL-E 3")
