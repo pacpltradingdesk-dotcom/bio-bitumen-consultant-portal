@@ -1023,22 +1023,22 @@ elif slide == 51:
 # ══════════════════════════════════════════════════════════════════════
 st.markdown("---")
 
+def _nav_to(target):
+    st.session_state["slide"] = target
+
 nav1, nav2, nav3, nav4, nav5 = st.columns([1, 1, 4, 1, 1])
 
 with nav1:
     if slide > 0:
-        def go_prev():
-            st.session_state["slide"] = max(st.session_state.get("slide", 0) - 1, 0)
-        st.button("◀ Previous", key="prev", use_container_width=True, on_click=go_prev)
+        st.button("◀ Previous", key="prev", use_container_width=True,
+                  on_click=_nav_to, args=(slide - 1,))
 
 with nav2:
     if slide > 0:
-        if st.button("⏮ Start", key="first", use_container_width=True):
-            st.session_state["slide"] = 0
-            st.rerun()
+        st.button("⏮ Start", key="first", use_container_width=True,
+                  on_click=_nav_to, args=(0,))
 
 with nav3:
-    # Slide selector
     jump = st.selectbox("Jump to slide", range(TOTAL_SLIDES),
                           index=slide, format_func=lambda x: f"{x+1}. {SLIDE_TITLES[x]}",
                           key="jump_slide", label_visibility="collapsed")
@@ -1048,15 +1048,13 @@ with nav3:
 
 with nav4:
     if slide < TOTAL_SLIDES - 1:
-        if st.button("⏭ End", key="last", use_container_width=True):
-            st.session_state["slide"] = TOTAL_SLIDES - 1
-            st.rerun()
+        st.button("⏭ End", key="last", use_container_width=True,
+                  on_click=_nav_to, args=(TOTAL_SLIDES - 1,))
 
 with nav5:
     if slide < TOTAL_SLIDES - 1:
-        def go_next():
-            st.session_state["slide"] = min(st.session_state.get("slide", 0) + 1, TOTAL_SLIDES - 1)
-        st.button("Next ▶", key="next", type="primary", use_container_width=True, on_click=go_next)
+        st.button("Next ▶", key="next", type="primary", use_container_width=True,
+                  on_click=_nav_to, args=(slide + 1,))
 
 # Action buttons
 st.markdown("---")
