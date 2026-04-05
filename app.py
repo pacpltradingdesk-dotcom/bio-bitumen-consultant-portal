@@ -98,8 +98,18 @@ st.sidebar.markdown(f"### {COMPANY['trade_name']}")
 st.sidebar.markdown("**Bio Bitumen Consulting System**")
 st.sidebar.markdown("---")
 st.sidebar.markdown(f"**Config:** {cfg['capacity_tpd']:.0f} TPD")
-st.sidebar.markdown(f"**Invest:** Rs {cfg['investment_cr']:.2f} Cr")
-st.sidebar.markdown(f"**ROI:** {cfg['roi_pct']:.1f}%")
+st.sidebar.markdown(f"**Invest:** ₹{cfg['investment_cr']:.1f} Cr")
+st.sidebar.markdown(f"**ROI:** {cfg['roi_pct']:.1f}% | **IRR:** {cfg['irr_pct']:.1f}%")
+
+# Contradiction check in sidebar
+try:
+    from utils.contradiction_alerts import check_contradictions
+    _alerts = check_contradictions(cfg)
+    _errs = [a for a in _alerts if a["level"] == "error"]
+    if _errs:
+        st.sidebar.error(f"⚠️ {len(_errs)} issue(s) found!")
+except Exception:
+    pass
 
 # ══════════════════════════════════════════════════════════════════════
 # HERO BANNER

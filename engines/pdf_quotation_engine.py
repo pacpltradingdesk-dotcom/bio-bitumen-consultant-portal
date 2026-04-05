@@ -91,19 +91,19 @@ def generate_quotation_pdf(output_path, customer, plant, roi_df=None, company=No
     elements.append(Paragraph("PROJECT SUMMARY", styles["SectionHead"]))
     summary_data = [
         ["Parameter", "Value"],
-        ["Total Project Investment", f"Rs {plant['inv_cr']} Crore"],
-        ["Bank Loan (60%)", f"Rs {plant['loan_cr']} Crore"],
-        ["Equity Required (40%)", f"Rs {plant['equity_cr']} Crore"],
-        ["Revenue — Year 1", f"Rs {plant['rev_yr1_cr']} Crore"],
-        ["Revenue — Year 5 (90% util.)", f"Rs {plant['rev_yr5_cr']} Crore"],
-        ["Monthly EMI", f"Rs {plant['emi_lac_mth']} Lakhs"],
-        ["DSCR (Year 3)", f"{plant['dscr_yr3']}x"],
-        ["IRR (Equity)", f"{plant['irr_pct']}%"],
-        ["Total Staff", f"{plant['staff']}"],
-        ["Daily Output — Pyrolysis Oil", f"{plant['oil_ltr_day']:,} Litres"],
-        ["Daily Output — Biochar", f"{plant['char_kg_day']:,} Kg"],
-        ["Power Requirement", f"{plant['power_kw']} kW"],
-        ["Biomass Required", f"{plant['biomass_mt_day']} MT/day ({plant['biomass_mt_yr']:,} MT/yr)"],
+        ["Total Project Investment", f"Rs {plant.get('inv_cr', plant.get('investment_cr', 0))} Crore"],
+        ["Bank Loan (60%)", f"Rs {plant.get('loan_cr', 0)} Crore"],
+        ["Equity Required (40%)", f"Rs {plant.get('equity_cr', 0)} Crore"],
+        ["Revenue — Year 1", f"Rs {plant.get('rev_yr1_cr', 0)} Crore"],
+        ["Revenue — Year 5 (90% util.)", f"Rs {plant.get('rev_yr5_cr', 0)} Crore"],
+        ["Monthly EMI", f"Rs {plant.get('emi_lac_mth', 0)} Lakhs"],
+        ["DSCR (Year 3)", f"{plant.get('dscr_yr3', 0)}x"],
+        ["IRR (Equity)", f"{plant.get('irr_pct', 0)}%"],
+        ["Total Staff", f"{plant.get('staff', 0)}"],
+        ["Daily Output — Pyrolysis Oil", f"{plant.get('oil_ltr_day', 0):,} Litres"],
+        ["Daily Output — Biochar", f"{plant.get('char_kg_day', 0):,} Kg"],
+        ["Power Requirement", f"{plant.get('power_kw', 0)} kW"],
+        ["Biomass Required", f"{plant.get('biomass_mt_day', 0)} MT/day ({plant.get('biomass_mt_yr', 0):,} MT/yr)"],
     ]
     summary_table = Table(summary_data, colWidths=[8 * cm, 8 * cm])
     summary_table.setStyle(TableStyle([
@@ -125,18 +125,18 @@ def generate_quotation_pdf(output_path, customer, plant, roi_df=None, company=No
     elements.append(Paragraph("INVESTMENT BREAKDOWN", styles["SectionHead"]))
     cost_data = [
         ["Component", "Amount (Lakhs)"],
-        ["Civil & Building", f"{plant['civil_lac']}"],
-        ["Machinery & Equipment", f"{plant['mach_lac']}"],
-        ["GST on Machinery", f"{plant['gst_mach_lac']}"],
-        ["Working Capital", f"{plant['wc_lac']}"],
-        ["Interest During Construction", f"{plant['idc_lac']}"],
-        ["Pre-operative Expenses", f"{plant['preop_lac']}"],
-        ["Contingency", f"{plant['cont_lac']}"],
-        ["Security Deposit", f"{plant['sec_lac']}"],
+        ["Civil & Building", f"{plant.get('civil_lac', 0)}"],
+        ["Machinery & Equipment", f"{plant.get('mach_lac', 0)}"],
+        ["GST on Machinery", f"{plant.get('gst_mach_lac', 0)}"],
+        ["Working Capital", f"{plant.get('wc_lac', 0)}"],
+        ["Interest During Construction", f"{plant.get('idc_lac', 0)}"],
+        ["Pre-operative Expenses", f"{plant.get('preop_lac', 0)}"],
+        ["Contingency", f"{plant.get('cont_lac', 0)}"],
+        ["Security Deposit", f"{plant.get('sec_lac', 0)}"],
     ]
-    total_lac = (plant['civil_lac'] + plant['mach_lac'] + plant['gst_mach_lac'] +
-                 plant['wc_lac'] + plant['idc_lac'] + plant['preop_lac'] +
-                 plant['cont_lac'] + plant['sec_lac'])
+    total_lac = (plant.get('civil_lac', 0) + plant.get('mach_lac', 0) + plant.get('gst_mach_lac', 0) +
+                 plant.get('wc_lac', 0) + plant.get('idc_lac', 0) + plant.get('preop_lac', 0) +
+                 plant.get('cont_lac', 0) + plant.get('sec_lac', 0))
     cost_data.append(["TOTAL", f"{total_lac:.1f}"])
 
     cost_table = Table(cost_data, colWidths=[10 * cm, 6 * cm])
@@ -188,7 +188,7 @@ def generate_quotation_pdf(output_path, customer, plant, roi_df=None, company=No
         "Project timeline: 12-18 months from date of order confirmation.",
         "All figures are based on current market rates and subject to revision.",
         "This is a preliminary estimate. Detailed project report available on request.",
-        f"For queries, contact: {company['owner']} | {company['phone']}",
+        f"For queries, contact: {company.get('owner', '')} | {company.get('phone', '')}",
     ]
     for i, term in enumerate(terms, 1):
         elements.append(Paragraph(f"{i}. {term}", styles["NormalLeft"]))
@@ -198,7 +198,7 @@ def generate_quotation_pdf(output_path, customer, plant, roi_df=None, company=No
     elements.append(HRFlowable(width="100%", thickness=1, color=NAVY))
     elements.append(Spacer(1, 6))
     elements.append(Paragraph(
-        f"{company['name']} | GST: {company['gst']} | {company['hq']}",
+        f"{company.get('name', '')} | GST: {company.get('gst', '')} | {company.get('hq', '')}",
         styles["Footer"]))
     elements.append(Paragraph("CONFIDENTIAL — For Private Circulation Only", styles["Footer"]))
 

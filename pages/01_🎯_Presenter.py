@@ -610,9 +610,9 @@ nav1, nav2, nav3, nav4, nav5 = st.columns([1, 1, 4, 1, 1])
 
 with nav1:
     if slide > 0:
-        if st.button("◀ Previous", key="prev", use_container_width=True):
-            st.session_state["slide"] = slide - 1
-            st.rerun()
+        def go_prev():
+            st.session_state["slide"] = max(st.session_state.get("slide", 0) - 1, 0)
+        st.button("◀ Previous", key="prev", use_container_width=True, on_click=go_prev)
 
 with nav2:
     if slide > 0:
@@ -637,9 +637,9 @@ with nav4:
 
 with nav5:
     if slide < TOTAL_SLIDES - 1:
-        if st.button("Next ▶", key="next", type="primary", use_container_width=True):
-            st.session_state["slide"] = slide + 1
-            st.rerun()
+        def go_next():
+            st.session_state["slide"] = min(st.session_state.get("slide", 0) + 1, TOTAL_SLIDES - 1)
+        st.button("Next ▶", key="next", type="primary", use_container_width=True, on_click=go_next)
 
 # Action buttons
 st.markdown("---")

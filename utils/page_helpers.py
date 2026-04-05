@@ -9,14 +9,22 @@ import os
 def fix_metric_truncation():
     """Apply CSS to prevent st.metric() value truncation. Call once per page."""
     st.markdown("""<style>
+    [data-testid="metric-container"] {
+        width: 100% !important;
+        overflow: visible !important;
+    }
     [data-testid="stMetricValue"] {
         font-size: 1.1rem !important;
         white-space: nowrap !important;
         overflow: visible !important;
     }
     [data-testid="stMetricLabel"] {
-        font-size: 0.75rem !important;
+        font-size: 0.8rem !important;
         white-space: nowrap !important;
+        overflow: visible !important;
+    }
+    div[data-testid="column"] {
+        overflow: visible !important;
     }
     </style>""", unsafe_allow_html=True)
 
