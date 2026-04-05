@@ -365,6 +365,7 @@ with nav[3]:
     st.page_link("pages/65_Environmental.py", label="Environmental Impact", icon="🌱")
     st.page_link("pages/66_Risk_Matrix.py", label="Risk Matrix", icon="⚠️")
     st.page_link("pages/71_Weather_Site.py", label="Weather & Site", icon="🌤️")
+    st.page_link("pages/73_AI_Plant_Layouts.py", label="AI Plant Layouts", icon="🏗️")
 
 with nav[4]:
     st.markdown("**Client Ops**")
