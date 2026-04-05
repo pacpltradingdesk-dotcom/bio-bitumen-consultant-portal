@@ -153,3 +153,63 @@ hr {
         min-width: 0 !important;
     }
 }
+
+/* ══════════════════════════════════════════════════════════ */
+/* MOBILE RESPONSIVE — Tablet & Phone Optimization           */
+/* ══════════════════════════════════════════════════════════ */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+    [data-testid="stSidebar"] {
+        min-width: 200px !important;
+        max-width: 200px !important;
+    }
+    [data-testid="stMetricValue"] {
+        font-size: 1.0rem !important;
+    }
+    .main .block-container {
+        padding: 1rem !important;
+    }
+}
+
+/* Phone (< 768px) */
+@media (max-width: 768px) {
+    [data-testid="stSidebar"] {
+        min-width: 0px !important;
+        max-width: 0px !important;
+    }
+    [data-testid="stMetricValue"] {
+        font-size: 0.9rem !important;
+    }
+    [data-testid="stMetricLabel"] {
+        font-size: 0.7rem !important;
+    }
+    .main .block-container {
+        padding: 0.5rem !important;
+    }
+    /* Stack columns vertically on phone */
+    [data-testid="column"] {
+        width: 100% !important;
+        flex: 100% !important;
+    }
+    /* Larger touch targets */
+    .stButton button {
+        min-height: 44px !important;
+        font-size: 14px !important;
+    }
+    /* Readable tables */
+    .stDataFrame {
+        font-size: 11px !important;
+    }
+}
+
+/* iPad Presentation Mode */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+    .main .block-container {
+        max-width: 100% !important;
+        padding: 1rem 2rem !important;
+    }
+    [data-testid="stMetricValue"] {
+        font-size: 1.3rem !important;
+    }
+}

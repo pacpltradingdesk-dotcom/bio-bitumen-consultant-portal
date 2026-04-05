@@ -1,0 +1,49 @@
+name: Bio Bitumen CI/CD Tests
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install --break-system-packages -r requirements.txt
+          pip install --break-system-packages pytest
+
+      - name: Run syntax check
+        run: |
+          python -c "
+          import ast, glob
+          errors = []
+          for f in glob.glob('**/*.py', recursive=True):
+              try:
+                  ast.parse(open(f, encoding='utf-8').read())
+              except SyntaxError as e:
+                  errors.append(f'{f}: {e}')
+          if errors:
+              for e in errors: print(f'FAIL: {e}')
+              exit(1)
+          print(f'All Python files pass syntax check')
+          "
+
+      - name: Run full system test
+        env:
+          STREAMLIT_SERVER_HEADLESS: "true"
+        run: python full_system_test.py
+
+      - name: Run comprehensive audit
+        env:
+          STREAMLIT_SERVER_HEADLESS: "true"
+        run: python comprehensive_audit.py

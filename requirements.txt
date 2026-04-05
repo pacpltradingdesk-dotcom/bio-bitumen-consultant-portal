@@ -10,3 +10,4 @@ pytz
 requests
 yfinance
 fpdf2
+qrcode[pil]
