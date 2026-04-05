@@ -151,24 +151,25 @@ st.info("📊 ROI shown here is **gross operating ROI** (EBITDA/Investment) befo
 st.markdown("---")
 _ex1, _ex2 = st.columns(2)
 with _ex1:
-    if st.button("Download Excel", type="primary", key="exp_xl_57Thr"):
-        try:
-            import io
-            from openpyxl import Workbook
-            _wb = Workbook()
-            _ws = _wb.active
-            _ws.title = "Export"
-            _ws.cell(row=1, column=1, value="Bio Bitumen Export")
-            _ws.cell(row=2, column=1, value=f"Capacity: {cfg.get('capacity_tpd',20):.0f} TPD")
-            _ws.cell(row=3, column=1, value=f"Investment: Rs {cfg.get('investment_cr',8):.2f} Cr")
-            _ws.cell(row=4, column=1, value=f"ROI: {cfg.get('roi_pct',0):.1f}%")
-            _buf = io.BytesIO()
-            _wb.save(_buf)
-            _buf.seek(0)
-            st.download_button("Download", _buf.getvalue(), "export.xlsx",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xl_57Thr")
-        except Exception as _e:
-            st.error(f"Export failed: {_e}")
+    try:
+        import io as _io
+        from openpyxl import Workbook as _Wb
+        _wb = _Wb()
+        _ws = _wb.active
+        _ws.title = "Export"
+        _ws.cell(row=1, column=1, value="Bio Bitumen Export")
+        _ws.cell(row=2, column=1, value=f"Capacity: {cfg.get('capacity_tpd',20):.0f} TPD")
+        _ws.cell(row=3, column=1, value=f"Investment: Rs {cfg.get('investment_cr',8):.2f} Cr")
+        _ws.cell(row=4, column=1, value=f"ROI: {cfg.get('roi_pct',0):.1f}%")
+        _buf = _io.BytesIO()
+        _wb.save(_buf)
+        _xl_data = _buf.getvalue()
+    except Exception:
+        _xl_data = None
+    if _xl_data:
+        st.download_button("Download Excel", _xl_data, "export.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="dl_xl_57Thr", type="primary")
 with _ex2:
     if st.button("Print", key="exp_prt_57Thr"):
         import streamlit.components.v1 as _stc

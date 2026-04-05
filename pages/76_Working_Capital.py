@@ -44,6 +44,10 @@ k3.metric("Current Ratio", f"{wc['current_ratio']:.2f}",
           delta_color="normal" if wc["current_ratio"] >= 1.5 else "inverse")
 k4.metric("WC % of Investment", f"{wc['wc_pct_of_investment']:.1f}%")
 
+st.info(f"**DPR Method:** This WC calculation uses full daily revenue/cost flows (DPR landed-cost basis). "
+        f"The Financial Model uses {cfg.get('working_capital_months', 3)}-month operating cost method "
+        f"(₹ {cfg.get('working_capital_lac', 0):.1f} Lac). For bank submissions, present the Financial Model "
+        "WC figure. This DPR breakdown shows the detailed component-wise requirement.")
 st.markdown("---")
 
 # ── Detailed Breakdown ───────────────────────────────────────────────

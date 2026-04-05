@@ -237,25 +237,25 @@ st.markdown("---")
 st.subheader("Export")
 exp1, exp2, exp3 = st.columns(3)
 with exp1:
-    if st.button("Download Excel", type="primary", key="exp_xl_calc"):
-        try:
-            import io, pandas as pd
-            from openpyxl import Workbook
-            wb = Workbook()
-            ws = wb.active
-            ws.title = "Calculator Output"
-            ws.cell(row=1, column=1, value="Bio Bitumen Calculator Export")
-            ws.cell(row=2, column=1, value=f"Capacity: {cfg['capacity_tpd']:.0f} TPD")
-            ws.cell(row=3, column=1, value=f"Investment: Rs {cfg['investment_cr']:.2f} Cr")
-            ws.cell(row=4, column=1, value=f"ROI: {cfg['roi_pct']:.1f}%")
-            ws.cell(row=5, column=1, value=f"IRR: {cfg['irr_pct']:.1f}%")
-            buf = io.BytesIO()
-            wb.save(buf)
-            buf.seek(0)
-            st.download_button("Download", buf.getvalue(), "calculator_export.xlsx",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xl_c")
-        except Exception as e:
-            st.error(f"Export failed: {e}")
+    try:
+        import io as _io
+        from openpyxl import Workbook as _Wb
+        _wb = _Wb()
+        _ws = _wb.active
+        _ws.title = "Export"
+        _ws.cell(row=1, column=1, value="Bio Bitumen Export")
+        _ws.cell(row=2, column=1, value=f"Capacity: {cfg.get('capacity_tpd',20):.0f} TPD")
+        _ws.cell(row=3, column=1, value=f"Investment: Rs {cfg.get('investment_cr',8):.2f} Cr")
+        _ws.cell(row=4, column=1, value=f"ROI: {cfg.get('roi_pct',0):.1f}%")
+        _buf = _io.BytesIO()
+        _wb.save(_buf)
+        _xl_data = _buf.getvalue()
+    except Exception:
+        _xl_data = None
+    if _xl_data:
+        st.download_button("Download Excel", _xl_data, "export.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="dl_xl_61_Loa", type="primary")
 with exp2:
     if st.button("Download CSV", key="exp_csv_calc"):
         import pandas as pd

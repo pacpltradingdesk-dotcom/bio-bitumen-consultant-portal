@@ -45,8 +45,12 @@ k3.metric("Margin/Tonne", f"₹{cs['margin_pt']:,}",
           delta_color="normal" if cs['margin_pt'] > 0 else "inverse")
 k4.metric("Daily Revenue", format_inr(cs['total_rev_daily']))
 k5.metric("Annual Net Profit", format_inr(cs['annual_pnl']['net_profit']),
-          delta=f"ROI {cs['annual_pnl']['roi_pct']:.1f}%")
+          delta=f"DPR ROI {cs['annual_pnl']['roi_pct']:.1f}%")
 
+st.info("**Note:** This is the DPR-grade conservative costing (landed cost of conventional bitumen + all overheads). "
+        f"Financial Model ROI ({cfg.get('roi_pct', 20):.1f}%) uses EBITDA/Investment method which is the standard "
+        "bank presentation metric. Both are correct for different purposes — use DPR costing for per-tonne analysis, "
+        "Financial Model for investment return analysis.")
 st.markdown("---")
 
 # ══════════════════════════════════════════════════════════════════════
@@ -263,26 +267,30 @@ with tab_location:
 st.markdown("---")
 ex1, ex2 = st.columns(2)
 with ex1:
-    if st.button("Download Cost Sheet Excel", type="primary", key="dl_cost_xl"):
-        import io
-        from openpyxl import Workbook
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Cost Sheet"
-        ws.cell(row=1, column=1, value="Bio-Bitumen Complete Cost Sheet")
-        ws.cell(row=2, column=1, value=f"Capacity: {cfg['capacity_tpd']:.0f} TPD | State: {cs['state']}")
-        ws.cell(row=3, column=1, value="Cost Head")
-        ws.cell(row=3, column=2, value="Daily ₹")
-        ws.cell(row=3, column=3, value="₹/Tonne")
-        for i, (head, cost) in enumerate(cs["cost_heads"], 4):
-            ws.cell(row=i, column=1, value=head)
-            ws.cell(row=i, column=2, value=round(cost))
-            ws.cell(row=i, column=3, value=round(cost / d))
-        buf = io.BytesIO()
-        wb.save(buf)
-        buf.seek(0)
-        st.download_button("Download", buf.getvalue(), "Detailed_Cost_Sheet.xlsx",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_cs_xl")
+    try:
+        import io as _io
+        from openpyxl import Workbook as _Wb
+        _wb = _Wb()
+        _ws = _wb.active
+        _ws.title = "Cost Sheet"
+        _ws.cell(row=1, column=1, value="Bio-Bitumen Complete Cost Sheet")
+        _ws.cell(row=2, column=1, value=f"Capacity: {cfg['capacity_tpd']:.0f} TPD | State: {cs['state']}")
+        _ws.cell(row=3, column=1, value="Cost Head")
+        _ws.cell(row=3, column=2, value="Daily Rs")
+        _ws.cell(row=3, column=3, value="Rs/Tonne")
+        for _i, (_head, _cost) in enumerate(cs["cost_heads"], 4):
+            _ws.cell(row=_i, column=1, value=_head)
+            _ws.cell(row=_i, column=2, value=round(_cost))
+            _ws.cell(row=_i, column=3, value=round(_cost / d))
+        _buf = _io.BytesIO()
+        _wb.save(_buf)
+        _xl_data = _buf.getvalue()
+    except Exception:
+        _xl_data = None
+    if _xl_data:
+        st.download_button("Download Cost Sheet Excel", _xl_data, "Detailed_Cost_Sheet.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="dl_cs_xl", type="primary")
 with ex2:
     if st.button("Print", key="prt_cost"):
         import streamlit.components.v1 as _stc

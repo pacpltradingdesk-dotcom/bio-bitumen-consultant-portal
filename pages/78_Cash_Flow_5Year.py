@@ -41,6 +41,11 @@ k3.metric("5-Year Total PAT", f"₹ {cf['total_pat_5yr_cr']:.2f} Cr")
 k4.metric("Avg Annual ROI", f"{cf['avg_annual_roi']:.1f}%")
 k5.metric("Year 5 PAT", f"₹ {cf['year5_pat_cr']:.2f} Cr")
 
+st.info("**DPR Blending-Cost Basis:** This cash flow uses full DPR landed-cost method where conventional "
+        "bitumen is purchased at market price (₹45,750/T + GST + freight). This gives a conservative view. "
+        f"The Financial Model page (ROI: {cfg.get('roi_pct', 20):.1f}%) uses aggregated cost-per-MT method "
+        "standard for bank presentations. Both are valid — DPR for detailed costing, Financial Model for "
+        "investment analysis.")
 st.markdown("---")
 
 tab_cf, tab_sensitivity = st.tabs(["📊 5-Year Cash Flow", "🔬 Sensitivity Analysis"])

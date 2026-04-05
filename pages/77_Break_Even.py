@@ -49,6 +49,10 @@ k4.metric("Margin of Safety", f"{be['margin_of_safety']:.1f}%",
           delta_color="normal" if be["margin_of_safety"] > 25 else "inverse")
 k5.metric("Contribution/Tonne", f"₹{be['contribution_per_tonne']:,}")
 
+st.info("**DPR Conservative Analysis:** This break-even uses full landed-cost method (conventional bitumen at "
+        f"₹{cfg.get('price_conv_bitumen', 45750):,}/T + 18% GST + freight). The Financial Model page uses "
+        "aggregated cost-per-MT method which shows a more favorable break-even. For bank presentations, "
+        "present the Financial Model break-even alongside this DPR analysis for completeness.")
 st.markdown("---")
 
 tab_analysis, tab_scenarios, tab_chart = st.tabs([
