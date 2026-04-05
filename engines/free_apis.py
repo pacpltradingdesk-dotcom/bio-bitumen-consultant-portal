@@ -492,7 +492,195 @@ def calculate_carbon_savings(tpd, working_days=300, bio_blend_pct=20):
 
 
 # ══════════════════════════════════════════════════════════════════════
-# 10. MASTER FUNCTION — Get All Free API Data
+# 10. CRUDE OIL PRICE — Live WTI/Brent (Free APIs)
+# ══════════════════════════════════════════════════════════════════════
+def get_crude_oil_price():
+    """Fetch live crude oil price from free sources. Returns USD/barrel."""
+    cached = _read_cache("crude_oil", ttl=3600)
+    if cached:
+        return cached
+
+    # Try multiple free sources
+    sources = [
+        # Source 1: Commodities API (free tier)
+        {"url": "https://api.commodities-api.com/api/latest?access_key=free&base=USD&symbols=BRENT",
+         "parse": lambda d: d.get("data", {}).get("rates", {}).get("BRENT", 0)},
+    ]
+
+    for src in sources:
+        try:
+            resp = requests.get(src["url"], timeout=10)
+            if resp.ok:
+                data = resp.json()
+                price = src["parse"](data)
+                if price and price > 20:
+                    result = {"wti_usd": round(price, 2), "source": "Live API",
+                              "timestamp": time.strftime("%Y-%m-%d %H:%M")}
+                    _write_cache("crude_oil", result)
+                    return result
+        except Exception:
+            continue
+
+    # Estimate from FX movement (crude correlates with USD/INR)
+    fx = get_exchange_rates()
+    usd_inr = fx.get("usd_inr", 84)
+    # Rough estimate: when INR weakens, crude tends to be higher
+    estimated_wti = round(75 + (usd_inr - 83) * 2.5, 2)
+    result = {"wti_usd": max(60, min(120, estimated_wti)),
+              "source": "Estimated from FX correlation",
+              "timestamp": time.strftime("%Y-%m-%d %H:%M")}
+    _write_cache("crude_oil", result)
+    return result
+
+
+def estimate_bitumen_price():
+    """Estimate India bitumen VG30 price from crude oil + USD/INR.
+    Formula: Crude × 7.33 barrels/MT × USD/INR × 1.08 premium × 1.18 GST + logistics"""
+    crude = get_crude_oil_price()
+    fx = get_exchange_rates()
+
+    wti = crude.get("wti_usd", 85)
+    usd_inr = fx.get("usd_inr", 84)
+
+    barrels_per_tonne = 7.33
+    crude_per_tonne_inr = wti * barrels_per_tonne * usd_inr
+    bitumen_premium = 1.08  # Bitumen trades at ~8% premium over crude
+    gst = 1.18
+    logistics = 1800  # Average road freight + handling
+
+    estimated = round(crude_per_tonne_inr * bitumen_premium * gst / 1000) * 1000 + logistics
+
+    return {
+        "vg30_estimated": estimated,
+        "crude_usd": wti,
+        "usd_inr": usd_inr,
+        "formula": f"WTI ${wti} × 7.33 bbl/T × ₹{usd_inr:.2f} × 1.08 × 1.18 + ₹{logistics}",
+        "crude_source": crude.get("source", ""),
+        "fx_source": fx.get("source", ""),
+        "timestamp": time.strftime("%Y-%m-%d %H:%M"),
+    }
+
+
+# ══════════════════════════════════════════════════════════════════════
+# 11. INDIA MANDI PRICES — Agro Commodity Rates (data.gov.in)
+# ══════════════════════════════════════════════════════════════════════
+def get_mandi_prices(commodity="Rice", state="Punjab"):
+    """Fetch agricultural commodity prices from data.gov.in open data.
+    Works without API key using open datasets."""
+    cache_key = f"mandi_{commodity}_{state}".lower().replace(" ", "_")
+    cached = _read_cache(cache_key, ttl=43200)  # 12 hour cache
+    if cached:
+        return cached
+
+    # Try data.gov.in open API
+    try:
+        # Commodity daily price endpoint (open, no key needed for basic access)
+        url = f"https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
+        params = {
+            "api-key": "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b",  # data.gov.in open key
+            "format": "json",
+            "filters[commodity]": commodity,
+            "filters[state]": state,
+            "limit": 10,
+            "sort[arrival_date]": "desc",
+        }
+        resp = requests.get(url, params=params, timeout=15)
+        if resp.ok:
+            data = resp.json()
+            records = data.get("records", [])
+            if records:
+                result = {
+                    "commodity": commodity,
+                    "state": state,
+                    "prices": [{
+                        "market": r.get("market", ""),
+                        "min_price": r.get("min_price", 0),
+                        "max_price": r.get("max_price", 0),
+                        "modal_price": r.get("modal_price", 0),
+                        "date": r.get("arrival_date", ""),
+                    } for r in records[:5]],
+                    "source": "data.gov.in",
+                    "timestamp": time.strftime("%Y-%m-%d %H:%M"),
+                }
+                _write_cache(cache_key, result)
+                return result
+    except Exception:
+        pass
+
+    # Offline fallback — baseline prices
+    baselines = {
+        "rice": {"min": 1000, "max": 1500, "modal": 1200, "unit": "Quintal"},
+        "wheat": {"min": 1500, "max": 2100, "modal": 1700, "unit": "Quintal"},
+        "sugarcane": {"min": 300, "max": 400, "modal": 350, "unit": "Quintal"},
+        "mustard": {"min": 4500, "max": 6000, "modal": 5200, "unit": "Quintal"},
+    }
+    base = baselines.get(commodity.lower(), {"min": 1000, "max": 2000, "modal": 1500, "unit": "Quintal"})
+    return {
+        "commodity": commodity,
+        "state": state,
+        "prices": [{"market": "Baseline", "min_price": base["min"],
+                     "max_price": base["max"], "modal_price": base["modal"],
+                     "date": "Baseline 2025-26"}],
+        "source": "Offline baseline",
+    }
+
+
+# ══════════════════════════════════════════════════════════════════════
+# 12. CONNECTION STATUS CHECKER — Test all APIs
+# ══════════════════════════════════════════════════════════════════════
+def check_all_connections():
+    """Test all data API connections and return status dict."""
+    results = {}
+
+    # Exchange Rate
+    try:
+        r = requests.get("https://open.er-api.com/v6/latest/USD", timeout=5)
+        results["exchange_rate"] = {"status": "LIVE" if r.ok else "OFFLINE",
+                                     "name": "ExchangeRate-API", "type": "free"}
+    except Exception:
+        results["exchange_rate"] = {"status": "OFFLINE", "name": "ExchangeRate-API", "type": "free"}
+
+    # Frankfurter backup
+    try:
+        r = requests.get("https://api.frankfurter.app/latest?from=USD&to=INR", timeout=5)
+        results["frankfurter"] = {"status": "LIVE" if r.ok else "OFFLINE",
+                                   "name": "Frankfurter (backup)", "type": "free"}
+    except Exception:
+        results["frankfurter"] = {"status": "OFFLINE", "name": "Frankfurter", "type": "free"}
+
+    # Open-Meteo weather
+    try:
+        r = requests.get("https://api.open-meteo.com/v1/forecast?latitude=23&longitude=72&current=temperature_2m", timeout=5)
+        results["weather"] = {"status": "LIVE" if r.ok else "OFFLINE",
+                               "name": "Open-Meteo Weather", "type": "free"}
+    except Exception:
+        results["weather"] = {"status": "OFFLINE", "name": "Open-Meteo", "type": "free"}
+
+    # data.gov.in
+    try:
+        r = requests.get("https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key=579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b&format=json&limit=1", timeout=10)
+        results["mandi"] = {"status": "LIVE" if r.ok else "OFFLINE",
+                             "name": "data.gov.in Mandi Prices", "type": "free"}
+    except Exception:
+        results["mandi"] = {"status": "OFFLINE", "name": "data.gov.in", "type": "free"}
+
+    # World Bank
+    try:
+        r = requests.get("https://api.worldbank.org/v2/country/IND/indicator/NY.GDP.MKTP.CD?format=json&per_page=1", timeout=5)
+        results["worldbank"] = {"status": "LIVE" if r.ok else "OFFLINE",
+                                 "name": "World Bank India", "type": "free"}
+    except Exception:
+        results["worldbank"] = {"status": "OFFLINE", "name": "World Bank", "type": "free"}
+
+    # Built-in systems (always on)
+    results["dpr_engine"] = {"status": "ALWAYS ON", "name": "DPR Calculation Engine", "type": "built-in"}
+    results["offline_ai"] = {"status": "ALWAYS ON", "name": "Offline AI Knowledge Base", "type": "built-in"}
+
+    return results
+
+
+# ══════════════════════════════════════════════════════════════════════
+# MASTER FUNCTION — Get All Free API Data
 # ══════════════════════════════════════════════════════════════════════
 def get_all_free_data(city="Vadodara"):
     """Fetch all free API data in one call. Cached individually."""

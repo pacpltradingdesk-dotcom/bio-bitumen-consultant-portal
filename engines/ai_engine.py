@@ -388,6 +388,101 @@ def ai_auto_report(report_type, cfg, company):
     return ask_ai(prompt, system, max_tokens=2000)
 
 
+# ══════════════════════════════════════════════════════════════════════
+# AI ORCHESTRATOR — Routes questions to the best specialist AI
+# ══════════════════════════════════════════════════════════════════════
+def ai_orchestrator(question, cfg=None):
+    """Smart orchestrator that routes questions to the best AI specialist.
+
+    Routing logic:
+    - Financial/DPR/cost questions → DeepSeek (maths) or OpenAI (analysis)
+    - Live price/market questions → Gemini (web search) or offline engine
+    - Policy/govt/scheme questions → Gemini (web search) or offline engine
+    - Document/writing questions → Claude (best writing) or OpenAI
+    - General questions → best available via fallback chain
+
+    Returns: (answer, provider, specialist_role)
+    """
+    q = question.lower()
+
+    # Determine specialist role
+    if any(w in q for w in ['cost', 'price', 'roi', 'irr', 'dscr', 'break-even', 'profit',
+                             'investment', 'emi', 'loan', 'financial', 'margin', 'revenue']):
+        role = "financial_analyst"
+        system = ("You are a chartered accountant and financial analyst for bio-bitumen DPR. "
+                  "Give specific numbers, formulas, and calculations. Use Indian accounting standards.")
+        # Prefer DeepSeek for maths, then OpenAI
+        preferred_chain = ["deepseek", "openai", "gemini", "claude", "gemini-free", "offline"]
+
+    elif any(w in q for w in ['write', 'draft', 'document', 'dpr', 'report', 'proposal',
+                                'letter', 'email', 'application']):
+        role = "document_writer"
+        system = ("You are a professional DPR document writer. Write bank-ready, formal English. "
+                  "Use proper formatting, headings, and specific project data.")
+        # Prefer Claude for writing quality
+        preferred_chain = ["claude", "openai", "gemini", "deepseek", "gemini-free", "offline"]
+
+    elif any(w in q for w in ['policy', 'scheme', 'mnre', 'government', 'subsidy', 'tender',
+                                'nhai', 'regulation', 'compliance', 'license']):
+        role = "policy_advisor"
+        system = ("You are an expert on Indian government policies for bio-energy and infrastructure. "
+                  "Reference specific schemes, portal URLs, and application procedures.")
+        # Prefer Gemini for web search capability
+        preferred_chain = ["gemini", "gemini-free", "openai", "deepseek", "claude", "offline"]
+
+    elif any(w in q for w in ['bitumen price', 'crude oil', 'market', 'live', 'current',
+                                'today', 'latest', 'iocl']):
+        role = "market_analyst"
+        system = ("You are a commodities market analyst for Indian bitumen industry. "
+                  "Give current price estimates with sources and methodology.")
+        preferred_chain = ["gemini", "gemini-free", "openai", "offline", "deepseek", "claude"]
+
+    elif any(w in q for w in ['process', 'pyrolysis', 'technology', 'reactor', 'yield',
+                                'temperature', 'equipment', 'drawing']):
+        role = "technical_expert"
+        system = ("You are a chemical engineer specializing in biomass pyrolysis and bio-bitumen. "
+                  "Reference IS standards, CSIR-CRRI specs, and specific equipment parameters.")
+        preferred_chain = ["openai", "claude", "deepseek", "gemini", "gemini-free", "offline"]
+    else:
+        role = "general_consultant"
+        system = SYSTEM_PROMPT_BASE
+        preferred_chain = None  # Use default chain
+
+    # Add project context
+    context = ""
+    if cfg:
+        context = (f"\nProject: {cfg.get('capacity_tpd', 20):.0f} TPD, Rs {cfg.get('investment_cr', 8):.2f} Cr, "
+                   f"{cfg.get('state', 'Maharashtra')}, ROI: {cfg.get('roi_pct', 20):.1f}%")
+        system += context
+
+    # Route to specialist chain
+    if preferred_chain:
+        for provider in preferred_chain:
+            try:
+                if provider == "openai":
+                    result = _call_openai(question, system)
+                elif provider == "claude":
+                    result = _call_claude(question, system)
+                elif provider == "gemini":
+                    result = _call_gemini(question, system, use_free=False)
+                elif provider == "deepseek":
+                    result = _call_deepseek(question, system)
+                elif provider == "gemini-free":
+                    result = _call_gemini(question, system, use_free=True)
+                elif provider == "offline":
+                    result = _call_offline(question, system)
+                else:
+                    continue
+                if result and len(result) > 10:
+                    return result, provider, role
+            except Exception:
+                continue
+        return _call_offline(question, system), "offline", role
+    else:
+        result, provider = ask_ai(question, system)
+        return result, provider, role
+
+
 def test_api_connection():
     """Test all 6 AI providers — returns status dict."""
     results = {}
