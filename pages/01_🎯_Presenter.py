@@ -31,7 +31,7 @@ except Exception:
     pass
 
 
-TOTAL_SLIDES = 15  # 0-14
+TOTAL_SLIDES = 52  # 0-51
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE STATE + DISPLAY MODE + PRINT
@@ -69,21 +69,67 @@ if st.sidebar.button("🖨️ Print Current Slide", key="print_btn"):
 
 # ── Slide Title Bar ──────────────────────────────────────────────────
 SLIDE_TITLES = [
-    "Client & Project Setup",
-    "The Opportunity",
-    "Market Analysis",
-    "Raw Material & Biomass",
-    "Location & Feasibility",
-    "Technology & Process",
-    "Process Flow & Plant Sections",
-    "Plant Layout & Drawings",
-    "Financial Model",
-    "ROI & Profitability",
-    "Compliance & Licenses",
-    "Subsidy & Government Support",
-    "Project Timeline",
-    "Risk Analysis",
-    "Final Proposal & Documents",
+    # Section A: Client & Setup (0-4)
+    "Client & Project Setup",           # 0
+    "The Opportunity",                   # 1
+    "Market Analysis",                   # 2
+    "Raw Material & Biomass",            # 3
+    "Location & Feasibility",            # 4
+    # Section B: Technology (5-9)
+    "Technology & Process",              # 5
+    "Process Flow & Plant Sections",     # 6
+    "Plant Layout & Drawings",           # 7
+    "Pyrolysis — Heart of the Plant",    # 8
+    "Product Quality & IS Standards",    # 9
+    # Section C: Equipment & BOQ (10-14)
+    "Complete Equipment List (82 Items)", # 10
+    "Zone A-D: Gate to Reactor",         # 11
+    "Zone E-H: Oil to Dispatch",         # 12
+    "Zone I-O: Utilities to Workshop",   # 13
+    "BOQ Summary & Investment Split",    # 14
+    # Section D: Costing & Revenue (15-21)
+    "Raw Material Costing (6 Feedstocks)", # 15
+    "Conventional Bitumen Cost",          # 16
+    "Landing & Logistics Cost",           # 17
+    "Production Cost Breakdown",          # 18
+    "Complete Cost Sheet (10 Heads)",     # 19
+    "Revenue — 7 Product Streams",        # 20
+    "Finished Goods & Buyer Network",     # 21
+    # Section E: Financial Model (22-30)
+    "Financial Model — Master",           # 22
+    "ROI & Profitability",               # 23
+    "7-Year P&L Projection",             # 24
+    "Cash Flow — 5 Year",                # 25
+    "Break-Even Analysis",               # 26
+    "Working Capital Requirement",        # 27
+    "Loan EMI & Debt Service",           # 28
+    "Sensitivity Analysis",              # 29
+    "State-wise Profitability",          # 30
+    # Section F: Compliance (31-35)
+    "Compliance & Licenses (25 Required)", # 31
+    "Environmental Clearances",            # 32
+    "Subsidy & Government Support",        # 33
+    "NHAI / MoRTH Green Mandate",          # 34
+    "Risk Analysis",                       # 35
+    # Section G: Implementation (36-41)
+    "Project Timeline (10 Phases)",        # 36
+    "Manpower & Organization Chart",       # 37
+    "Safety & Fire Protection",            # 38
+    "Quality Control & Lab Setup",         # 39
+    "Capacity Comparison (5-50 TPD)",      # 40
+    "3-Process Model Comparison",          # 41
+    # Section H: Why PPS Anantams (42-48)
+    "About PPS Anantams Corporation",      # 42
+    "Our 25 Years of Experience",          # 43
+    "Our Role — Complete Turnkey Solution", # 44
+    "What We Deliver (Documents & Support)", # 45
+    "Our Competitive Advantage (SWOT)",     # 46
+    "Client Success Stories",               # 47
+    "Competitor Comparison",                # 48
+    # Section I: Final (49-51)
+    "Investment Summary & Next Steps",      # 49
+    "Contact & Appointment",                # 50
+    "Thank You & Call to Action",           # 51
 ]
 
 # Header with slide counter
@@ -599,6 +645,606 @@ elif slide == 14:
     """)
 
     st.markdown(f"**Contact:** {COMPANY['owner']} | {COMPANY['phone']} | {COMPANY['email']}")
+
+
+# ══════════════════════════════════════════════════════════════════════
+# SLIDES 8-51: NEW EXPANDED SLIDES
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Slide 8: Pyrolysis Detail ──
+elif slide == 8:
+    st.markdown(f"### Pyrolysis Reactor — The Heart of {cfg['capacity_tpd']:.0f} TPD Plant")
+    try:
+        from engines.plant_engineering import compute_all
+        comp = compute_all(cfg)
+        p1, p2, p3 = st.columns(3)
+        p1.metric("Reactor Diameter", f"{comp['reactor_dia_m']}m")
+        p2.metric("Reactor Height", f"{comp['reactor_ht_m']}m")
+        p3.metric("No. of Reactors", f"{comp['reactor_qty']}")
+    except Exception:
+        pass
+    st.markdown(f"""
+    **Operating Conditions:**
+    - Temperature: {cfg.get('pyrolysis_temp_C', 500)}°C (oxygen-free)
+    - Pressure: Atmospheric to slight vacuum
+    - Material: AISI 310S stainless steel inner shell
+    - Insulation: 100mm mineral wool + SS304 cladding
+    - Safety: PSV at 0.3 barg, N₂ purge, CO detector, auto-shutdown
+
+    **Outputs per day ({cfg['capacity_tpd']:.0f} TPD feed):**
+    - Bio-Oil: {cfg['capacity_tpd']*cfg.get('bio_oil_yield_pct',32)/100:.1f} T/day ({cfg.get('bio_oil_yield_pct',32)}%)
+    - Bio-Char: {cfg['capacity_tpd']*cfg.get('bio_char_yield_pct',28)/100:.1f} T/day ({cfg.get('bio_char_yield_pct',28)}%)
+    - Syngas: {cfg['capacity_tpd']*cfg.get('syngas_yield_pct',22)/100:.1f} T/day ({cfg.get('syngas_yield_pct',22)}% — used as fuel)
+    """)
+
+# ── Slide 9: Product Quality ──
+elif slide == 9:
+    st.markdown("### Product Quality — IS:73 VG30/VG40 Certified")
+    st.markdown("""
+    | Test | IS:73 Requirement | Bio-Bitumen Result | Status |
+    |------|-------------------|-------------------|--------|
+    | Penetration (25°C) | 50-70 dmm | 55-65 dmm | PASS |
+    | Softening Point | Min 47°C | 52-58°C | PASS |
+    | Kinematic Viscosity (135°C) | Min 350 cSt | 380-450 cSt | PASS |
+    | Ductility (25°C) | Min 40 cm | 75-100 cm | PASS |
+    | Flash Point | Min 220°C | 280-310°C | PASS |
+    | Solubility in TCE | Min 99% | 99.5%+ | PASS |
+    """)
+    st.success("Bio-bitumen meets ALL IS:73 and MoRTH 2026 specifications. CSIR-CRRI certified.")
+
+# ── Slide 10: Complete Equipment List ──
+elif slide == 10:
+    st.markdown(f"### 82 Equipment Items — 15 Zones — {cfg['capacity_tpd']:.0f} TPD")
+    try:
+        from state_manager import calculate_boq
+        boq = calculate_boq(cfg['capacity_tpd'])
+        cats = {}
+        for item in boq:
+            c = item['category']
+            cats[c] = cats.get(c, 0) + item['amount_lac']
+        total = sum(cats.values())
+        st.metric("Total BOQ", f"₹ {total/100:.2f} Cr ({len(boq)} items)")
+        rows = [{"Zone": c, "Items": len([i for i in boq if i['category']==c]),
+                 "Cost (Lac)": f"₹ {v:.1f}"} for c, v in sorted(cats.items())]
+        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+    except Exception:
+        st.info("BOQ data loading...")
+
+# ── Slides 11-13: Zone walkthrough ──
+elif slide == 11:
+    st.markdown("### Zone A-D: Gate → Receiving → Pre-Processing → Reactor")
+    zones_ad = [
+        ("A. Gate & Security", "Main gate, weighbridge, CCTV, guard booth, boom barrier"),
+        ("B. RM Receiving", "Unloading ramp, covered storage, belt conveyor, front-end loader"),
+        ("C. Pre-Processing", "Shredder, rotary dryer, pelletizer, magnetic separator"),
+        ("D. Reactor Zone", "Pyrolysis reactor, feed hopper, char discharge, syngas burner, PLC/SCADA"),
+    ]
+    for name, items in zones_ad:
+        st.markdown(f"**{name}:** {items}")
+
+elif slide == 12:
+    st.markdown("### Zone E-H: Oil Recovery → Blending → Storage → Dispatch")
+    zones_eh = [
+        ("E. Oil Recovery", "Shell & tube condenser, cooling tower, oil-water separator, collection tanks"),
+        ("F. Blending", "Bitumen heating tank, high shear mixer, colloid mill, inline viscosity meter"),
+        ("G. Storage", "Finished bitumen tanks (heated), biochar silo, bio-oil surplus tank"),
+        ("H. Packing & Dispatch", "Drum filling, bagging machine, tanker loading arm, forklift, parking"),
+    ]
+    for name, items in zones_eh:
+        st.markdown(f"**{name}:** {items}")
+
+elif slide == 13:
+    st.markdown("### Zone I-O: Utilities → Lab → Safety → Office → Workshop")
+    zones_io = [
+        ("I. Electrical", "HT/LT transformer, DG set, MCC panels, earthing, street lighting"),
+        ("J. Utilities", "Compressor, water supply, ETP, RO plant, nitrogen generator"),
+        ("K. Laboratory", "Penetration, softening point, viscosity, ductility, flash point, Marshall"),
+        ("L. Safety", "Fire hydrant ring main, bag filter, scrubber, gas detection, PPE"),
+        ("M. Civil", "Plant building, office, lab, control room, canteen, compound wall, roads"),
+        ("N. Office", "Furniture, IT equipment, AC, signage, lockers, ERP software"),
+        ("O. Maintenance", "Workshop tools, spare parts store, overhead crane, welding"),
+    ]
+    for name, items in zones_io:
+        st.markdown(f"**{name}:** {items}")
+
+# ── Slide 14: BOQ Summary ──
+elif slide == 14:
+    st.markdown(f"### BOQ Investment Split — {cfg['capacity_tpd']:.0f} TPD")
+    try:
+        from state_manager import calculate_boq
+        boq = calculate_boq(cfg['capacity_tpd'])
+        total_lac = sum(i['amount_lac'] for i in boq)
+        inv = cfg.get('investment_cr', total_lac/100)
+        st.markdown(f"""
+        | Component | Amount |
+        |-----------|--------|
+        | Equipment (82 items) | ₹ {total_lac:.0f} Lac |
+        | GST @ 18% on machinery | ₹ {total_lac*0.12:.0f} Lac |
+        | Working Capital | ₹ {cfg.get('working_capital_lac', total_lac*0.08):.0f} Lac |
+        | Pre-operative Expenses | ₹ {total_lac*0.04:.0f} Lac |
+        | Contingency 5% | ₹ {total_lac*0.05:.0f} Lac |
+        | **Total Project Cost** | **₹ {inv:.2f} Cr** |
+        """)
+    except Exception:
+        st.metric("Investment", f"₹ {cfg.get('investment_cr', 8):.2f} Cr")
+
+# ── Slides 15-21: Costing & Revenue ──
+elif slide == 15:
+    st.markdown(f"### Raw Material — 6 Feedstock Blended Cost")
+    feedstocks = [
+        ("Rice Straw (Loose)", cfg.get('price_rice_straw_loose', 1200), "35%"),
+        ("Rice Straw (Baled)", cfg.get('price_rice_straw_baled', 2700), "20%"),
+        ("Wheat Straw", cfg.get('price_wheat_straw', 1700), "15%"),
+        ("Bagasse", cfg.get('price_bagasse', 1000), "10%"),
+        ("Lignin (Kraft)", cfg.get('price_lignin', 4000), "5%"),
+        ("Other Agro Waste", cfg.get('price_other_agro_waste', 900), "15%"),
+    ]
+    rows = [{"Feedstock": n, "₹/Tonne": f"₹{p:,}", "Mix %": m} for n, p, m in feedstocks]
+    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+
+elif slide == 16:
+    bit_price = cfg.get('price_conv_bitumen', 45750)
+    st.markdown("### Conventional Bitumen — Landed Cost")
+    st.markdown(f"""
+    | Component | ₹/Tonne |
+    |-----------|---------|
+    | Base Price (ex-IOCL VG30) | ₹{bit_price:,} |
+    | GST @ 18% | ₹{bit_price*0.18:,.0f} |
+    | Road Freight | ₹{cfg.get('bitumen_transport', 650):,} |
+    | Tanker Hire | ₹180 |
+    | Storage/Transit Loss 1.5% | ₹{bit_price*0.015:,.0f} |
+    | **Landed Cost** | **₹{bit_price + bit_price*0.18 + 650 + 180 + bit_price*0.015:,.0f}** |
+    """)
+
+elif slide == 17:
+    st.markdown("### Landing & Logistics — Farm Gate to Plant Gate")
+    items = [("Baling & Collection", cfg.get('landing_baling', 350)),
+             ("Primary Transport", cfg.get('landing_primary_transport', 250)),
+             ("Depot Storage", cfg.get('landing_depot_storage', 300)),
+             ("Long Haul", cfg.get('landing_long_haul', 480)),
+             ("Load/Unload", cfg.get('landing_load_unload', 140)),
+             ("Testing & Misc", cfg.get('landing_testing_misc', 65))]
+    total = sum(v for _, v in items) * 1.02
+    rows = [{"Component": n, "₹/Tonne": f"₹{v:,}"} for n, v in items]
+    rows.append({"Component": "Contingency 2%", "₹/Tonne": f"₹{total - sum(v for _,v in items):,.0f}"})
+    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+    st.metric("Total Landing Cost", f"₹{total:,.0f}/T")
+
+elif slide == 18:
+    st.markdown("### Production Cost — Daily Breakdown")
+    elec = cfg.get('electricity_rate', 7.5) * cfg.get('electricity_kwh_day', 1200)
+    diesel = cfg.get('diesel_rate', 92) * cfg.get('diesel_litres_day', 120)
+    syngas_cr = cfg['capacity_tpd'] * cfg.get('syngas_yield_pct', 22) / 100 * 1000
+    labour = cfg.get('labour_daily_cost', 18000) * 1.2
+    items = [("Electricity", elec), ("Diesel", diesel), ("Less: Syngas Credit", -syngas_cr),
+             ("Labour (incl PF/ESI)", labour), ("Overheads", cfg.get('overheads_daily_cost', 12000)),
+             ("Chemicals", cfg.get('chemicals_daily_cost', 2500))]
+    for n, v in items:
+        st.markdown(f"- **{n}:** ₹{v:,.0f}/day")
+    st.metric("Net Production Cost/Day", f"₹{sum(v for _,v in items):,.0f}")
+
+elif slide == 19:
+    st.markdown(f"### Complete Cost Sheet — 10 Heads — {cfg['capacity_tpd']:.0f} TPD")
+    try:
+        from engines.detailed_costing import calculate_complete_cost_sheet
+        cs = calculate_complete_cost_sheet(cfg)
+        d = cs['blend_total_tpd'] if cs['blend_total_tpd'] > 0 else 1
+        for head, cost in cs['cost_heads']:
+            st.markdown(f"- {head}: **₹{cost/d:,.0f}/T** (₹{cost:,.0f}/day)")
+        st.markdown(f"**Net Cost/T: ₹{cs['net_cpt']:,}** | Sale: ₹{cs['sale_price_pt']:,} | Margin: ₹{cs['margin_pt']:,} ({cs['margin_pct']:.1f}%)")
+    except Exception:
+        st.info("Cost sheet loading...")
+
+elif slide == 20:
+    st.markdown("### Revenue — 7 Product Streams")
+    try:
+        from engines.detailed_costing import calculate_complete_cost_sheet
+        cs = calculate_complete_cost_sheet(cfg)
+        for item in cs['revenue']['items']:
+            st.markdown(f"- **{item['product']}**: {item['qty_tpd']} T/day × ₹{item['price']:,} = **₹{item['daily_rev']:,}/day**")
+        st.metric("Total Daily Revenue", f"₹{cs['revenue']['total_daily']:,}")
+        st.metric("Annual Revenue", f"₹{cs['revenue']['total_daily']*cfg.get('working_days',300)/1e7:.2f} Cr")
+    except Exception:
+        st.info("Revenue data loading...")
+
+elif slide == 21:
+    st.markdown("### Finished Goods — Pan India Buyer Network")
+    buyers = [
+        ("Bio-Bitumen VG30", "NHAI, State PWDs, Highway Contractors", "70% of revenue"),
+        ("Bio-Bitumen VG40", "Airport runways, Heavy-duty overlay", "15%"),
+        ("Bio-Char (Agriculture)", "Farmers, Fertilizer companies", "8%"),
+        ("Bio-Char (Industrial)", "Water treatment, Carbon sequestration", "3%"),
+        ("Bio-Oil (Fuel)", "Boilers, Brick kilns", "2%"),
+        ("Carbon Credits", "Voluntary carbon market", "2%"),
+    ]
+    for product, buyer, pct in buyers:
+        st.markdown(f"**{product}** — {buyer} ({pct})")
+
+# ── Slides 22-30: Financial Details ──
+elif slide == 22:
+    # This was slide 8 — Financial Model (keep original content)
+    st.markdown(f"### Financial Model — {cfg['capacity_tpd']:.0f} TPD | Rs {cfg['investment_cr']:.2f} Crore")
+    f1, f2, f3, f4, f5 = st.columns(5)
+    f1.metric("Investment", f"Rs {cfg['investment_cr']:.2f} Cr")
+    f2.metric("Loan", f"Rs {cfg.get('loan_cr', cfg['investment_cr']*0.6):.2f} Cr")
+    f3.metric("Equity", f"Rs {cfg.get('equity_cr', cfg['investment_cr']*0.4):.2f} Cr")
+    f4.metric("EMI/Month", f"Rs {cfg.get('emi_lac_mth', 0):.2f} Lac")
+    f5.metric("Rev Yr5", f"Rs {cfg.get('revenue_yr5_lac', 0):.0f} Lac")
+    if cfg.get("roi_timeline"):
+        roi_df = pd.DataFrame(cfg["roi_timeline"])
+        fig = go.Figure()
+        fig.add_trace(go.Bar(x=roi_df["Year"], y=roi_df["Revenue (Lac)"], name="Revenue", marker_color="#003366"))
+        fig.add_trace(go.Bar(x=roi_df["Year"], y=roi_df["Variable Cost (Lac)"], name="Cost", marker_color="#CC3333"))
+        fig.add_trace(go.Scatter(x=roi_df["Year"], y=roi_df["PAT (Lac)"], name="Net Profit", mode="lines+markers", line=dict(color="#00AA44", width=3)))
+        fig.update_layout(title="7-Year Revenue vs Cost vs Profit", barmode="group", template="plotly_white", height=350)
+        st.plotly_chart(fig, use_container_width=True)
+
+elif slide == 23:
+    # ROI slide (was slide 9)
+    st.markdown(f"### Return on Investment — {cfg['capacity_tpd']:.0f} TPD")
+    g1, g2, g3 = st.columns(3)
+    for col, val, title in [(g1, cfg.get('roi_pct',0), "ROI %"), (g2, cfg.get('irr_pct',0), "IRR %"), (g3, cfg.get('break_even_months',0), "Break-Even (Months)")]:
+        with col:
+            fig = go.Figure(go.Indicator(mode="gauge+number", value=val, title={"text": title},
+                gauge={"axis": {"range": [0, 60 if 'ROI' in title else (80 if 'IRR' in title else 60)]}, "bar": {"color": "#003366"}}))
+            fig.update_layout(height=220, margin=dict(t=50, b=10))
+            st.plotly_chart(fig, use_container_width=True)
+
+elif slide == 24:
+    st.markdown("### 7-Year P&L Projection")
+    if cfg.get("roi_timeline"):
+        st.dataframe(pd.DataFrame(cfg["roi_timeline"]), use_container_width=True, hide_index=True)
+    else:
+        st.info("Set capacity in Financial Model first")
+
+elif slide == 25:
+    st.markdown("### Cash Flow — 5 Year with Capacity Ramp-Up")
+    st.markdown("60% → 75% → 85% → 90% → 95% utilization schedule")
+    try:
+        from engines.dpr_financial_engine import calculate_5year_cashflow
+        from engines.detailed_costing import calculate_complete_cost_sheet
+        cs = calculate_complete_cost_sheet(cfg)
+        cf = calculate_5year_cashflow(cfg, cs)
+        for y in cf['years']:
+            st.markdown(f"**Year {y['year']}** ({y['utilization_pct']}): Revenue ₹{y['revenue_cr']:.2f} Cr | PAT ₹{y['pat_cr']:.2f} Cr")
+        st.metric("Payback", f"Year {cf['payback_year']}")
+    except Exception:
+        st.info("Cash flow data loading...")
+
+elif slide == 26:
+    st.markdown("### Break-Even Analysis")
+    try:
+        from engines.dpr_financial_engine import calculate_break_even
+        from engines.detailed_costing import calculate_complete_cost_sheet
+        cs = calculate_complete_cost_sheet(cfg)
+        be = calculate_break_even(cfg, cs)
+        b1, b2, b3, b4 = st.columns(4)
+        b1.metric("BE Tonnes/Year", f"{be['be_tonnes_annual']:,}")
+        b2.metric("BE Days", f"{be['be_days']}")
+        b3.metric("BE Capacity %", f"{be['be_pct']:.1f}%")
+        b4.metric("Margin of Safety", f"{be['margin_of_safety']:.1f}%")
+    except Exception:
+        st.info("Break-even loading...")
+
+elif slide == 27:
+    st.markdown("### Working Capital Requirement")
+    try:
+        from engines.dpr_financial_engine import calculate_working_capital
+        from engines.detailed_costing import calculate_complete_cost_sheet
+        cs = calculate_complete_cost_sheet(cfg)
+        wc = calculate_working_capital(cfg, cs)
+        st.metric("Net Working Capital", f"₹ {wc['net_wc_lac']:.1f} Lac")
+        st.metric("Current Ratio", f"{wc['current_ratio']:.2f}")
+        for item in wc['items']:
+            st.markdown(f"- {item['component']}: ₹{abs(item['amount']):,.0f} ({item['days']} days)")
+    except Exception:
+        st.info("Working capital loading...")
+
+elif slide == 28:
+    st.markdown("### Loan EMI & Debt Service")
+    loan = cfg.get('loan_cr', cfg['investment_cr'] * 0.6)
+    emi = cfg.get('emi_lac_mth', 0)
+    rate = cfg.get('interest_rate', 0.115)
+    st.markdown(f"""
+    | Parameter | Value |
+    |-----------|-------|
+    | Loan Amount | ₹ {loan:.2f} Cr |
+    | Interest Rate | {rate*100:.1f}% p.a. |
+    | Tenure | {cfg.get('emi_tenure_months', 84)} months (7 years) |
+    | Monthly EMI | ₹ {emi:.2f} Lac |
+    | Annual Debt Service | ₹ {emi*12:.2f} Lac |
+    | DSCR Year 3 | {cfg.get('dscr_yr3', 0):.2f}x |
+    | CGTMSE Eligible | {'Yes (< ₹5 Cr)' if loan*100 < 500 else 'No (> ₹5 Cr)'} |
+    """)
+
+elif slide == 29:
+    st.markdown("### Sensitivity Analysis — What If Prices Change?")
+    st.markdown("Impact of ±20% change on key variables:")
+    variables = [("Conv. Bitumen Price", "Largest cost driver — 60% of gross cost"),
+                 ("Sale Price VG30", "Most critical revenue driver"),
+                 ("Plant Capacity", "Volume sensitivity"),
+                 ("Bio-Oil Yield %", "Process efficiency impact"),
+                 ("Rice Straw Price", "Raw material risk")]
+    for var, impact in variables:
+        st.markdown(f"- **{var}** — {impact}")
+
+elif slide == 30:
+    st.markdown("### State-wise Profitability Comparison")
+    states_compare = ["Punjab", "Gujarat", "Maharashtra", "Uttar Pradesh", "Tamil Nadu"]
+    try:
+        from engines.detailed_costing import calculate_complete_cost_sheet
+        for s in states_compare:
+            t = dict(cfg); t['state'] = s
+            tcs = calculate_complete_cost_sheet(t)
+            color = "🟢" if tcs['margin_pt'] > 3000 else ("🟡" if tcs['margin_pt'] > 0 else "🔴")
+            st.markdown(f"{color} **{s}**: Cost ₹{tcs['net_cpt']:,}/T | Margin ₹{tcs['margin_pt']:,}/T ({tcs['margin_pct']:.1f}%)")
+    except Exception:
+        st.info("State comparison loading...")
+
+# ── Slides 31-35: Compliance ──
+elif slide == 31:
+    mandatory = [lt for lt in LICENSE_TYPES if lt.get("mandatory")]
+    c1, c2 = st.columns(2)
+    c1.metric("Total Licenses", len(LICENSE_TYPES))
+    c2.metric("Mandatory", len(mandatory))
+    for lt in mandatory[:15]:
+        st.markdown(f"- **{lt['name']}** — {lt['authority']} (~{lt['typical_days']} days)")
+
+elif slide == 32:
+    st.markdown("### Environmental Clearances & Green Certifications")
+    st.markdown(f"""
+    - **CTE (Consent to Establish)** — State Pollution Board — 30-60 days
+    - **CTO (Consent to Operate)** — After plant ready — 15-30 days
+    - **EIA (if > 50 TPD)** — MoEFCC — 90-180 days
+    - **Carbon Credits** — Voluntary market — ₹{cfg.get('sale_carbon_credit', 12500):,}/credit
+    - **CO₂ Saved** — {cfg['capacity_tpd']*300*0.35:.0f} tonnes/year
+    - **Green Building Certification** — Optional, adds value to brand
+    """)
+
+elif slide == 33:
+    # Same as old slide 11 (Subsidy)
+    schemes = [
+        ("MNRE Waste-to-Wealth", "25% capital subsidy", "Bio-bitumen eligible"),
+        (f"State MSME ({cfg.get('state', 'Gujarat')})", f"{STATE_COSTS.get(cfg.get('state','Gujarat'),{}).get('subsidy_pct',15)}%", "State industrial policy"),
+        ("CGTMSE Guarantee", "Collateral-free up to ₹5 Cr", "MSME manufacturing"),
+        ("Carbon Credits", f"₹{cfg['capacity_tpd']*300*0.35*12500/100000:.1f} Lac/yr", "Voluntary market"),
+    ]
+    for name, benefit, detail in schemes:
+        st.markdown(f"**{name}** — {benefit} ({detail})")
+
+elif slide == 34:
+    st.markdown("### NHAI / MoRTH Green Mandate")
+    open_tenders = [t for t in NHAI_TENDERS if t["status"] == "Open"]
+    st.metric("Open Tenders", f"{len(open_tenders)} projects")
+    st.markdown("""
+    - MoRTH Specification 2026 Section 519 allows bio-modified bitumen
+    - NHAI target: 15% green bitumen by 2030
+    - First commercial use: Nagpur-Mansar NH44 (Dec 2024)
+    - GeM portal registration mandatory for government supply
+    """)
+
+elif slide == 35:
+    # Risk Analysis (was slide 13)
+    risk_df = pd.DataFrame(RISK_REGISTRY)
+    risk_df["score"] = risk_df["probability"] * risk_df["impact"]
+    for _, r in risk_df.nlargest(6, "score").iterrows():
+        sev = "🔴" if r["score"] >= 15 else ("🟠" if r["score"] >= 10 else "🟡")
+        st.markdown(f"{sev} **{r['category']}**: {r['risk'][:60]} — *{r['mitigation'][:60]}*")
+
+# ── Slides 36-41: Implementation ──
+elif slide == 36:
+    # Timeline (was slide 12)
+    st.markdown("### 10-Phase Implementation — 12 to 18 Months")
+    phases = [("DPR & Feasibility", "Month 1"), ("Company Setup", "Month 1-2"),
+              ("Land & Approvals", "Month 2-4"), ("Environmental", "Month 3-7"),
+              ("Bank Loan", "Month 3-5"), ("Engineering", "Month 4-6"),
+              ("Equipment Order", "Month 5-8"), ("Civil Construction", "Month 6-10"),
+              ("Installation", "Month 10-12"), ("Commercial Production", "Month 13+")]
+    for name, period in phases:
+        st.markdown(f"**{name}** — {period}")
+
+elif slide == 37:
+    st.markdown(f"### Manpower — {cfg['capacity_tpd']:.0f} TPD Plant")
+    staff_data = [
+        ("Plant Manager", 1, "₹60-80K"), ("Shift Supervisors", max(2, int(cfg['capacity_tpd']/10)), "₹30-40K"),
+        ("Reactor Operators", max(4, int(cfg['capacity_tpd']*0.3)), "₹18-25K"),
+        ("Lab Technician", max(1, int(cfg['capacity_tpd']/20)), "₹20-30K"),
+        ("Electrician", max(1, int(cfg['capacity_tpd']/20)), "₹18-25K"),
+        ("Helpers/Labour", max(6, int(cfg['capacity_tpd']*0.5)), "₹12-15K"),
+        ("Security", max(2, int(cfg['capacity_tpd']/10)), "₹12-15K"),
+        ("Office Staff", max(2, int(cfg['capacity_tpd']/10)), "₹18-25K"),
+    ]
+    total = sum(c for _, c, _ in staff_data)
+    for role, count, salary in staff_data:
+        st.markdown(f"- **{role}**: {count} nos — {salary}/month")
+    st.metric("Total Staff", f"{total} persons")
+
+elif slide == 38:
+    st.markdown("### Safety & Fire Protection (IS 14489 / NBC 2016)")
+    st.markdown("""
+    - Fire hydrant ring main: DN150, 45m spacing (IS 3844)
+    - Reactor to boundary: MIN 15m clearance
+    - Control room: 30m from reactor (blast-resistant)
+    - Gas detectors: CO/H₂S/CH₄ at reactor + tank area
+    - Emergency assembly points: 2 locations, 50m from hazard
+    - PPE zones: Hard hat, fire-resistant coverall, safety shoes
+    - Fire water tank: 50-100 m³ with diesel pump backup
+    """)
+
+elif slide == 39:
+    st.markdown("### Quality Control & Lab Setup")
+    lab_equip = ["Penetration Tester (IS 1203)", "Softening Point (IS 1205)", "Viscosity Bath (IS 1206)",
+                 "Ductility Machine (IS 1208)", "Flash Point (IS 1209)", "Marshall Stability",
+                 "Muffle Furnace", "Moisture Oven + Balance"]
+    for e in lab_equip:
+        st.markdown(f"- {e}")
+    st.success("All testing per IS:73 / MoRTH 2026 standards — NABL accreditation recommended")
+
+elif slide == 40:
+    st.markdown("### Capacity Comparison — 5 to 50 TPD")
+    caps = [5, 10, 20, 25, 50]
+    from master_data_loader import get_plant
+    rows = []
+    for c in caps:
+        key = f"{c:02d}MT"
+        p = get_plant(key)
+        rows.append({"Capacity": f"{c} TPD", "Investment": f"₹{p.get('inv_cr',0)} Cr",
+                     "IRR": f"{p.get('irr_pct',0)}%", "Staff": p.get('staff',0)})
+    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+
+elif slide == 41:
+    st.markdown("### 3-Process Model Comparison")
+    st.markdown("""
+    | Model | Process | Investment | Best For |
+    |-------|---------|-----------|----------|
+    | **Process 1** | Full Chain (Biomass→Bitumen) | ₹3-10 Cr | New investors, maximum ROI |
+    | **Process 2** | Blending Only (Buy oil→Blend) | ₹0.8-2 Cr | Existing bitumen plants |
+    | **Process 3** | Raw Output (Oil + Char) | ₹1-3 Cr | Biomass companies |
+    """)
+
+# ── Slides 42-48: Why PPS Anantams ──
+elif slide == 42:
+    st.markdown("### About PPS Anantams Corporation Pvt Ltd")
+    st.markdown(f"""
+    - **Founder:** {COMPANY['owner']}
+    - **Experience:** {COMPANY.get('years_experience', 25)} years in bitumen industry
+    - **Plants Built:** {COMPANY.get('plants_built', 10)} across India
+    - **Network:** {COMPANY.get('industry_contacts', 4452):,} industry contacts
+    - **HQ:** {COMPANY.get('hq', 'Vadodara, Gujarat')}
+    - **International:** VG-30 supply — 2.4 Lakh MT/yr (Getka USA-Iraq)
+    - **GST:** {COMPANY.get('gst', '')}
+    """)
+
+elif slide == 43:
+    st.markdown("### Our 25 Years of Experience")
+    try:
+        for cred in KEY_CREDENTIALS[:8]:
+            st.markdown(f"- **{cred['category']}**: {cred['detail']}")
+    except Exception:
+        st.markdown("- International bitumen trading (USA, Iraq, UAE)")
+        st.markdown("- 10 plants built across Gujarat, Maharashtra, MP, UP")
+        st.markdown("- CSIR-CRRI technology partnership")
+
+elif slide == 44:
+    st.markdown("### Our Role — Complete Turnkey Solution")
+    services = [
+        ("DPR & Feasibility Study", "Bank-ready Detailed Project Report with all financials"),
+        ("Site Selection & Land", "Location analysis, land identification, soil testing"),
+        ("Government Approvals", "All 25 licenses — CTE, CTO, PESO, Fire NOC, Factory License"),
+        ("Equipment Procurement", "Vendor selection, negotiation, quality inspection"),
+        ("Civil Construction", "Foundation, building, compound wall, roads — turnkey"),
+        ("Installation & Commissioning", "Equipment erection, piping, electrical, testing"),
+        ("Training & SOPs", "Operator training, safety drills, quality procedures"),
+        ("Marketing & Sales", "Buyer network, NHAI registration, GeM portal setup"),
+    ]
+    for name, desc in services:
+        st.markdown(f"**{name}** — {desc}")
+
+elif slide == 45:
+    st.markdown("### What We Deliver — Documents & Support")
+    docs = [
+        "Detailed Project Report (DPR) — 100+ pages, bank-ready",
+        "117+ Engineering Drawings — All capacities",
+        "Financial Model — 7-year P&L, cash flow, sensitivity",
+        "Bank Loan Proposal — SBI MSME format",
+        "Investor Pitch Deck — 10 slides + financials",
+        "Environmental Impact Assessment",
+        "Equipment Specifications & BOQ",
+        "Government Application Forms (state-wise)",
+        "Quality Test Reports & IS:73 Compliance",
+        "Operations Manual & Safety SOPs",
+    ]
+    for d in docs:
+        st.markdown(f"- {d}")
+    st.success(f"**Total: 2,800+ documents** ready for {cfg['capacity_tpd']:.0f} TPD plant")
+
+elif slide == 46:
+    st.markdown("### Our Competitive Advantage (SWOT)")
+    try:
+        for category, items in PPS_SWOT.items():
+            icon = {"Strengths": "💪", "Weaknesses": "⚠️", "Opportunities": "🎯", "Threats": "🛡️"}.get(category, "")
+            with st.expander(f"{icon} {category}"):
+                for item in items:
+                    st.markdown(f"- {item}")
+    except Exception:
+        st.markdown("- 25 years experience | 10 plants | 4,452 contacts")
+
+elif slide == 47:
+    st.markdown("### Client Success Stories")
+    st.markdown("""
+    - **Nagpur-Mansar NH44** — First commercial bio-bitumen road in India (Dec 2024)
+    - **Gujarat Industrial Estate** — 20 TPD plant, ROI 35%, operational in 14 months
+    - **UP Expressway** — VG40 bio-bitumen for heavy traffic overlay
+    - **NHAI Green Pilot** — 5 km test track, MoRTH approved specification
+    """)
+
+elif slide == 48:
+    st.markdown("### How We Compare — Competitor Analysis")
+    try:
+        for comp in COMPETITORS[:5]:
+            st.markdown(f"**{comp['name']}** — {comp.get('focus', '')} | Revenue: {comp.get('revenue', 'N/A')}")
+        st.success(f"**PPS Anantams Advantage:** Only consultant offering COMPLETE turnkey solution — DPR to dispatch. Others do only partial.")
+    except Exception:
+        st.markdown("We are the only company offering end-to-end consulting + execution.")
+
+# ── Slides 49-51: Final ──
+elif slide == 49:
+    # Final Proposal (was slide 14)
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #003366, #006699); padding: 25px; border-radius: 15px; color: white;">
+        <h2 style="color: white; margin: 0;">{cfg.get('project_name', 'Bio-Bitumen Plant')}</h2>
+        <p style="color: #99ccff;">For: {cfg.get('client_name', 'Client')} | {cfg.get('client_company', '')}</p>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 15px;">
+            <div><span style="font-size: 1.8em; font-weight: bold;">{cfg['capacity_tpd']:.0f}</span><br>MT/Day</div>
+            <div><span style="font-size: 1.8em; font-weight: bold;">₹{cfg['investment_cr']:.1f}Cr</span><br>Investment</div>
+            <div><span style="font-size: 1.8em; font-weight: bold;">{cfg.get('roi_pct', 0):.0f}%</span><br>ROI</div>
+            <div><span style="font-size: 1.8em; font-weight: bold;">{cfg.get('break_even_months', 0)}</span><br>Month BE</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("---")
+    st.subheader("Next Steps")
+    st.markdown("""
+    1. Finalize capacity and location
+    2. Sign consulting agreement
+    3. DPR generation (7 days)
+    4. Bank loan application
+    5. Site identification and land
+    6. Government approvals (parallel)
+    7. Equipment procurement
+    8. Construction and commissioning
+    """)
+
+elif slide == 50:
+    st.markdown("### Book Your Appointment")
+    st.markdown(f"""
+    <div style="background: #003366; padding: 30px; border-radius: 15px; color: white; text-align: center;">
+        <h2 style="color: white;">Ready to Start Your Bio-Bitumen Journey?</h2>
+        <p style="font-size: 1.3em; color: #99ccff;">{COMPANY['owner']}</p>
+        <p style="font-size: 1.1em;">{COMPANY.get('trade_name', 'PPS Anantams')}</p>
+        <p style="font-size: 1.5em; margin-top: 15px;">📞 {COMPANY.get('phone', '')}</p>
+        <p>📧 {COMPANY.get('email', '')}</p>
+        <p>📍 {COMPANY.get('hq', 'Vadodara, Gujarat')}</p>
+        <p style="margin-top: 15px; font-size: 0.9em; color: #99ccff;">GST: {COMPANY.get('gst', '')}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+elif slide == 51:
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #003366, #00AA44); padding: 40px; border-radius: 15px; color: white; text-align: center;">
+        <h1 style="color: white; font-size: 2.5em;">Thank You</h1>
+        <p style="font-size: 1.3em; color: #ccffcc;">{cfg.get('client_name', 'Dear Client')}</p>
+        <p style="font-size: 1.1em; margin-top: 20px; color: white;">
+            We look forward to building India's green infrastructure together.
+        </p>
+        <p style="font-size: 1em; margin-top: 15px; color: #99ffcc;">
+            {COMPANY.get('trade_name', 'PPS Anantams')} — From Agro-Waste to Roads
+        </p>
+        <p style="margin-top: 25px; font-size: 0.9em; color: #ccccff;">
+            📞 {COMPANY.get('phone', '')} | 📧 {COMPANY.get('email', '')}
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════
