@@ -35,6 +35,22 @@ client_name = cfg.get("client_name", "")
 project_name = cfg.get("project_name", "")
 site_address = cfg.get("site_address", "")
 
+# Contradiction Alerts — show BEFORE any document generation
+try:
+    from utils.contradiction_alerts import show_alerts, get_readiness_score
+    errs, warns, infos = show_alerts(cfg, show_info=False)
+    score, details = get_readiness_score(cfg)
+    st.markdown(f"""
+    <div style="background: {'#00AA44' if score >= 80 else '#FF8800' if score >= 50 else '#CC3333'}15;
+                border: 2px solid {'#00AA44' if score >= 80 else '#FF8800' if score >= 50 else '#CC3333'};
+                border-radius: 10px; padding: 10px 15px; margin-bottom: 10px; text-align: center;">
+        <strong>Submission Readiness: {score}/100</strong> —
+        {'Ready for Bank Submission' if score >= 80 else 'Some issues need fixing' if score >= 50 else 'Not ready — fix errors first'}
+    </div>
+    """, unsafe_allow_html=True)
+except Exception:
+    pass
+
 if client_name and project_name:
     st.markdown(f"""
     <div style="background: #00336610; border: 2px solid #003366; border-radius: 12px;

@@ -220,3 +220,43 @@ st.dataframe(season_data, width="stretch", hide_index=True)
 
 st.markdown("---")
 st.caption(f"{COMPANY['name']} | Weather data: Open-Meteo (free) | Holidays: Nager.Date (free)")
+
+# ── Connect to Financial Model ────────────────────────────────────
+st.markdown("---")
+st.subheader("Connect to Financial Model")
+current_days = cfg.get("working_days", 300)
+try:
+    from engines.free_apis import get_india_holidays
+    holidays = get_india_holidays()
+    holiday_count = len(holidays) if holidays else 15
+except Exception:
+    holiday_count = 15
+
+# Monsoon adjustment
+monsoon_loss = {"Mumbai":45,"Pune":35,"Chennai":30,"Kolkata":40,"Guwahati":50,
+                "Bhubaneswar":35,"Hyderabad":25,"Ahmedabad":20,"Vadodara":20,
+                "Jaipur":15,"Lucknow":25,"Indore":20,"Bhopal":25,"Nagpur":20,
+                "Patna":30,"Ranchi":30,"Raipur":25,"Chandigarh":20,"Varanasi":25}
+city = cfg.get("location", "Vadodara")
+rain_days = monsoon_loss.get(city, 25)
+effective_days = 365 - 52 - holiday_count - rain_days
+
+st.markdown(f"""
+| Factor | Days |
+|--------|------|
+| Calendar | 365 |
+| Sundays | -52 |
+| Holidays | -{holiday_count} |
+| Monsoon ({city}) | -{rain_days} |
+| **Effective** | **{effective_days}** |
+""")
+
+if effective_days != current_days:
+    st.info(f"Financial Model uses {current_days} days. Weather suggests {effective_days} days.")
+    if st.button(f"Update Financial Model to {effective_days} days", type="primary", key="weather_sync"):
+        from state_manager import update_fields
+        update_fields({"working_days": effective_days})
+        st.success(f"Working days updated to {effective_days}!")
+        st.rerun()
+else:
+    st.success(f"Financial Model already uses {current_days} days — matches weather data")

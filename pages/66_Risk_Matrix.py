@@ -171,3 +171,31 @@ st.plotly_chart(fig_bar, width="stretch")
 
 st.markdown("---")
 st.caption(f"{COMPANY['name']} | Risk Assessment Module")
+
+# ── Export Section ────────────────────────────────────────────────────
+st.markdown("---")
+st.subheader("Export")
+_ex1, _ex2 = st.columns(2)
+with _ex1:
+    if st.button("Download Excel", type="primary", key="exp_xl_analysis"):
+        try:
+            import io
+            from openpyxl import Workbook
+            _wb = Workbook()
+            _ws = _wb.active
+            _ws.title = "Analysis Export"
+            _ws.cell(row=1, column=1, value="Bio Bitumen Analysis Export")
+            _ws.cell(row=2, column=1, value=f"Capacity: {cfg['capacity_tpd']:.0f} TPD")
+            _ws.cell(row=3, column=1, value=f"State: {cfg.get('state','')}")
+            _ws.cell(row=4, column=1, value=f"Investment: Rs {cfg['investment_cr']:.2f} Cr")
+            _buf = io.BytesIO()
+            _wb.save(_buf)
+            _buf.seek(0)
+            st.download_button("Download", _buf.getvalue(), "analysis_export.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xl_a")
+        except Exception as _e:
+            st.error(f"Export failed: {_e}")
+with _ex2:
+    if st.button("Print Page", key="exp_print_analysis"):
+        import streamlit.components.v1 as _stc
+        _stc.html("<script>window.print();</script>", height=0)
