@@ -299,3 +299,8 @@ with tab_scope:
 
 st.markdown("---")
 st.caption(f"{COMPANY['name']} | AI Layout Engine — Powered by OpenAI DALL-E 3")
+
+# Print
+if st.sidebar.button("Print", key="prt_73AI"):
+    import streamlit.components.v1 as _stc
+    _stc.html("<script>window.print();</script>", height=0)

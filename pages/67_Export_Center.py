@@ -290,3 +290,8 @@ try:
                     st.markdown(_r)
 except Exception:
     pass
+
+# Print
+if st.sidebar.button("Print", key="prt_67Exp"):
+    import streamlit.components.v1 as _stc
+    _stc.html("<script>window.print();</script>", height=0)
