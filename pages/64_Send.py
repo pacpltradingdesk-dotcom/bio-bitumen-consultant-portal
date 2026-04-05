@@ -112,15 +112,17 @@ with tab_email:
     # Generate email body using LIVE cfg values
     default_body = generate_email_body(customer, plant_live, COMPANY)
 
-    # Show HTML editor + preview side by side
-    col_edit, col_preview = st.columns(2)
-    with col_edit:
-        st.caption("Edit Email (HTML)")
+    # Email body — show rendered preview, hide raw HTML in expander
+    try:
+        stc.html(default_body, height=320, scrolling=True)
+    except Exception:
+        st.markdown(default_body, unsafe_allow_html=True)
+
+    with st.expander("Edit Email HTML (advanced)"):
         body = st.text_area("Email Body", value=default_body, height=300, key="email_body",
                             label_visibility="collapsed")
-    with col_preview:
-        st.caption("Preview")
-        stc.html(body, height=300, scrolling=True)
+    if "email_body" not in st.session_state:
+        body = default_body
 
     # Attachments
     attachments = []

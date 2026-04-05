@@ -187,9 +187,10 @@ st.markdown("---")
 # PLANT CAPACITIES AT A GLANCE
 # ══════════════════════════════════════════════════════════════════════
 st.subheader("Plant Capacities at a Glance")
-cols = st.columns(7)
+plant_count = len(plants)
+cols = st.columns(min(plant_count, 8))
 for i, (key, p) in enumerate(plants.items()):
-    with cols[i]:
+    with cols[i % len(cols)]:
         st.markdown(f"""
 **{p.get('label', key)}**
 - Invest: **Rs {p['inv_cr']} Cr**
