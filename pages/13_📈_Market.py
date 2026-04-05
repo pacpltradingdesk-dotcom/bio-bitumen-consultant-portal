@@ -119,9 +119,9 @@ st.markdown(f"""
 """)
 
 # Impact on Bio-Bitumen
-bio_price = 35000  # Bio-bitumen selling price
+bio_price = cfg.get('selling_price_per_mt', 35000)
 discount = vg30.get('vg30_estimated', 48000) - bio_price
-st.success(f"**Bio-Bitumen Advantage:** At Rs 35,000/MT vs VG30 at Rs {vg30.get('vg30_estimated', 48000):,.0f}/MT, "
+st.success(f"**Bio-Bitumen Advantage:** At Rs {bio_price:,}/MT vs VG30 at Rs {vg30.get('vg30_estimated', 48000):,.0f}/MT, "
            f"bio-bitumen offers a **Rs {discount:,.0f}/MT discount** ({discount/vg30.get('vg30_estimated', 48000)*100:.1f}% cheaper)")
 
 st.markdown("---")

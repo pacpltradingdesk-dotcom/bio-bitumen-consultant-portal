@@ -37,9 +37,9 @@ col_in, col_out = st.columns([1, 2])
 
 with col_in:
     st.subheader("Adjust Parameters")
-    capacity = st.slider("Plant Capacity (TPD)", 5, 100, 20, 5, key="roi_cap")
-    selling_price = st.slider("Selling Price (Rs/MT)", 25000, 55000, 35000, 1000, key="roi_sp")
-    biomass_cost = st.slider("Biomass Cost (Rs/MT)", 800, 4000, 2000, 100, key="roi_bc")
+    capacity = st.slider("Plant Capacity (TPD)", 5, 100, int(cfg.get('capacity_tpd', 20)), 5, key="roi_cap")
+    selling_price = st.slider("Selling Price (Rs/MT)", 25000, 55000, int(cfg.get('selling_price_per_mt', 35000)), 1000, key="roi_sp")
+    biomass_cost = st.slider("Biomass Cost (Rs/MT)", 800, 4000, int(cfg.get('raw_material_cost_per_mt', 8000) / 4), 100, key="roi_bc")
     equity_pct = st.slider("Equity % (rest is loan)", 10, 100, 30, 5, key="roi_eq")
     process = st.radio("Process Model", [1, 2, 3],
                         format_func=lambda x: {1: "Full Chain (Biomass to Bitumen)",

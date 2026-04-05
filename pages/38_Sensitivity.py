@@ -39,10 +39,10 @@ st.markdown("**Which variable impacts ROI the most?**")
 
 # Test +/- 20% on each variable
 variables = [
-    ("Selling Price", "selling_price", 35000, 0.20),
-    ("Raw Material Cost", "biomass_cost_mt", 2000, 0.20),
+    ("Selling Price", "selling_price", cfg.get('selling_price_per_mt', 35000), 0.20),
+    ("Raw Material Cost", "biomass_cost_mt", cfg.get('raw_material_cost_per_mt', 8000) / 4, 0.20),
     ("Capacity Utilization", "util_adj", 1.0, 0.20),
-    ("Power Cost", "power_rate", 7.50, 0.20),
+    ("Power Cost", "power_rate", cfg.get('electricity_rate', 7.50), 0.20),
     ("Labour Cost", "labor_daily", 450, 0.30),
     ("Interest Rate", "interest_rate", 0.115, 0.30),
     ("Equity Ratio", "equity_ratio", 0.40, 0.25),
@@ -107,7 +107,7 @@ with col1:
     rois = []
     for price in prices:
         # Approximate ROI adjustment based on price
-        price_ratio = price / 35000
+        price_ratio = price / cfg.get('selling_price_per_mt', 35000)
         adj_roi = base["roi_pct"] * price_ratio * 0.8  # Non-linear adjustment
         rois.append(adj_roi)
 

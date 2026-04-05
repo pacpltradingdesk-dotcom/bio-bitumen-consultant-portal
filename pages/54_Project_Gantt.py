@@ -35,7 +35,7 @@ customers = get_all_customers()
 
 if not customers:
     st.warning("No customers in CRM yet.")
-    st.markdown("**Demo Preview — Sample 20 TPD Project Timeline:**")
+    st.markdown(f"**Demo Preview — Sample {cfg['capacity_tpd']:.0f} TPD Project Timeline:**")
     import plotly.express as px
     import datetime, pandas as pd
     demo_data = [{"Task":"Pre-Feasibility","Start":"2026-06-01","Finish":"2026-07-01"},{"Task":"Company Setup","Start":"2026-07-01","Finish":"2026-08-01"},{"Task":"Land & Approvals","Start":"2026-07-15","Finish":"2026-10-15"},{"Task":"Bank Loan","Start":"2026-08-01","Finish":"2026-11-01"},{"Task":"Construction","Start":"2026-11-01","Finish":"2027-04-01"},{"Task":"Commissioning","Start":"2027-04-01","Finish":"2027-07-01"}]

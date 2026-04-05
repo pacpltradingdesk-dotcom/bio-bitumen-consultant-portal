@@ -186,7 +186,7 @@ with b2:
 
     **Bio-Bitumen Potential (15% replacement):**
     - Volume: **{total_bitumen * 0.15:,.0f} MT**
-    - Revenue: **Rs {total_bitumen * 0.15 * 35000 / 10000000:.1f} Cr**
+    - Revenue: **Rs {total_bitumen * 0.15 * cfg.get('selling_price_per_mt', 35000) / 10000000:.1f} Cr**
 
     **Your Supply Capacity:**
     - At {cfg['capacity_tpd']:.0f} TPD x 300 days = {cfg['capacity_tpd'] * 300:,.0f} MT/year

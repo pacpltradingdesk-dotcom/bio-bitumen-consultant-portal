@@ -26,7 +26,7 @@ st.markdown("---")
 # ═══════════════════════════════════════════════════════════════════
 # PLANT SECTIONS (from uploaded 30TPD layout images)
 # ═══════════════════════════════════════════════════════════════════
-st.subheader("Plant Layout Sections (from 30 TPD Reference Design)")
+st.subheader(f"Plant Layout Sections — {cfg['capacity_tpd']:.0f} TPD")
 
 sections = pd.DataFrame([
     {"#": 1, "Section": "RAW MATERIAL RECEIVING AREA", "Color": "Green", "Key Equipment": "Truck Access Road, Weigh Bridge, Open Storage Yard, Covered Shed", "Area": "~15% of plot"},
@@ -124,10 +124,10 @@ st.markdown("""
 
 # Plot dimensions
 st.subheader(f"Plot Size Required — {cfg['capacity_tpd']:.0f} TPD Plant")
-plot_length = max(40, cfg['capacity_tpd'] * 2)
-plot_width = max(25, cfg['capacity_tpd'] * 1.2)
-st.metric("Plot Dimensions", f"{plot_length:.0f}m x {plot_width:.0f}m ({plot_length * plot_width:.0f} sqm / {plot_length * plot_width * 10.764 / 43560:.2f} acres)")
-st.caption("Based on 30 TPD reference: 60m x 35m (2,100 sqm). Scaled linearly for other capacities.")
+plot_length = cfg.get('plot_length_m', max(60, int(cfg['capacity_tpd'] * 4)))
+plot_width = cfg.get('plot_width_m', max(40, int(cfg['capacity_tpd'] * 3)))
+st.metric("Plot Dimensions", f"{plot_length:.0f}m x {plot_width:.0f}m ({plot_length * plot_width:.0f} sqm / {plot_length * plot_width / 4047:.2f} acres)")
+st.caption(f"Auto-scaled for {cfg['capacity_tpd']:.0f} TPD. Edit in Project Setup → Plot Dimensions.")
 
 
 # ── AI Skill: Process Optimization ──────────────────────────────────────

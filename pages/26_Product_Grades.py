@@ -94,9 +94,12 @@ st.dataframe(products, width="stretch", hide_index=True)
 
 # Revenue mix chart
 import plotly.graph_objects as go
+sp_vg30 = cfg.get('sale_bio_bitumen_vg30', 44000)
+sp_vg40 = cfg.get('sale_bio_bitumen_vg40', 48000)
+sp_char = cfg.get('sale_biochar_agri', 26000)
 fig2 = go.Figure(data=[go.Bar(
     x=["Bio-Binder", "VG-30", "VG-40", "CRMB", "PMB", "Emulsion", "Biochar", "Act. Carbon"],
-    y=[65000, 51000, 51500, 58500, 64000, 42000, 13500, 35000],
+    y=[65000, sp_vg30, sp_vg40, 58500, 64000, 42000, sp_char, 35000],
     marker_color=["#003366", "#006699", "#004c8c", "#0088cc", "#00aadd", "#FF8800", "#228B22", "#333333"],
 )])
 fig2.update_layout(title="Product Selling Price (Rs/MT)", template="plotly_white",
