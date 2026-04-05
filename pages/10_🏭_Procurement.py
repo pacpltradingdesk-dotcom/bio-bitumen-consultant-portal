@@ -125,3 +125,40 @@ with tab_compare:
         # Machinery as % of total
         mach_pct = plant.get("mach_lac", 0) / (cfg["investment_lac"] or 1) * 100
         st.metric("Machinery as % of Total Investment", f"{mach_pct:.1f}%")
+
+# ══════════════════════════════════════════════════════════════════════
+# AI SKILLS — Right where you need them
+# ══════════════════════════════════════════════════════════════════════
+st.markdown("---")
+st.subheader("AI Procurement Tools")
+
+try:
+    from engines.ai_engine import is_ai_available
+    if is_ai_available():
+        from engines.ai_skills import read_vendor_quotation, generate_bom_from_description
+
+        skill_tab1, skill_tab2 = st.tabs(["📋 Analyze Vendor Quote", "📦 Generate BOM"])
+
+        with skill_tab1:
+            st.caption("Paste a vendor quotation → AI extracts key data and rates it")
+            quote_text = st.text_area("Paste vendor quotation text here:", height=150, key="vendor_quote_text")
+            if st.button("Analyze Quote", type="primary", key="analyze_quote") and quote_text:
+                with st.spinner("AI analyzing quotation..."):
+                    result, prov = read_vendor_quotation(quote_text, cfg)
+                if result:
+                    st.markdown(result)
+                    st.caption(f"Powered by {prov}")
+
+        with skill_tab2:
+            st.caption("Describe equipment → AI generates Bill of Materials")
+            bom_desc = st.text_area("Describe the equipment/system:", height=100, key="bom_desc",
+                placeholder="e.g., Piping from reactor to condenser, 6 inch MS pipe, 20m length, with isolation valves")
+            if st.button("Generate BOM", type="primary", key="gen_bom") and bom_desc:
+                with st.spinner("AI generating Bill of Materials..."):
+                    result, prov = generate_bom_from_description(bom_desc, cfg)
+                if result:
+                    st.markdown(result)
+    else:
+        st.info("Add API keys in AI Settings to enable AI procurement tools")
+except Exception:
+    pass

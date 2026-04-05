@@ -419,3 +419,54 @@ if passed < len(checks):
 
 st.markdown("---")
 st.caption(f"{COMPANY['name']} | Document Hub | Client-personalized professional output")
+
+# ══════════════════════════════════════════════════════════════════════
+# AI DOCUMENT SKILLS — Generate specialized content
+# ══════════════════════════════════════════════════════════════════════
+st.markdown("---")
+st.subheader("AI-Powered Document Generation")
+
+try:
+    from engines.ai_engine import is_ai_available
+    if is_ai_available():
+        from engines.ai_skills import generate_investor_deck_content, generate_financial_projection_json, format_site_report
+        from config import COMPANY as _COMP
+
+        doc_skill1, doc_skill2, doc_skill3 = st.tabs(["💼 Investor Deck", "📊 AI Financial Projection", "🏗️ Site Report"])
+
+        with doc_skill1:
+            st.caption("Generate 10-slide investor presentation content")
+            if st.button("Generate Investor Deck", type="primary", key="gen_inv_deck"):
+                with st.spinner("AI creating investor presentation... (30 seconds)"):
+                    result, prov = generate_investor_deck_content(cfg, _COMP)
+                if result:
+                    st.markdown(result)
+                    st.download_button("Download Deck Content", result, "Investor_Deck_Content.txt", "text/plain", key="dl_deck")
+
+        with doc_skill2:
+            st.caption("AI generates 5-year projection as structured data")
+            if st.button("Generate AI Financial Projection", type="primary", key="gen_ai_fin"):
+                with st.spinner("AI generating financial projection..."):
+                    data, prov = generate_financial_projection_json(cfg)
+                if data:
+                    import pandas as pd
+                    st.json(data)
+                    if "yearly" in data:
+                        st.dataframe(pd.DataFrame(data["yearly"]), width="stretch", hide_index=True)
+                else:
+                    st.warning("Could not generate structured projection. Try again.")
+
+        with doc_skill3:
+            st.caption("Paste raw site notes → get formal daily progress report")
+            site_notes = st.text_area("Raw site notes:", height=120, key="site_notes_hub",
+                placeholder="Today poured concrete for reactor foundation. Cement truck 2 hrs late. Tomorrow start tank walls.")
+            if st.button("Generate Site Report", type="primary", key="gen_site_rpt") and site_notes:
+                with st.spinner("AI formatting site report..."):
+                    result, prov = format_site_report(site_notes, cfg)
+                if result:
+                    st.markdown(result)
+                    st.download_button("Download Report", result, "Site_Progress_Report.txt", "text/plain", key="dl_site_rpt")
+    else:
+        st.info("Add API keys in AI Settings for AI document generation")
+except Exception:
+    pass

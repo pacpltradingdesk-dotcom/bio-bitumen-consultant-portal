@@ -216,3 +216,44 @@ with _ex2:
     if st.button("Print Page", key="exp_print_analysis"):
         import streamlit.components.v1 as _stc
         _stc.html("<script>window.print();</script>", height=0)
+
+# ══════════════════════════════════════════════════════════════════════
+# AI COMPLIANCE TOOLS — Draft applications automatically
+# ══════════════════════════════════════════════════════════════════════
+st.markdown("---")
+st.subheader("AI Compliance Tools")
+
+try:
+    from engines.ai_engine import is_ai_available
+    if is_ai_available():
+        from engines.ai_skills import draft_gpcb_application, draft_factory_license, get_compliance_checklist
+
+        comp_tab1, comp_tab2, comp_tab3 = st.tabs(["📄 Draft GPCB Application", "🏭 Draft Factory License", "✅ State Checklist"])
+
+        with comp_tab1:
+            if st.button("Draft CTE Application", type="primary", key="draft_cte"):
+                with st.spinner("AI drafting GPCB application..."):
+                    result, prov = draft_gpcb_application(cfg)
+                if result:
+                    st.markdown(result)
+                    st.download_button("Download Application", result, "GPCB_CTE_Application.txt", "text/plain", key="dl_cte")
+
+        with comp_tab2:
+            if st.button("Draft Factory License", type="primary", key="draft_fl"):
+                with st.spinner("AI drafting Factory License application..."):
+                    result, prov = draft_factory_license(cfg)
+                if result:
+                    st.markdown(result)
+                    st.download_button("Download Application", result, "Factory_License_Application.txt", "text/plain", key="dl_fl")
+
+        with comp_tab3:
+            if st.button("Generate State Checklist", type="primary", key="gen_checklist"):
+                with st.spinner(f"AI generating {cfg.get('state','Gujarat')} compliance checklist..."):
+                    result, prov = get_compliance_checklist(cfg)
+                if result:
+                    st.markdown(result)
+                    st.download_button("Download Checklist", result, "Compliance_Checklist.txt", "text/plain", key="dl_checklist")
+    else:
+        st.info("Add API keys in AI Settings to enable AI compliance tools")
+except Exception:
+    pass
