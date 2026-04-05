@@ -39,6 +39,23 @@ if not has_key:
 
 st.success("OpenAI API connected — DALL-E 3 ready")
 
+# ── MASTER CONTEXT VALIDATION — Block if critical data missing ────
+from engines.master_context import validate_before_generation, get_parameter_popup
+is_valid, master_context, missing_popup = validate_before_generation(cfg)
+
+if not is_valid:
+    st.error("Missing required project data! Fill these before generating professional layouts:")
+    st.markdown(missing_popup)
+    st.page_link("pages/03_📝_Project_Setup.py", label="Go to Project Setup", icon="📝")
+    st.caption("AI will NOT guess missing values — all inputs must be provided for accurate output")
+
+# Show what data is being used
+with st.expander("Project Context — Data used for all AI generations"):
+    st.text(master_context[:2000] + "..." if len(master_context) > 2000 else master_context)
+    st.caption("This data is prepended to every AI prompt. AI will NEVER guess — it uses only YOUR values.")
+
+st.markdown("---")
+
 # ══════════════════════════════════════════════════════════════════════
 # TAB 1: CUSTOM LAYOUT | TAB 2: DOCUMENT DRAWINGS | TAB 3: GALLERY
 # ══════════════════════════════════════════════════════════════════════

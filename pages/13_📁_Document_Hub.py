@@ -35,6 +35,17 @@ client_name = cfg.get("client_name", "")
 project_name = cfg.get("project_name", "")
 site_address = cfg.get("site_address", "")
 
+# Master Context Validation — block if critical data missing
+try:
+    from engines.master_context import validate_before_generation
+    _valid, _ctx, _missing = validate_before_generation(cfg)
+    if not _valid:
+        st.error("Missing required project data for professional document output:")
+        st.markdown(_missing)
+        st.page_link("pages/03_📝_Project_Setup.py", label="Fill Project Setup", icon="📝")
+except Exception:
+    pass
+
 # Contradiction Alerts — show BEFORE any document generation
 try:
     from utils.contradiction_alerts import show_alerts, get_readiness_score
