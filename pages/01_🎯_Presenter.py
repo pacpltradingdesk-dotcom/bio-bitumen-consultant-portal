@@ -171,8 +171,10 @@ if slide == 0:
         inp_city = st.text_input("City", value=cfg.get("location", ""), key="p_city")
         inp_address = st.text_area("Site Address", value=cfg.get("site_address", ""), height=80, key="p_addr")
     with c2:
-        inp_cap = st.selectbox("Plant Capacity (TPD) *", [5, 10, 15, 20, 30, 40, 50],
-                                index=[5,10,15,20,30,40,50].index(int(cfg["capacity_tpd"])) if int(cfg["capacity_tpd"]) in [5,10,15,20,30,40,50] else 3, key="p_cap")
+        cap_options = [5, 10, 15, 20, 25, 30, 40, 50]
+        cur_cap = int(cfg["capacity_tpd"])
+        cap_idx = cap_options.index(cur_cap) if cur_cap in cap_options else 3
+        inp_cap = st.selectbox("Plant Capacity (TPD) *", cap_options, index=cap_idx, key="p_cap")
         inp_budget = st.number_input("Budget (Rs Crore)", 0.5, 50.0, float(cfg.get("investment_cr", 8)), 0.5, key="p_budget")
         inp_biomass = st.selectbox("Primary Biomass", ["Rice Straw", "Wheat Straw", "Sugarcane Bagasse",
                                     "Cotton Stalk", "Groundnut Shell", "Mixed"], key="p_biomass")
@@ -1023,38 +1025,43 @@ elif slide == 51:
 # ══════════════════════════════════════════════════════════════════════
 st.markdown("---")
 
-def _nav_to(target):
-    st.session_state["slide"] = target
+def _go_next():
+    st.session_state["slide"] = min(st.session_state.get("slide", 0) + 1, TOTAL_SLIDES - 1)
+
+def _go_prev():
+    st.session_state["slide"] = max(st.session_state.get("slide", 0) - 1, 0)
+
+def _go_start():
+    st.session_state["slide"] = 0
+
+def _go_end():
+    st.session_state["slide"] = TOTAL_SLIDES - 1
+
+def _jump_to():
+    st.session_state["slide"] = st.session_state.get("jump_slide", 0)
 
 nav1, nav2, nav3, nav4, nav5 = st.columns([1, 1, 4, 1, 1])
 
 with nav1:
     if slide > 0:
-        st.button("◀ Previous", key="prev", use_container_width=True,
-                  on_click=_nav_to, args=(slide - 1,))
+        st.button("◀ Previous", key="prev", use_container_width=True, on_click=_go_prev)
 
 with nav2:
     if slide > 0:
-        st.button("⏮ Start", key="first", use_container_width=True,
-                  on_click=_nav_to, args=(0,))
+        st.button("⏮ Start", key="first", use_container_width=True, on_click=_go_start)
 
 with nav3:
-    jump = st.selectbox("Jump to slide", range(TOTAL_SLIDES),
-                          index=slide, format_func=lambda x: f"{x+1}. {SLIDE_TITLES[x]}",
-                          key="jump_slide", label_visibility="collapsed")
-    if jump != slide:
-        st.session_state["slide"] = jump
-        st.rerun()
+    st.selectbox("Jump to slide", range(TOTAL_SLIDES),
+                  index=slide, format_func=lambda x: f"{x+1}. {SLIDE_TITLES[x]}",
+                  key="jump_slide", label_visibility="collapsed", on_change=_jump_to)
 
 with nav4:
     if slide < TOTAL_SLIDES - 1:
-        st.button("⏭ End", key="last", use_container_width=True,
-                  on_click=_nav_to, args=(TOTAL_SLIDES - 1,))
+        st.button("⏭ End", key="last", use_container_width=True, on_click=_go_end)
 
 with nav5:
     if slide < TOTAL_SLIDES - 1:
-        st.button("Next ▶", key="next", type="primary", use_container_width=True,
-                  on_click=_nav_to, args=(slide + 1,))
+        st.button("Next ▶", key="next", type="primary", use_container_width=True, on_click=_go_next)
 
 # Action buttons
 st.markdown("---")
