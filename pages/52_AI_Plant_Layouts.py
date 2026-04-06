@@ -132,21 +132,37 @@ with tab_custom:
                                     index=0, key="dal_env")
 
     with col2:
-        plot_length = st.number_input("Plot Length (m)", 20, 200, 60, 5, key="dal_len")
-        plot_width = st.number_input("Plot Width (m)", 15, 100, 35, 5, key="dal_wid")
+        plot_length = st.number_input("Plot Length (m)", 20, 200, int(cfg.get('plot_length_m', 120)), 5, key="dal_len")
+        plot_width = st.number_input("Plot Width (m)", 15, 100, int(cfg.get('plot_width_m', 80)), 5, key="dal_wid")
         size = st.selectbox("Image Size", ["1792x1024 (Landscape)", "1024x1024 (Square)",
                                             "1024x1792 (Portrait)"], index=0, key="dal_size")
         size_param = size.split(" ")[0]
 
-    # Show machine list
+    # Show COMPUTED equipment specs (not generic list)
     plant = PLANT_MACHINES.get(plant_type, PLANT_MACHINES["Bio-bitumen"])
     st.markdown(f"**Process Flow:** {plant['flow']}")
-    st.markdown(f"**Equipment ({len(plant['machines'])} items):** {', '.join(plant['machines'][:10])}")
+
+    if plant_type == "Bio-bitumen":
+        try:
+            from engines.plant_engineering import compute_all, get_machinery_list
+            comp = compute_all(cfg)
+            real_machines = get_machinery_list(cfg, comp)
+            st.markdown(f"**Equipment ({len(real_machines)} items with COMPUTED specs):**")
+            for m in real_machines[:8]:
+                st.caption(f"  {m['tag']}: {m['name']} — {m['dims'][:60]}")
+            st.markdown(f"**Key Dimensions:** Reactor Ø{comp['reactor_dia_m']}m × {comp['reactor_ht_m']}m | "
+                        f"Dryer Ø{comp['dryer_dia_m']}m × {comp['dryer_len_m']}m | "
+                        f"Oil Tank Ø{comp['bio_oil_tank_dia_m']}m")
+        except Exception:
+            st.markdown(f"**Equipment ({len(plant['machines'])} items):** {', '.join(plant['machines'][:10])}")
+    else:
+        st.markdown(f"**Equipment ({len(plant['machines'])} items):** {', '.join(plant['machines'][:10])}")
+
     st.markdown(f"**Safety:** {plant['safety_zones']}")
 
-    # Build prompt
+    # Build prompt WITH cfg for computed specs
     prompt = build_dalle_prompt(plant_type, capacity, environment, visual_style,
-                                 plot_length, plot_width)
+                                 plot_length, plot_width, cfg=cfg)
 
     with st.expander("View/Edit Generated Prompt"):
         edited_prompt = st.text_area("DALL-E 3 Prompt", value=prompt, height=200,

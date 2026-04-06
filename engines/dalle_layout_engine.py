@@ -116,42 +116,84 @@ ENVIRONMENTS = {
 
 
 def build_dalle_prompt(plant_type, capacity_tpd, environment, visual_style,
-                        plot_length=60, plot_width=35, custom_machines=None):
+                        plot_length=60, plot_width=35, custom_machines=None, cfg=None):
     """
     Build a DALL-E 3 optimized prompt from plant parameters.
+    Uses COMPUTED specs from plant_engineering when cfg is provided.
     Max 4000 chars. Returns the prompt string.
     """
     plant = PLANT_MACHINES.get(plant_type, PLANT_MACHINES["Bio-bitumen"])
-    machines = custom_machines or plant["machines"]
     style = VISUAL_STYLES.get(visual_style, VISUAL_STYLES["Isometric 3D"])
     env = ENVIRONMENTS.get(environment, ENVIRONMENTS["Industrial Estate"])
 
-    # Keep machine list to max 10 items (DALL-E constraint)
-    machines = machines[:10]
-    machine_list = ", ".join(machines)
+    # Get REAL computed specs if cfg available
+    specs_text = ""
+    if cfg and plant_type == "Bio-bitumen":
+        try:
+            from engines.plant_engineering import compute_all, get_machinery_list, SAFETY_CLEARANCES
+            comp = compute_all(cfg)
+            machinery = get_machinery_list(cfg, comp)
+
+            # Use computed plot dimensions
+            plot_length = comp.get("plot_l_m", plot_length)
+            plot_width = comp.get("plot_w_m", plot_width)
+
+            # Build machine list from actual computed machinery with specs
+            real_machines = []
+            for m in machinery[:10]:
+                real_machines.append(f"{m['tag']} {m['name']} ({m['dims'][:50]})")
+            machine_list = ", ".join(real_machines) if real_machines else ", ".join((custom_machines or plant["machines"])[:10])
+
+            # Build specs text with actual dimensions
+            specs_text = (
+                f"Reactor: {comp['reactor_qty']}x cylindrical vessel "
+                f"{comp['reactor_dia_m']}m diameter x {comp['reactor_ht_m']}m height "
+                f"on 1.5m skirt, insulated with SS cladding (RAL 3002 red). "
+                f"Dryer: rotary drum {comp['dryer_dia_m']}m dia x {comp['dryer_len_m']}m long. "
+                f"Oil tanks: 2x {comp['bio_oil_tank_dia_m']}m dia x {comp['bio_oil_tank_ht_m']}m "
+                f"inside concrete dyke bund. "
+                f"Feed shed: {comp['feed_shed_l_m']:.0f}m x {comp['feed_shed_w_m']:.0f}m covered. "
+                f"Safety: {SAFETY_CLEARANCES['reactor_to_boundary_m']}m reactor-to-boundary, "
+                f"{SAFETY_CLEARANCES['reactor_to_control_room_m']}m to control room, "
+                f"{SAFETY_CLEARANCES['fire_hydrant_spacing_m']}m hydrant spacing. "
+            )
+
+            # Update safety zones with real clearances
+            safety = (
+                f"{SAFETY_CLEARANCES['reactor_to_boundary_m']}m safety zone around reactor, "
+                f"{SAFETY_CLEARANCES['fire_road_width_m']}m fire road, "
+                f"fire hydrants every {SAFETY_CLEARANCES['fire_hydrant_spacing_m']}m"
+            )
+        except Exception:
+            machine_list = ", ".join((custom_machines or plant["machines"])[:10])
+            safety = plant["safety_zones"]
+    else:
+        machines = custom_machines or plant["machines"]
+        machine_list = ", ".join(machines[:10])
+        safety = plant["safety_zones"]
 
     prompt = (
         f"Create a highly detailed, professional {style} of a "
         f"{capacity_tpd} TPD (tonnes per day) {plant_type} Production Plant "
         f"on a {plot_length}m x {plot_width}m industrial plot. "
         f"Environment: The facility is located {env}. "
+    )
+
+    if specs_text:
+        prompt += f"EXACT EQUIPMENT SPECIFICATIONS: {specs_text} "
+
+    prompt += (
         f"Layout & Machinery: Arrange the equipment logically in sequential "
         f"processing order from left to right following the process flow: "
         f"{plant['flow']}. "
-        f"The core components must include: {machine_list}. "
-        f"Connect these machines realistically using industrial piping, "
-        f"inclined belt conveyors, and safety walkways with yellow railings. "
-        f"Include {plant['safety_zones']}. "
-        f"Show internal 6m wide road, pipe rack at 4.5m height, "
-        f"2m clearance around all equipment, and green belt boundary. "
-        f"Aesthetics: Use a clean, modern industrial color palette "
-        f"(brushed steel, concrete grey, muted blue, and safety orange). "
-        f"The lighting should be soft, global illumination suitable for "
-        f"an engineering presentation or agency pitch deck. "
-        f"Callouts & Labels: Include clean, readable rectangular text boxes "
-        f"acting as floating labels pointing to the main equipment with thin lines. "
-        f"High-end architectural diagram quality, 8k resolution, ultra-sharp focus, "
-        f"informative and technical."
+        f"The core components: {machine_list}. "
+        f"Connect using industrial piping, belt conveyors, safety walkways. "
+        f"Include {safety}. "
+        f"Show {SAFETY_CLEARANCES.get('road_width_internal_m', 6) if cfg else 6}m wide road, "
+        f"pipe rack at 4.5m height, green belt boundary. "
+        f"Clean modern industrial colors (steel, concrete grey, safety orange). "
+        f"Floating labels pointing to equipment. "
+        f"High-end architectural quality, 8k, ultra-sharp, technical."
     )
 
     # Ensure within 4000 char limit
