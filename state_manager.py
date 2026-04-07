@@ -13,7 +13,8 @@ DEFAULTS = {
     # Plant Configuration
     "capacity_tpd": 20.0,
     "working_days": 300,
-    "product_model": "bitumen",  # bitumen / oilchar
+    "product_model": "bitumen",  # bitumen / blending / oilchar
+    "process_id": 1,               # 1=Full Chain, 2=Blending Only, 3=Raw Output
 
     # Revenue Inputs (EDITABLE)
     "selling_price_per_mt": 35000,    # Bio-Bitumen Rs/MT
@@ -207,11 +208,11 @@ def format_inr_lac(lac_amount):
 # ══════════════════════════════════════════════════════════════════════
 # BOQ AUTO-CALCULATOR — Generates equipment list from capacity
 # ══════════════════════════════════════════════════════════════════════
-def calculate_boq(tpd):
-    """Auto-generate comprehensive Bill of Quantities based on plant capacity.
-    Covers EVERYTHING: gate to gate — unloading, processing, packing, office, lab,
-    weighbridge, compound wall, store, parking, roads, utilities, safety, admin.
-    65+ items across 15 zones, auto-scaled from capacity.
+def calculate_boq(tpd, process_id=1):
+    """Auto-generate comprehensive Bill of Quantities based on plant capacity and process type.
+    Process 1 (Full Chain): All 15 zones — pyrolysis + blending + dispatch
+    Process 2 (Blending Only): Skip zones C (pre-processing), D (reactor), E (oil recovery)
+    Process 3 (Raw Output): Skip zone F (blending) — sells oil + char directly
     """
     s = tpd / 20  # Scale factor (20 TPD = 1.0x reference)
 
@@ -440,6 +441,17 @@ def calculate_boq(tpd):
         {"item": "Overhead Crane / Hoist", "spec": f"{max(2, int(tpd/5))} T capacity", "qty": 1,
          "unit": "Nos", "rate_lac": round(4 * max(1, s*0.7), 1), "category": "O. Maintenance"},
     ]
+
+    # Process-specific filtering
+    # Process 1 (Full Chain): ALL zones
+    # Process 2 (Blending Only): Skip C (Pre-Processing), D (Reactor), E (Oil Recovery)
+    # Process 3 (Raw Output): Skip F (Blending)
+    if process_id == 2:
+        skip_zones = {"C. Pre-Processing", "D. Reactor Zone", "E. Oil Recovery"}
+        boq = [i for i in boq if i["category"] not in skip_zones]
+    elif process_id == 3:
+        skip_zones = {"F. Blending"}
+        boq = [i for i in boq if i["category"] not in skip_zones]
 
     for item in boq:
         item["amount_lac"] = round(item["qty"] * item["rate_lac"], 1)

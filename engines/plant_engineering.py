@@ -140,14 +140,18 @@ def compute_all(cfg):
 # ══════════════════════════════════════════════════════════════════════
 def get_machinery_list(cfg, comp=None):
     """Return complete machinery list with deterministic specs.
-    Every dimension is computed from capacity — never estimated."""
+    Process-aware: filters equipment by process_id.
+    Process 1 (Full Chain): All equipment
+    Process 2 (Blending Only): No pyrolysis reactor, dryer, grinder, condenser
+    Process 3 (Raw Output): No blending mixer, colloid mill, bitumen tanks"""
     if comp is None:
         comp = compute_all(cfg)
 
     tpd = cfg.get("capacity_tpd", 20)
+    process_id = cfg.get("process_id", 1)
     pyro_temp = cfg.get("pyrolysis_temp_C", 500)
 
-    return [
+    all_machinery = [
         {
             "tag": "SC-101", "name": "Weighbridge + Receiving Hopper",
             "qty": 1, "motor_kw": 11,
@@ -323,6 +327,20 @@ def get_machinery_list(cfg, comp=None):
             "clearance_m": 30.0,
         },
     ]
+
+    # Process-specific filtering
+    # Tags for pyrolysis section: SZ (shredder), DR (dryer), PR (reactor), CD (condenser)
+    # Tags for blending section: BIT (bitumen tank), MX (mixer)
+    if process_id == 2:
+        # Blending Only — remove pyrolysis equipment
+        skip_tags = {"SZ-101", "DR-101", "GR-101", "PR-101", "CD-101", "CB-101"}
+        all_machinery = [m for m in all_machinery if m["tag"] not in skip_tags]
+    elif process_id == 3:
+        # Raw Output — remove blending equipment
+        skip_tags = {"BIT-101", "MX-101"}
+        all_machinery = [m for m in all_machinery if m["tag"] not in skip_tags]
+
+    return all_machinery
 
 
 # ══════════════════════════════════════════════════════════════════════
