@@ -161,6 +161,15 @@ st.markdown(f'<div style="text-align:center; margin-bottom:10px;">{dot_html}</di
 st.markdown(f"## {SLIDE_TITLES[slide]}")
 st.markdown("---")
 
+# Auto-inject chart for this slide (if mapped)
+try:
+    from engines.slide_charts import get_slide_chart
+    _slide_chart = get_slide_chart(slide, cfg)
+    if _slide_chart:
+        st.plotly_chart(_slide_chart, use_container_width=True)
+except Exception:
+    pass
+
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE 0: CLIENT & PROJECT INPUT
