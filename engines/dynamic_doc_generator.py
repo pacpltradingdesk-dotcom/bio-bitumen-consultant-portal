@@ -70,7 +70,7 @@ def generate_dpr_docx(cfg, company, customer=None):
     # Client info — from cfg (Project Setup) or customer parameter
     client_name = cfg.get("client_name") or (customer.get("name", "") if customer else "") or "The Promoter"
     client_company = cfg.get("client_company") or (customer.get("company", "") if customer else "") or ""
-    project_name = cfg.get("project_name") or f"Bio-Modified Bitumen Plant — {cfg['capacity_tpd']:.0f} MT/Day"
+    project_name = cfg.get("project_name") or f"Bio-Modified Bitumen Plant — {cfg.get('capacity_tpd', 20):.0f} MT/Day"
     site_address = cfg.get("site_address") or f"{cfg.get('location', 'To be finalized')}, {cfg.get('state', '')}"
 
     # Cover Page
@@ -87,43 +87,43 @@ def generate_dpr_docx(cfg, company, customer=None):
     elif client_name and client_name != "The Promoter":
         doc.add_paragraph(f"Prepared for: {client_name}")
 
-    doc.add_paragraph(f"Total Investment: Rs {cfg['investment_cr']:.2f} Crore")
-    doc.add_paragraph(f"Plant Capacity: {cfg['capacity_tpd']:.0f} MT/Day")
+    doc.add_paragraph(f"Total Investment: Rs {cfg.get('investment_cr', 8):.2f} Crore")
+    doc.add_paragraph(f"Plant Capacity: {cfg.get('capacity_tpd', 20):.0f} MT/Day")
     doc.add_paragraph(f"Location: {site_address}")
     if cfg.get("site_pincode"):
-        doc.add_paragraph(f"Pincode: {cfg['site_pincode']} | District: {cfg.get('site_district', '')}")
+        doc.add_paragraph(f"Pincode: {cfg.get('site_pincode', "")} | District: {cfg.get('site_district', '')}")
     if cfg.get("site_area_acres"):
-        doc.add_paragraph(f"Site Area: {cfg['site_area_acres']} Acres ({cfg.get('site_ownership', '')})")
+        doc.add_paragraph(f"Site Area: {cfg.get('site_area_acres', 0)} Acres ({cfg.get('site_ownership', '')})")
     doc.add_paragraph("")
     doc.add_paragraph(f"Prepared by: {company['trade_name']}")
     doc.add_paragraph(f"Consultant: {company['owner']} | {company['phone']}")
     doc.add_paragraph(f"Date: {now.strftime('%d %B %Y')}")
     if cfg.get("project_id"):
-        doc.add_paragraph(f"Reference: {cfg['project_id']}")
+        doc.add_paragraph(f"Reference: {cfg.get('project_id', "")}")
     doc.add_paragraph(f"CONFIDENTIAL — For {client_name} use only")
     doc.add_page_break()
 
     # 1. Executive Summary
     _add_heading(doc, "1. EXECUTIVE SUMMARY")
     doc.add_paragraph(
-        f"This Detailed Project Report presents a {cfg['capacity_tpd']:.0f} MT/Day Bio-Modified Bitumen "
+        f"This Detailed Project Report presents a {cfg.get('capacity_tpd', 20):.0f} MT/Day Bio-Modified Bitumen "
         f"manufacturing plant using agricultural biomass pyrolysis technology. The project requires a total "
-        f"investment of Rs {cfg['investment_cr']:.2f} Crore with a debt:equity ratio of "
-        f"{int((1-cfg['equity_ratio'])*100)}:{int(cfg['equity_ratio']*100)}."
+        f"investment of Rs {cfg.get('investment_cr', 8):.2f} Crore with a debt:equity ratio of "
+        f"{int((1-cfg.get('equity_ratio', 0.40))*100)}:{int(cfg.get('equity_ratio', 0.40)*100)}."
     )
     _add_table(doc, ["Parameter", "Value"], [
-        ["Plant Capacity", f"{cfg['capacity_tpd']:.0f} MT/Day"],
-        ["Total Investment", f"Rs {cfg['investment_cr']:.2f} Crore"],
-        ["Bank Loan", f"Rs {cfg['loan_cr']:.2f} Crore"],
-        ["Promoter Equity", f"Rs {cfg['equity_cr']:.2f} Crore"],
-        ["Annual Revenue (Yr5)", f"Rs {cfg['revenue_yr5_lac']:.0f} Lakhs"],
-        ["ROI", f"{cfg['roi_pct']:.1f}%"],
-        ["IRR", f"{cfg['irr_pct']:.1f}%"],
-        ["DSCR (Year 3)", f"{cfg['dscr_yr3']:.2f}x"],
-        ["Break-Even", f"{cfg['break_even_months']} months"],
-        ["Monthly EMI", f"Rs {cfg['emi_lac_mth']:.2f} Lakhs"],
-        ["Staff Requirement", f"{cfg['staff']} persons"],
-        ["Power Requirement", f"{cfg['power_kw']:.0f} kW"],
+        ["Plant Capacity", f"{cfg.get('capacity_tpd', 20):.0f} MT/Day"],
+        ["Total Investment", f"Rs {cfg.get('investment_cr', 8):.2f} Crore"],
+        ["Bank Loan", f"Rs {cfg.get('loan_cr', 4.8):.2f} Crore"],
+        ["Promoter Equity", f"Rs {cfg.get('equity_cr', 3.2):.2f} Crore"],
+        ["Annual Revenue (Yr5)", f"Rs {cfg.get('revenue_yr5_lac', 0):.0f} Lakhs"],
+        ["ROI", f"{cfg.get('roi_pct', 0):.1f}%"],
+        ["IRR", f"{cfg.get('irr_pct', 0):.1f}%"],
+        ["DSCR (Year 3)", f"{cfg.get('dscr_yr3', 0):.2f}x"],
+        ["Break-Even", f"{cfg.get('break_even_months', 0)} months"],
+        ["Monthly EMI", f"Rs {cfg.get('emi_lac_mth', 0):.2f} Lakhs"],
+        ["Staff Requirement", f"{cfg.get('staff', 20)} persons"],
+        ["Power Requirement", f"{cfg.get('power_kw', 100):.0f} kW"],
     ])
     doc.add_page_break()
 
@@ -135,7 +135,7 @@ def generate_dpr_docx(cfg, company, customer=None):
         "Bitumen demand is projected to grow at 8-10% CAGR driven by Bharatmala, PMGSY, and state highway projects."
     )
     doc.add_paragraph(
-        f"Bio-Modified Bitumen offers a sustainable alternative at Rs {cfg['selling_price_per_mt']:,}/MT "
+        f"Bio-Modified Bitumen offers a sustainable alternative at Rs {cfg.get('selling_price_per_mt', 35000):,}/MT "
         f"compared to conventional VG30 at Rs 48,000-52,000/MT, providing a significant cost advantage "
         f"while meeting NHAI green mandate requirements."
     )
@@ -150,14 +150,14 @@ def generate_dpr_docx(cfg, company, customer=None):
     )
     doc.add_heading("3.2 Plant Specifications", level=2)
     _add_table(doc, ["Specification", "Value"], [
-        ["Capacity", f"{cfg['capacity_tpd']:.0f} MT/Day biomass input"],
-        ["Bio-Oil Output", f"{cfg['oil_ltr_day']:.0f} Litres/day"],
-        ["Biochar Output", f"{cfg['char_kg_day']:.0f} Kg/day"],
-        ["Power Requirement", f"{cfg['power_kw']:.0f} kW"],
-        ["Water Requirement", f"{max(5, int(cfg['capacity_tpd'])):,} KLD"],
-        ["Land Requirement", f"{int(cfg['capacity_tpd'] * 520):,} sq ft ({cfg['capacity_tpd'] * 520 / 43560:.2f} acres)"],
-        ["Manpower", f"{cfg['staff']} persons"],
-        ["Working Days", f"{cfg['working_days']}/year"],
+        ["Capacity", f"{cfg.get('capacity_tpd', 20):.0f} MT/Day biomass input"],
+        ["Bio-Oil Output", f"{cfg.get('oil_ltr_day', 8000):.0f} Litres/day"],
+        ["Biochar Output", f"{cfg.get('char_kg_day', 6000):.0f} Kg/day"],
+        ["Power Requirement", f"{cfg.get('power_kw', 100):.0f} kW"],
+        ["Water Requirement", f"{max(5, int(cfg.get('capacity_tpd', 20))):,} KLD"],
+        ["Land Requirement", f"{int(cfg.get('capacity_tpd', 20) * 520):,} sq ft ({cfg.get('capacity_tpd', 20) * 520 / 43560:.2f} acres)"],
+        ["Manpower", f"{cfg.get('staff', 20)} persons"],
+        ["Working Days", f"{cfg.get('working_days', 300)}/year"],
     ])
     doc.add_page_break()
 
@@ -172,7 +172,7 @@ def generate_dpr_docx(cfg, company, customer=None):
         ["Pre-operative Expenses", f"Rs {p.get('preop_lac', 0):.1f} Lac"],
         ["Contingency", f"Rs {p.get('cont_lac', 0):.1f} Lac"],
         ["Security Deposit", f"Rs {p.get('sec_lac', 0):.1f} Lac"],
-        ["TOTAL", f"Rs {cfg['investment_lac']:.1f} Lac (Rs {cfg['investment_cr']:.2f} Crore)"],
+        ["TOTAL", f"Rs {cfg.get('investment_lac', 800):.1f} Lac (Rs {cfg.get('investment_cr', 8):.2f} Crore)"],
     ]
     _add_table(doc, ["Component", "Amount"], inv_rows)
 
@@ -192,23 +192,23 @@ def generate_dpr_docx(cfg, company, customer=None):
         _add_table(doc, headers, rows)
 
     doc.add_paragraph("")
-    doc.add_paragraph(f"Profit per MT: Rs {cfg['profit_per_mt']:,.0f}")
-    doc.add_paragraph(f"Monthly Profit (Yr5): Rs {cfg['monthly_profit_lac']:.1f} Lakhs")
+    doc.add_paragraph(f"Profit per MT: Rs {cfg.get('profit_per_mt', 0):,.0f}")
+    doc.add_paragraph(f"Monthly Profit (Yr5): Rs {cfg.get('monthly_profit_lac', 0):.1f} Lakhs")
 
     # 6. Cost Structure
     _add_heading(doc, "6. COST STRUCTURE (Per MT Output)")
     _add_table(doc, ["Cost Item", "Rs/MT"], [
-        ["Raw Material (Biomass)", f"{cfg['raw_material_cost_per_mt']:,}"],
-        ["Power & Fuel", f"{cfg['power_cost_per_mt']:,}"],
-        ["Labour", f"{cfg['labour_cost_per_mt']:,}"],
-        ["Chemicals & Consumables", f"{cfg['chemical_cost_per_mt']:,}"],
-        ["Packaging & Handling", f"{cfg['packaging_cost_per_mt']:,}"],
-        ["Transport (Outbound)", f"{cfg['transport_cost_per_mt']:,}"],
-        ["QC & Testing", f"{cfg['qc_cost_per_mt']:,}"],
-        ["Miscellaneous", f"{cfg['misc_cost_per_mt']:,}"],
-        ["TOTAL VARIABLE COST", f"{cfg['total_variable_cost_per_mt']:,}"],
-        ["Selling Price", f"{cfg['selling_price_per_mt']:,}"],
-        ["PROFIT PER MT", f"{cfg['profit_per_mt']:,}"],
+        ["Raw Material (Biomass)", f"{cfg.get('raw_material_cost_per_mt', 8000):,}"],
+        ["Power & Fuel", f"{cfg.get('power_cost_per_mt', 4500):,}"],
+        ["Labour", f"{cfg.get('labour_cost_per_mt', 3000):,}"],
+        ["Chemicals & Consumables", f"{cfg.get('chemical_cost_per_mt', 1500):,}"],
+        ["Packaging & Handling", f"{cfg.get('packaging_cost_per_mt', 500):,}"],
+        ["Transport (Outbound)", f"{cfg.get('transport_cost_per_mt', 2000):,}"],
+        ["QC & Testing", f"{cfg.get('qc_cost_per_mt', 500):,}"],
+        ["Miscellaneous", f"{cfg.get('misc_cost_per_mt', 1000):,}"],
+        ["TOTAL VARIABLE COST", f"{cfg.get('total_variable_cost_per_mt', 22000):,}"],
+        ["Selling Price", f"{cfg.get('selling_price_per_mt', 35000):,}"],
+        ["PROFIT PER MT", f"{cfg.get('profit_per_mt', 0):,}"],
     ])
 
     # 7. Risk Analysis
@@ -240,7 +240,7 @@ def generate_dpr_docx(cfg, company, customer=None):
 
     # 9. BOQ — Bill of Quantities (auto-generated from capacity)
     _add_heading(doc, "9. BILL OF QUANTITIES (BOQ)")
-    doc.add_paragraph(f"Equipment and material requirements for {cfg['capacity_tpd']:.0f} MT/Day plant:")
+    doc.add_paragraph(f"Equipment and material requirements for {cfg.get('capacity_tpd', 20):.0f} MT/Day plant:")
     try:
         from state_manager import calculate_boq
         boq = calculate_boq(cfg["capacity_tpd"])
@@ -259,7 +259,7 @@ def generate_dpr_docx(cfg, company, customer=None):
     # 10. Raw Material Sourcing
     _add_heading(doc, "10. RAW MATERIAL SOURCING PLAN")
     doc.add_paragraph(
-        f"The plant requires approximately {cfg['capacity_tpd']*2.5:.0f} MT/day of agricultural biomass. "
+        f"The plant requires approximately {cfg.get('capacity_tpd', 20)*2.5:.0f} MT/day of agricultural biomass. "
         f"Primary source: {cfg.get('biomass_source', 'Rice Straw')} from local farmer cooperatives "
         f"within 50-100 km radius of {cfg.get('location', 'the plant site')}."
     )
@@ -278,8 +278,8 @@ def generate_dpr_docx(cfg, company, customer=None):
         ["Q3 (Oct-Dec)", "Rice Straw, Cotton Stalk", "Very High", "Maximum procurement, 90-day buffer"],
         ["Q4 (Jan-Mar)", "Mixed sources", "Medium", "Supplementary procurement"],
     ])
-    doc.add_paragraph(f"90-Day Buffer Stock Required: {cfg['capacity_tpd']*2.5*90:.0f} MT")
-    doc.add_paragraph(f"Storage Area Required: {int(cfg['capacity_tpd']*2.5*90/80*3.28*3.28/3):,} sq ft")
+    doc.add_paragraph(f"90-Day Buffer Stock Required: {cfg.get('capacity_tpd', 20)*2.5*90:.0f} MT")
+    doc.add_paragraph(f"Storage Area Required: {int(cfg.get('capacity_tpd', 20)*2.5*90/80*3.28*3.28/3):,} sq ft")
     doc.add_page_break()
 
     # 11. Environmental Impact
@@ -323,7 +323,7 @@ def generate_dpr_docx(cfg, company, customer=None):
         f"\nTotal Estimated Subsidy: Rs {subsidy_amount:.2f} Crore ({subsidy_pct}% of investment)"
     )
     doc.add_paragraph(
-        f"Effective Investment After Subsidy: Rs {cfg['investment_cr'] - subsidy_amount:.2f} Crore"
+        f"Effective Investment After Subsidy: Rs {cfg.get('investment_cr', 8) - subsidy_amount:.2f} Crore"
     )
     doc.add_page_break()
 
@@ -348,14 +348,14 @@ def generate_dpr_docx(cfg, company, customer=None):
     _add_table(doc, ["Role", "Count", "Monthly CTC (Rs)"], [
         ["Plant Manager", "1", "60,000-80,000"],
         ["Shift Supervisor", "2", "30,000-40,000"],
-        ["Reactor Operators", f"{max(4, int(cfg['capacity_tpd']*0.3))}", "18,000-25,000"],
+        ["Reactor Operators", f"{max(4, int(cfg.get('capacity_tpd', 20)*0.3))}", "18,000-25,000"],
         ["Lab Technician", "1-2", "20,000-30,000"],
         ["Electrician", "1", "20,000-25,000"],
-        ["Helpers/Loaders", f"{max(6, int(cfg['capacity_tpd']*0.5))}", "12,000-15,000"],
+        ["Helpers/Loaders", f"{max(6, int(cfg.get('capacity_tpd', 20)*0.5))}", "12,000-15,000"],
         ["Drivers", "2-3", "15,000-20,000"],
         ["Office/Accounts", "2", "20,000-30,000"],
         ["Security", "2-3", "12,000-15,000"],
-        ["TOTAL", f"{cfg['staff']}", f"Rs {cfg.get('payroll_lac_yr', 45):.1f} Lac/year"],
+        ["TOTAL", f"{cfg.get('staff', 20)}", f"Rs {cfg.get('payroll_lac_yr', 45):.1f} Lac/year"],
     ])
     doc.add_page_break()
 
@@ -364,12 +364,12 @@ def generate_dpr_docx(cfg, company, customer=None):
     doc.add_paragraph("The following table shows project profitability under different scenarios:")
     if cfg.get("sensitivity_matrix"):
         _add_table(doc, ["Scenario", "Low Price", "Base Price", "High Price"], [
-            ["Low Cost", f"Rs {cfg['sensitivity_matrix'][0][0]:.0f} Lac",
-             f"Rs {cfg['sensitivity_matrix'][0][1]:.0f} Lac", f"Rs {cfg['sensitivity_matrix'][0][2]:.0f} Lac"],
-            ["Base Cost", f"Rs {cfg['sensitivity_matrix'][1][0]:.0f} Lac",
-             f"Rs {cfg['sensitivity_matrix'][1][1]:.0f} Lac", f"Rs {cfg['sensitivity_matrix'][1][2]:.0f} Lac"],
-            ["High Cost", f"Rs {cfg['sensitivity_matrix'][2][0]:.0f} Lac",
-             f"Rs {cfg['sensitivity_matrix'][2][1]:.0f} Lac", f"Rs {cfg['sensitivity_matrix'][2][2]:.0f} Lac"],
+            ["Low Cost", f"Rs {cfg.get('sensitivity_matrix', [])[0][0]:.0f} Lac",
+             f"Rs {cfg.get('sensitivity_matrix', [])[0][1]:.0f} Lac", f"Rs {cfg.get('sensitivity_matrix', [])[0][2]:.0f} Lac"],
+            ["Base Cost", f"Rs {cfg.get('sensitivity_matrix', [])[1][0]:.0f} Lac",
+             f"Rs {cfg.get('sensitivity_matrix', [])[1][1]:.0f} Lac", f"Rs {cfg.get('sensitivity_matrix', [])[1][2]:.0f} Lac"],
+            ["High Cost", f"Rs {cfg.get('sensitivity_matrix', [])[2][0]:.0f} Lac",
+             f"Rs {cfg.get('sensitivity_matrix', [])[2][1]:.0f} Lac", f"Rs {cfg.get('sensitivity_matrix', [])[2][2]:.0f} Lac"],
         ])
     doc.add_paragraph(
         f"Even in the worst-case scenario (high cost + low price), the project maintains positive EBITDA "
@@ -392,6 +392,141 @@ def generate_dpr_docx(cfg, company, customer=None):
                   "4,452 Industry Contacts — Contractors, Traders, Importers",
                   "Pride of India Award — Best Fast-Growing Business 2021"]:
         doc.add_paragraph(f"  - {cred}")
+
+    # 17. Civil & Infrastructure Requirements
+    _add_heading(doc, "17. CIVIL & INFRASTRUCTURE")
+    try:
+        from engines.plant_engineering import get_civil_specs
+        civil = get_civil_specs(cfg)
+        doc.add_paragraph(f"Process Hall: {civil['process_hall']['type']}, "
+                          f"{civil['process_hall']['area_sqm']} sqm, "
+                          f"{civil['process_hall']['length_m']}m x {civil['process_hall']['width_m']}m")
+        doc.add_paragraph(f"Office: {civil['office_building']['type']}, {civil['office_building']['area_sqm']} sqm")
+        doc.add_paragraph(f"Laboratory: {civil['laboratory']['area_sqm']} sqm, {civil['laboratory']['type']}")
+        doc.add_paragraph(f"Control Room: {civil['control_room']['area_sqm']} sqm, blast-resistant {civil['control_room']['is_standard']}")
+        doc.add_paragraph(f"Compound Wall: {civil['compound_wall']['total_length_m']}m perimeter, {civil['compound_wall']['height_m']}m height")
+        doc.add_paragraph(f"Internal Roads: {civil['internal_roads']['width_m']}m wide, {civil['internal_roads']['pavement']}")
+        doc.add_paragraph(f"Drainage: {civil['storm_drainage']['type']}, gradient {civil['storm_drainage']['gradient']}")
+        doc.add_paragraph(f"Bund Wall: {civil['bund_wall']['height_m']}m x {civil['bund_wall']['thickness_m']}m, {civil['bund_wall']['material']}")
+        doc.add_paragraph(f"Green Belt: {civil['green_belt']['width_m']}m wide, {civil['green_belt']['total_area_sqm']} sqm")
+        doc.add_paragraph(f"Earthing: {civil['earthing_grid']['conductor']}, {civil['earthing_grid']['resistance']}")
+    except Exception:
+        doc.add_paragraph(f"Civil infrastructure based on {cfg.get('capacity_tpd', 20):.0f} TPD capacity. "
+                          f"Plot: {cfg.get('plot_length_m', 120)}m x {cfg.get('plot_width_m', 80)}m")
+    doc.add_page_break()
+
+    # 18. Risk Assessment Matrix
+    _add_heading(doc, "18. RISK ASSESSMENT & MITIGATION")
+    _add_table(doc, ["Risk Category", "Risk Description", "Impact", "Probability", "Mitigation"],
+        [
+            ["Market", "Bitumen price volatility", "High", "Medium",
+             "Diversified product mix (VG30+VG40+Char+Oil)"],
+            ["Technology", "Process yield below design", "Medium", "Low",
+             "CSIR-CRRI proven technology, pilot testing"],
+            ["Financial", "Loan repayment stress", "High", "Low",
+             f"DSCR {cfg.get('dscr_yr3', 0):.2f}x > 1.5x bank minimum"],
+            ["Regulatory", "Environmental clearance delay", "Medium", "Medium",
+             "Pre-submission consultation with SPCB"],
+            ["Supply Chain", "Biomass availability seasonal", "Medium", "Medium",
+             "90-day buffer stock, multiple feedstock sources"],
+            ["Operational", "Skilled manpower shortage", "Low", "Medium",
+             "Training program, operator certification"],
+        ])
+    doc.add_page_break()
+
+    # 19. Covering Letter (for bank/govt submission)
+    _add_heading(doc, "COVERING LETTER", level=0)
+    doc.add_paragraph(f"Date: {now.strftime('%d %B %Y')}")
+    doc.add_paragraph("")
+    doc.add_paragraph("To,")
+    doc.add_paragraph("The Branch Manager / Sanctioning Authority")
+    doc.add_paragraph("[Bank Name / Government Authority]")
+    doc.add_paragraph("[Address]")
+    doc.add_paragraph("")
+    doc.add_paragraph(f"Subject: Submission of Detailed Project Report — {project_name}")
+    doc.add_paragraph("")
+    doc.add_paragraph(f"Dear Sir/Madam,")
+    doc.add_paragraph(
+        f"We are pleased to submit the Detailed Project Report (DPR) for our proposed "
+        f"{cfg.get('capacity_tpd', 20):.0f} MT/Day Bio-Modified Bitumen manufacturing plant at "
+        f"{site_address}. The project requires a total investment of Rs {cfg.get('investment_cr', 8):.2f} Crore "
+        f"with a term loan requirement of Rs {cfg.get('loan_cr', cfg.get('investment_cr', 8)*0.6):.2f} Crore."
+    )
+    doc.add_paragraph(
+        f"The project utilizes CSIR-CRRI licensed pyrolysis technology for converting agricultural "
+        f"waste into IS:73 compliant bio-modified bitumen. Key financial metrics: "
+        f"ROI {cfg.get('roi_pct', 0):.1f}%, IRR {cfg.get('irr_pct', 0):.1f}%, "
+        f"DSCR {cfg.get('dscr_yr3', 0):.2f}x, Break-even {cfg.get('break_even_months', 0)} months."
+    )
+    doc.add_paragraph(
+        f"We request your kind consideration and sanction of the term loan facility. "
+        f"All supporting documents including financial projections, machinery quotations, "
+        f"and compliance checklist are enclosed herewith."
+    )
+    doc.add_paragraph("")
+    doc.add_paragraph("Thanking you,")
+    doc.add_paragraph(f"For {client_company or client_name}")
+    doc.add_paragraph("")
+    doc.add_paragraph(f"{client_name}")
+    doc.add_paragraph("(Authorized Signatory)")
+    doc.add_page_break()
+
+    # 20. Annexures List
+    _add_heading(doc, "20. LIST OF ANNEXURES")
+    annexures = [
+        "Annexure A: Promoter's KYC Documents (PAN, Aadhaar, Address Proof)",
+        "Annexure B: Company Registration Certificate (ROC / MSME / Udyam)",
+        "Annexure C: GST Registration Certificate",
+        "Annexure D: Land Documents (Sale Deed / Lease Agreement / NOC)",
+        "Annexure E: Machinery Quotations from OEM / Authorized Dealers",
+        "Annexure F: Civil Construction Estimate from Licensed Contractor",
+        "Annexure G: Consent to Establish (CTE) Application — State PCB",
+        "Annexure H: Factory License Application — Factory Inspector",
+        "Annexure I: Fire NOC Application — Fire Department",
+        "Annexure J: PESO License Application (for petroleum storage)",
+        "Annexure K: MSME / Udyam Registration",
+        "Annexure L: Bank Account Statement (last 12 months)",
+        "Annexure M: Income Tax Returns (last 3 years)",
+        "Annexure N: CIBIL Report of Promoter(s)",
+        "Annexure O: IS:73 Product Quality Test Certificate (from CSIR-CRRI lab)",
+        "Annexure P: Site Photographs and Location Map",
+        "Annexure Q: Equipment Supplier Catalogue / Technical Specifications",
+        "Annexure R: Environmental Impact Assessment Summary",
+        "Annexure S: Project Implementation Schedule (Gantt Chart)",
+        "Annexure T: NHAI / MoRTH Specification Compliance Statement",
+    ]
+    for ann in annexures:
+        doc.add_paragraph(ann, style='List Bullet')
+
+    doc.add_paragraph("")
+    doc.add_paragraph(
+        "Note: All annexures to be submitted as per the specific requirements of the "
+        "financing institution / government authority. Additional documents may be "
+        "required based on state-specific regulations."
+    )
+    doc.add_page_break()
+
+    # 21. Government Application Forms Required
+    _add_heading(doc, "21. GOVERNMENT APPLICATIONS & FORMS REQUIRED")
+    _add_table(doc, ["Application", "Authority", "Timeline", "Status"],
+        [
+            ["Consent to Establish (CTE)", "State Pollution Control Board", "30-60 days", "To Apply"],
+            ["Consent to Operate (CTO)", "State Pollution Control Board", "15-30 days (after CTE)", "After Plant Ready"],
+            ["Factory License", "Factory Inspector", "15-30 days", "To Apply"],
+            ["Fire NOC", "Fire Department", "15-30 days", "To Apply"],
+            ["PESO License", "Petroleum & Explosives Safety Org", "30-60 days", "To Apply"],
+            ["Electrical Inspector Approval", "State Electrical Inspectorate", "15-30 days", "To Apply"],
+            ["GST Registration", "GST Portal (gst.gov.in)", "7 days", "To Apply"],
+            ["MSME / Udyam Registration", "Udyam Portal", "Instant", "To Apply"],
+            ["GeM Portal Registration", "gem.gov.in", "3-5 days", "For Govt Supply"],
+            ["CGTMSE Guarantee", "cgtmse.in", "Along with bank loan", "If Eligible"],
+            [f"State Industrial Policy ({cfg.get('state', 'State')})", "State Industries Dept", "30-60 days", "To Apply"],
+        ])
+    doc.add_paragraph(
+        f"All applications will be prepared and coordinated by {company['trade_name']} "
+        f"as part of the consulting mandate."
+    )
+    doc.add_page_break()
 
     # Disclaimer
     doc.add_page_break()
@@ -426,7 +561,7 @@ def generate_bank_proposal_docx(cfg, company, customer=None):
     cust_company = customer.get("company", "") if customer else ""
 
     _add_heading(doc, "TERM LOAN PROPOSAL")
-    doc.add_heading(f"Bio-Modified Bitumen Plant — {cfg['capacity_tpd']:.0f} MT/Day", level=2)
+    doc.add_heading(f"Bio-Modified Bitumen Plant — {cfg.get('capacity_tpd', 20):.0f} MT/Day", level=2)
     doc.add_paragraph(f"Date: {now.strftime('%d %B %Y')}")
     doc.add_paragraph(f"To: {cust_name}")
     if cust_company:
@@ -436,22 +571,22 @@ def generate_bank_proposal_docx(cfg, company, customer=None):
 
     _add_heading(doc, "1. LOAN REQUIREMENT")
     _add_table(doc, ["Parameter", "Details"], [
-        ["Total Project Cost", f"Rs {cfg['investment_cr']:.2f} Crore"],
-        ["Term Loan Required", f"Rs {cfg['loan_cr']:.2f} Crore"],
-        ["Promoter Equity (40%)", f"Rs {cfg['equity_cr']:.2f} Crore"],
-        ["Interest Rate", f"{cfg['interest_rate']*100:.1f}% p.a."],
-        ["Tenure", f"{cfg['emi_tenure_months']} months ({cfg['emi_tenure_months']//12} years)"],
-        ["Monthly EMI", f"Rs {cfg['emi_lac_mth']:.2f} Lakhs"],
-        ["DSCR (Year 3)", f"{cfg['dscr_yr3']:.2f}x (Bank minimum: 1.50x)"],
+        ["Total Project Cost", f"Rs {cfg.get('investment_cr', 8):.2f} Crore"],
+        ["Term Loan Required", f"Rs {cfg.get('loan_cr', 4.8):.2f} Crore"],
+        ["Promoter Equity (40%)", f"Rs {cfg.get('equity_cr', 3.2):.2f} Crore"],
+        ["Interest Rate", f"{cfg.get('interest_rate', 0.115)*100:.1f}% p.a."],
+        ["Tenure", f"{cfg.get('emi_tenure_months', 84)} months ({cfg.get('emi_tenure_months', 84)//12} years)"],
+        ["Monthly EMI", f"Rs {cfg.get('emi_lac_mth', 0):.2f} Lakhs"],
+        ["DSCR (Year 3)", f"{cfg.get('dscr_yr3', 0):.2f}x (Bank minimum: 1.50x)"],
     ])
 
     _add_heading(doc, "2. PROJECT VIABILITY")
     _add_table(doc, ["Metric", "Value"], [
-        ["Annual Revenue (Yr5)", f"Rs {cfg['revenue_yr5_lac']:.0f} Lakhs"],
-        ["ROI", f"{cfg['roi_pct']:.1f}%"],
-        ["IRR (Equity)", f"{cfg['irr_pct']:.1f}%"],
-        ["Break-Even", f"{cfg['break_even_months']} months"],
-        ["Profit per MT", f"Rs {cfg['profit_per_mt']:,.0f}"],
+        ["Annual Revenue (Yr5)", f"Rs {cfg.get('revenue_yr5_lac', 0):.0f} Lakhs"],
+        ["ROI", f"{cfg.get('roi_pct', 0):.1f}%"],
+        ["IRR (Equity)", f"{cfg.get('irr_pct', 0):.1f}%"],
+        ["Break-Even", f"{cfg.get('break_even_months', 0)} months"],
+        ["Profit per MT", f"Rs {cfg.get('profit_per_mt', 0):,.0f}"],
     ])
 
     _add_heading(doc, "3. SECURITY OFFERED")
@@ -488,8 +623,8 @@ def generate_investor_pptx(cfg, company):
     s1 = prs.slides.add_slide(prs.slide_layouts[0])
     s1.shapes.title.text = f"{company['trade_name']}"
     s1.placeholders[1].text = (
-        f"Bio-Modified Bitumen Plant — {cfg['capacity_tpd']:.0f} MT/Day\n"
-        f"Investment: Rs {cfg['investment_cr']:.2f} Crore | IRR: {cfg['irr_pct']:.1f}%\n"
+        f"Bio-Modified Bitumen Plant — {cfg.get('capacity_tpd', 20):.0f} MT/Day\n"
+        f"Investment: Rs {cfg.get('investment_cr', 8):.2f} Crore | IRR: {cfg.get('irr_pct', 0):.1f}%\n"
         f"{company['owner']} | {company['phone']}"
     )
 
@@ -504,13 +639,13 @@ def generate_investor_pptx(cfg, company):
 
     # Slide 3: Investment Summary
     add_slide("Investment Summary", (
-        f"• Total Project Cost: Rs {cfg['investment_cr']:.2f} Crore\n"
-        f"• Equity Required: Rs {cfg['equity_cr']:.2f} Crore\n"
-        f"• Bank Loan: Rs {cfg['loan_cr']:.2f} Crore\n"
-        f"• Annual Revenue (Yr5): Rs {cfg['revenue_yr5_lac']:.0f} Lakhs\n"
-        f"• ROI: {cfg['roi_pct']:.1f}% | IRR: {cfg['irr_pct']:.1f}%\n"
-        f"• Break-Even: {cfg['break_even_months']} months\n"
-        f"• DSCR: {cfg['dscr_yr3']:.2f}x"
+        f"• Total Project Cost: Rs {cfg.get('investment_cr', 8):.2f} Crore\n"
+        f"• Equity Required: Rs {cfg.get('equity_cr', 3.2):.2f} Crore\n"
+        f"• Bank Loan: Rs {cfg.get('loan_cr', 4.8):.2f} Crore\n"
+        f"• Annual Revenue (Yr5): Rs {cfg.get('revenue_yr5_lac', 0):.0f} Lakhs\n"
+        f"• ROI: {cfg.get('roi_pct', 0):.1f}% | IRR: {cfg.get('irr_pct', 0):.1f}%\n"
+        f"• Break-Even: {cfg.get('break_even_months', 0)} months\n"
+        f"• DSCR: {cfg.get('dscr_yr3', 0):.2f}x"
     ))
 
     # Slide 4: Technology
@@ -524,12 +659,12 @@ def generate_investor_pptx(cfg, company):
     ))
 
     # Slide 5: Plant Specs
-    add_slide(f"Plant: {cfg['capacity_tpd']:.0f} MT/Day", (
-        f"• Staff: {cfg['staff']} persons\n"
-        f"• Power: {cfg['power_kw']:.0f} kW\n"
-        f"• Oil Output: {cfg['oil_ltr_day']:.0f} Litres/day\n"
-        f"• Char Output: {cfg['char_kg_day']:.0f} Kg/day\n"
-        f"• Land: {int(cfg['capacity_tpd'] * 520):,} sq ft\n"
+    add_slide(f"Plant: {cfg.get('capacity_tpd', 20):.0f} MT/Day", (
+        f"• Staff: {cfg.get('staff', 20)} persons\n"
+        f"• Power: {cfg.get('power_kw', 100):.0f} kW\n"
+        f"• Oil Output: {cfg.get('oil_ltr_day', 8000):.0f} Litres/day\n"
+        f"• Char Output: {cfg.get('char_kg_day', 6000):.0f} Kg/day\n"
+        f"• Land: {int(cfg.get('capacity_tpd', 20) * 520):,} sq ft\n"
         f"• Location: {cfg.get('location', 'TBD')}, {cfg.get('state', '')}"
     ))
 
@@ -545,8 +680,8 @@ def generate_investor_pptx(cfg, company):
         f"• Year 3-5: Promoter buyback at 2x equity\n"
         f"• Year 5-7: Strategic sale to infrastructure company\n"
         f"• IPO route: After 3+ years of profitable operations\n"
-        f"• Expected equity IRR: {cfg['irr_pct']:.1f}%\n"
-        f"• Payback period: {cfg['break_even_months']} months"
+        f"• Expected equity IRR: {cfg.get('irr_pct', 0):.1f}%\n"
+        f"• Payback period: {cfg.get('break_even_months', 0)} months"
     ))
 
     # Slide 8: Contact
@@ -586,27 +721,27 @@ def generate_financial_xlsx(cfg, company):
     ws1 = wb.active
     ws1.title = "Summary"
     summary = [
-        [f"Bio Bitumen Financial Model — {cfg['capacity_tpd']:.0f} MT/Day", ""],
+        [f"Bio Bitumen Financial Model — {cfg.get('capacity_tpd', 20):.0f} MT/Day", ""],
         ["Date", datetime.now(IST).strftime("%d %B %Y")],
         ["", ""],
         ["INVESTMENT", ""],
-        ["Total Project Cost", f"Rs {cfg['investment_cr']:.2f} Crore"],
-        ["Bank Loan (60%)", f"Rs {cfg['loan_cr']:.2f} Crore"],
-        ["Equity (40%)", f"Rs {cfg['equity_cr']:.2f} Crore"],
-        ["Monthly EMI", f"Rs {cfg['emi_lac_mth']:.2f} Lakhs"],
+        ["Total Project Cost", f"Rs {cfg.get('investment_cr', 8):.2f} Crore"],
+        ["Bank Loan (60%)", f"Rs {cfg.get('loan_cr', 4.8):.2f} Crore"],
+        ["Equity (40%)", f"Rs {cfg.get('equity_cr', 3.2):.2f} Crore"],
+        ["Monthly EMI", f"Rs {cfg.get('emi_lac_mth', 0):.2f} Lakhs"],
         ["", ""],
         ["REVENUE", ""],
-        ["Selling Price/MT", f"Rs {cfg['selling_price_per_mt']:,}"],
-        ["Variable Cost/MT", f"Rs {cfg['total_variable_cost_per_mt']:,}"],
-        ["Profit/MT", f"Rs {cfg['profit_per_mt']:,}"],
-        ["Revenue Yr5", f"Rs {cfg['revenue_yr5_lac']:.0f} Lakhs"],
-        ["Monthly Profit", f"Rs {cfg['monthly_profit_lac']:.1f} Lakhs"],
+        ["Selling Price/MT", f"Rs {cfg.get('selling_price_per_mt', 35000):,}"],
+        ["Variable Cost/MT", f"Rs {cfg.get('total_variable_cost_per_mt', 22000):,}"],
+        ["Profit/MT", f"Rs {cfg.get('profit_per_mt', 0):,}"],
+        ["Revenue Yr5", f"Rs {cfg.get('revenue_yr5_lac', 0):.0f} Lakhs"],
+        ["Monthly Profit", f"Rs {cfg.get('monthly_profit_lac', 0):.1f} Lakhs"],
         ["", ""],
         ["RETURNS", ""],
-        ["ROI", f"{cfg['roi_pct']:.1f}%"],
-        ["IRR", f"{cfg['irr_pct']:.1f}%"],
-        ["DSCR Yr3", f"{cfg['dscr_yr3']:.2f}x"],
-        ["Break-Even", f"{cfg['break_even_months']} months"],
+        ["ROI", f"{cfg.get('roi_pct', 0):.1f}%"],
+        ["IRR", f"{cfg.get('irr_pct', 0):.1f}%"],
+        ["DSCR Yr3", f"{cfg.get('dscr_yr3', 0):.2f}x"],
+        ["Break-Even", f"{cfg.get('break_even_months', 0)} months"],
     ]
     for i, (a, b) in enumerate(summary):
         ws1.cell(row=i + 1, column=1, value=a).font = Font(bold=True) if not b else Font()
@@ -653,13 +788,13 @@ def generate_financial_xlsx(cfg, company):
     ws5 = wb.create_sheet("Assumptions")
     write_header(ws5, 1, ["Parameter", "Value", "Source"])
     assumptions = [
-        ("Capacity", f"{cfg['capacity_tpd']:.0f} MT/Day", "Client requirement"),
+        ("Capacity", f"{cfg.get('capacity_tpd', 20):.0f} MT/Day", "Client requirement"),
         ("Working Days", str(cfg["working_days"]), "Industry standard"),
-        ("Selling Price", f"Rs {cfg['selling_price_per_mt']:,}/MT", "PetroBazaar Mar 2026"),
-        ("Biomass Cost", f"Rs {cfg['raw_material_cost_per_mt']:,}/MT output", "IndiaMART verified"),
-        ("Interest Rate", f"{cfg['interest_rate']*100:.1f}%", "SBI MCLR + 200 bps"),
-        ("Tax Rate", f"{cfg['tax_rate']*100:.0f}%", "Section 115BAB"),
-        ("Depreciation", f"{cfg['depreciation_rate']*100:.0f}% SLM", "Companies Act 2013"),
+        ("Selling Price", f"Rs {cfg.get('selling_price_per_mt', 35000):,}/MT", "PetroBazaar Mar 2026"),
+        ("Biomass Cost", f"Rs {cfg.get('raw_material_cost_per_mt', 8000):,}/MT output", "IndiaMART verified"),
+        ("Interest Rate", f"{cfg.get('interest_rate', 0.115)*100:.1f}%", "SBI MCLR + 200 bps"),
+        ("Tax Rate", f"{cfg.get('tax_rate', 0.25)*100:.0f}%", "Section 115BAB"),
+        ("Depreciation", f"{cfg.get('depreciation_rate', 0.10)*100:.0f}% SLM", "Companies Act 2013"),
         ("Oil Yield", "40% of biomass", "CSIR-CRRI research"),
         ("Char Yield", "30% of biomass", "CSIR-CRRI research"),
     ]
@@ -682,7 +817,7 @@ def generate_all_documents(cfg, company, customer=None, output_dir=None):
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
 
-    cap_label = f"{cfg['capacity_tpd']:.0f}MT"
+    cap_label = f"{cfg.get('capacity_tpd', 20):.0f}MT"
     cust_label = customer["name"].replace(" ", "_") if customer else "General"
     results = {}
 
