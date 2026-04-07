@@ -69,8 +69,8 @@ st.markdown("---")
 from engines.drawing_master import (DRAWING_REGISTRY, DRAWING_CATEGORIES,
     get_drawings_for_stakeholder, build_prompt_with_context, get_scope_of_work_drawings)
 
-tab_stakeholder, tab_custom, tab_docs, tab_gallery, tab_scope = st.tabs([
-    "By Stakeholder", "Custom Layout", "Document Drawings", "Gallery", "Scope of Work"
+tab_stakeholder, tab_custom, tab_combo, tab_docs, tab_gallery, tab_scope = st.tabs([
+    "By Stakeholder", "Custom Layout", "Smart Prompts", "Document Drawings", "Gallery", "Scope of Work"
 ])
 
 # ── TAB: BY STAKEHOLDER ─────────────────────────────────────────────
@@ -199,7 +199,46 @@ with tab_custom:
         else:
             st.error(f"Generation failed: {info}")
 
-# ── TAB 2: DOCUMENT-SPECIFIC DRAWINGS ───────────────────────────────
+# ── TAB: SMART PROMPTS (Combination Engine) ─────────────────────────
+with tab_combo:
+    st.subheader("Smart Drawing Prompts — Auto-Generated from Config")
+    st.caption("Change process/capacity → prompts update instantly. No API needed.")
+
+    try:
+        from engines.combination_engine import (
+            generate_all_prompts_for_config, TECHNOLOGIES, DRAWING_TYPES
+        )
+
+        sc1, sc2 = st.columns(2)
+        with sc1:
+            sp_process = st.selectbox("Process", [1, 2, 3],
+                format_func=lambda x: f"P{x}: {TECHNOLOGIES[x]['short']}",
+                index=cfg.get("process_id", 1) - 1, key="sp_proc")
+        with sc2:
+            sp_cap = st.number_input("Capacity", 5, 100,
+                int(cfg.get("capacity_tpd", 20)), 5, key="sp_cap")
+
+        sp_cfg = dict(cfg)
+        sp_cfg["process_id"] = sp_process
+        sp_cfg["capacity_tpd"] = sp_cap
+
+        all_sp = generate_all_prompts_for_config(sp_cfg)
+
+        st.success(f"**{len(all_sp)} prompts ready** | {TECHNOLOGIES[sp_process]['short']} | "
+                   f"{sp_cap} TPD | {all_sp['site_layout']['variables']['machinery_count']} equipment | "
+                   f"{all_sp['site_layout']['variables']['zone_count']} zones")
+
+        for dt_key, dt_label in DRAWING_TYPES.items():
+            r = all_sp[dt_key]
+            with st.expander(f"{dt_label} ({r['char_count']} chars)"):
+                st.code(r["prompt"], language="text")
+                st.caption(f"Reactor: Ø{r['variables']['reactor_dia_m']}m × {r['variables']['reactor_ht_m']}m | "
+                           f"Dryer: Ø{r['variables']['dryer_dia_m']}m × {r['variables']['dryer_len_m']}m | "
+                           f"Products: {r['variables']['products']}")
+    except Exception as e:
+        st.error(f"Combination engine: {e}")
+
+# ── TAB: DOCUMENT-SPECIFIC DRAWINGS ─────────────────────────────────
 with tab_docs:
     st.subheader("Generate Document-Specific Drawings")
     st.caption("Professional engineering drawings for DPR, bank proposals, and compliance submissions")

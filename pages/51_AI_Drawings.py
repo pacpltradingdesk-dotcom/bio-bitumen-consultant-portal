@@ -28,7 +28,7 @@ st.title("AI-Generated 3D Drawings & Renders")
 st.markdown(f"**Professional 3D renders for {cfg['capacity_tpd']:.0f} TPD plant — powered by Pollinations AI (FREE)**")
 st.markdown("---")
 
-tab_gallery, tab_generate, tab_custom = st.tabs(["Image Gallery", "Generate New Set", "Custom Drawing"])
+tab_gallery, tab_generate, tab_prompts, tab_custom = st.tabs(["Image Gallery", "Generate New Set", "Prompt Library", "Custom Drawing"])
 
 # ═══════════════════════════════════════════════════════════════════
 # TAB 1: GALLERY — Show existing AI images
@@ -128,7 +128,73 @@ with tab_generate:
         st.success(f"**{generated} images generated!** View them in the Gallery tab.")
 
 # ═══════════════════════════════════════════════════════════════════
-# TAB 3: CUSTOM DRAWING
+# TAB 3: PROMPT LIBRARY (Combination Engine — zero API calls)
+# ═══════════════════════════════════════════════════════════════════
+with tab_prompts:
+    st.subheader("Drawing Prompt Library — Auto-Generated from Your Config")
+    st.caption("These prompts update instantly when you change capacity, process, or state. No API call needed.")
+
+    try:
+        from engines.combination_engine import (
+            generate_combination_prompt, generate_all_prompts_for_config,
+            get_all_combinations_count, TECHNOLOGIES, DRAWING_TYPES, auto_heal_inputs
+        )
+
+        st.info(f"**{get_all_combinations_count()} combinations** supported. Current config: "
+                f"**{cfg['capacity_tpd']:.0f} TPD** | Process {cfg.get('process_id', 1)} | {cfg.get('state', 'N/A')}")
+
+        # Process selector
+        pc1, pc2 = st.columns(2)
+        with pc1:
+            process_sel = st.selectbox("Technology / Process",
+                [1, 2, 3], format_func=lambda x: f"Process {x}: {TECHNOLOGIES[x]['short']}",
+                index=cfg.get("process_id", 1) - 1, key="combo_process")
+        with pc2:
+            cap_sel = st.number_input("Capacity (TPD)", 5, 100,
+                int(cfg.get("capacity_tpd", 20)), 5, key="combo_cap")
+
+        # Build config for combination engine
+        combo_cfg = dict(cfg)
+        combo_cfg["process_id"] = process_sel
+        combo_cfg["capacity_tpd"] = cap_sel
+
+        # Generate all 5 prompts
+        all_prompts = generate_all_prompts_for_config(combo_cfg)
+
+        # Show each prompt
+        for dt_key, dt_label in DRAWING_TYPES.items():
+            result = all_prompts[dt_key]
+            with st.expander(f"{dt_label} — {result['char_count']} chars | {result['variables']['machinery_count']} equipment"):
+                st.code(result["prompt"], language="text")
+                st.caption(f"Combo ID: {result['combo_id']} | Process: {result['technology']}")
+
+                # Copy button
+                if st.button(f"Copy to Clipboard", key=f"copy_{dt_key}"):
+                    st.code(result["prompt"])
+                    st.success("Prompt displayed — select all and copy (Ctrl+A, Ctrl+C)")
+
+                # Generate image from this prompt
+                if st.button(f"Generate Image (Pollinations AI)", key=f"gen_{dt_key}"):
+                    with st.spinner(f"Generating {dt_label}..."):
+                        fname = f"{dt_key}_{int(cap_sel)}TPD_P{process_sel}.png"
+                        path = generate_with_pollinations(result["prompt"], fname)
+                        if path:
+                            st.image(path, caption=dt_label, use_container_width=True)
+                            with open(path, "rb") as f:
+                                st.download_button("Download", f.read(), fname, key=f"dl_{dt_key}")
+                        else:
+                            st.error("Generation failed. Check internet.")
+
+        # Auto-heal info
+        healed = result["healed_inputs"]
+        if healed:
+            st.warning(f"Auto-healed {len(healed)} missing inputs: {', '.join(healed)}")
+
+    except Exception as e:
+        st.error(f"Combination engine error: {e}")
+
+# ═══════════════════════════════════════════════════════════════════
+# TAB 4: CUSTOM DRAWING
 # ═══════════════════════════════════════════════════════════════════
 with tab_custom:
     st.subheader("Generate Custom Drawing")
