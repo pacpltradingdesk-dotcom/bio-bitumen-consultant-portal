@@ -158,30 +158,64 @@ with tab_prompts:
         combo_cfg["process_id"] = process_sel
         combo_cfg["capacity_tpd"] = cap_sel
 
-        # Generate all 5 prompts
+        # Generate all 9 prompts
         all_prompts = generate_all_prompts_for_config(combo_cfg)
 
-        # Show each prompt
+        st.markdown(f"**{len(all_prompts)} drawing prompts ready** — each with exact specs for {cap_sel} TPD")
+
+        # ── MASTER BUTTON: Generate ALL images at once ──
+        if st.button(f"Generate ALL {len(all_prompts)} Drawings (FREE — Pollinations AI)", type="primary", key="gen_all_combo"):
+            progress = st.progress(0)
+            status = st.empty()
+            generated = 0
+
+            for idx, (dt_key, result) in enumerate(all_prompts.items()):
+                dt_label = DRAWING_TYPES.get(dt_key, dt_key)
+                status.text(f"Generating {idx+1}/{len(all_prompts)}: {dt_label}...")
+                progress.progress((idx + 1) / len(all_prompts))
+
+                fname = f"{dt_key}_{int(cap_sel)}TPD_P{process_sel}.png"
+                path = generate_with_pollinations(result["prompt"], fname)
+
+                if path:
+                    generated += 1
+                    st.image(path, caption=f"{dt_label} — {cap_sel} TPD Process {process_sel}", use_container_width=True)
+                    with open(path, "rb") as f:
+                        st.download_button(f"Download {dt_label}", f.read(), fname, key=f"dlall_{dt_key}")
+                else:
+                    st.warning(f"Failed: {dt_label}")
+
+            progress.progress(1.0)
+            status.text(f"Done! {generated}/{len(all_prompts)} images generated.")
+            if generated == len(all_prompts):
+                st.success(f"ALL {generated} drawings generated! Scroll down to view and download.")
+            st.balloons()
+
+        st.markdown("---")
+        st.caption("Or generate individual drawings below:")
+
+        # Show each prompt with individual generate button
         for dt_key, dt_label in DRAWING_TYPES.items():
             result = all_prompts[dt_key]
             with st.expander(f"{dt_label} — {result['char_count']} chars | {result['variables']['machinery_count']} equipment"):
+                # Show key specs inline
+                v = result["variables"]
+                st.markdown(f"**Reactor:** Ø{v['reactor_dia_m']}m × {v['reactor_ht_m']}m × {v['reactor_qty']} | "
+                            f"**Dryer:** Ø{v['dryer_dia_m']}m × {v['dryer_len_m']}m | "
+                            f"**Plot:** {v['plot_l_m']}m × {v['plot_w_m']}m | "
+                            f"**Pipes:** Fire DN{v['fire_pipe_dn']}, Oil DN{v['oil_pipe_dn']}")
+
                 st.code(result["prompt"], language="text")
-                st.caption(f"Combo ID: {result['combo_id']} | Process: {result['technology']}")
 
-                # Copy button
-                if st.button(f"Copy to Clipboard", key=f"copy_{dt_key}"):
-                    st.code(result["prompt"])
-                    st.success("Prompt displayed — select all and copy (Ctrl+A, Ctrl+C)")
-
-                # Generate image from this prompt
-                if st.button(f"Generate Image (Pollinations AI)", key=f"gen_{dt_key}"):
+                # Generate single image
+                if st.button(f"Generate This Drawing", key=f"gen1_{dt_key}", type="primary"):
                     with st.spinner(f"Generating {dt_label}..."):
                         fname = f"{dt_key}_{int(cap_sel)}TPD_P{process_sel}.png"
                         path = generate_with_pollinations(result["prompt"], fname)
                         if path:
                             st.image(path, caption=dt_label, use_container_width=True)
                             with open(path, "rb") as f:
-                                st.download_button("Download", f.read(), fname, key=f"dl_{dt_key}")
+                                st.download_button("Download", f.read(), fname, key=f"dl1_{dt_key}")
                         else:
                             st.error("Generation failed. Check internet.")
 
