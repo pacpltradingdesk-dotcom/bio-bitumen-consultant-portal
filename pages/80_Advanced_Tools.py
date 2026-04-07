@@ -160,3 +160,11 @@ with tab_video:
 
 st.markdown("---")
 st.caption(f"{COMPANY['name']} | Advanced Tools")
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "80")
+except Exception:
+    pass

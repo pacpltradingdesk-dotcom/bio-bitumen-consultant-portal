@@ -277,3 +277,11 @@ except Exception:
 
 # ROI Disclaimer
 st.caption("📊 Base ROI uses simplified operating formula. For bank-standard ROI, see Financial Model.")
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "38")
+except Exception:
+    pass

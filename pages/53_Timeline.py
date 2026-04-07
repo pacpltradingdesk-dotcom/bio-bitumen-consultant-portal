@@ -144,3 +144,11 @@ with _ex2:
     if st.button("Print", key="exp_prt_54Tim"):
         import streamlit.components.v1 as _stc
         _stc.html("<script>window.print();</script>", height=0)
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "53")
+except Exception:
+    pass

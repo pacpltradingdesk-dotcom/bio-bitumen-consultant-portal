@@ -265,3 +265,11 @@ try:
         st.info("Add API keys in AI Settings to enable AI compliance tools")
 except Exception:
     pass
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "40")
+except Exception:
+    pass

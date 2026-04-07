@@ -236,3 +236,11 @@ if st.button("Reset All to Full Spec", key="reset_optimizer"):
 st.markdown("---")
 st.caption("All mandatory items locked per IS 14489, NBC 2016, Factories Act 1948, CPCB norms. "
            "Reduced items meet minimum IS compliance. This tool does NOT compromise safety.")
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "29")
+except Exception:
+    pass

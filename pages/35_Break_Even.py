@@ -182,3 +182,11 @@ if st.button("Print", key="prt_be"):
     _stc.html("<script>window.print();</script>", height=0)
 
 st.caption(f"{COMPANY['name']} | Break-Even Analysis | Auto-linked to DPR Cost Sheet")
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "35")
+except Exception:
+    pass

@@ -263,3 +263,11 @@ st.markdown("---")
 if st.button("Print", key="prt_42Pac"):
     import streamlit.components.v1 as _stc
     _stc.html("<script>window.print();</script>", height=0)
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "63")
+except Exception:
+    pass

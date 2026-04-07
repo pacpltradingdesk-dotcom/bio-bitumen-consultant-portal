@@ -191,3 +191,11 @@ if st.button("Ask AI (uses fallback chain)", type="primary", key="test_ask"):
 
 st.markdown("---")
 st.caption(f"{COMPANY['name']} | AI Auto-Connection Manager | 6 providers, never fails")
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "83")
+except Exception:
+    pass

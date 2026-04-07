@@ -202,3 +202,11 @@ if st.button("Print", key="prt_cf"):
     _stc.html("<script>window.print();</script>", height=0)
 
 st.caption(f"{COMPANY['name']} | 5-Year Cash Flow & Sensitivity | Auto-linked to DPR Cost Sheet")
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "34")
+except Exception:
+    pass

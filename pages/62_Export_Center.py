@@ -295,3 +295,11 @@ except Exception:
 if st.sidebar.button("Print", key="prt_67Exp"):
     import streamlit.components.v1 as _stc
     _stc.html("<script>window.print();</script>", height=0)
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "62")
+except Exception:
+    pass

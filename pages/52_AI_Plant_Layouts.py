@@ -359,3 +359,11 @@ st.caption(f"{COMPANY['name']} | AI Layout Engine — Powered by OpenAI DALL-E 3
 if st.sidebar.button("Print", key="prt_73AI"):
     import streamlit.components.v1 as _stc
     _stc.html("<script>window.print();</script>", height=0)
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "52")
+except Exception:
+    pass

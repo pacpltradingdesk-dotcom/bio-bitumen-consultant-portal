@@ -226,3 +226,11 @@ try:
                     st.markdown(_r)
 except Exception:
     pass
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "42")
+except Exception:
+    pass

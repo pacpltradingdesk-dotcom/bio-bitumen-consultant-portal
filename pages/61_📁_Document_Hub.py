@@ -477,3 +477,11 @@ try:
         st.info("Add API keys in AI Settings for AI document generation")
 except Exception:
     pass
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "61")
+except Exception:
+    pass

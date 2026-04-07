@@ -617,3 +617,11 @@ with ctrl2:
 
 st.markdown("---")
 st.caption(f"{COMPANY['name']} | {COMPANY['owner']} | {COMPANY['phone']}")
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "81")
+except Exception:
+    pass

@@ -323,3 +323,11 @@ except Exception:
 
 st.markdown("---")
 st.caption("All values auto-update when capacity changes. BOQ feeds into Financial Model and DPR Generator.")
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "23")
+except Exception:
+    pass

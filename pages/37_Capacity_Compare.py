@@ -284,3 +284,11 @@ except Exception:
     pass
 
 st.caption("📊 ROI uses operating-profit formula. For bank-standard, see Financial Model.")
+
+
+# ── Next Steps Navigation ──
+try:
+    from engines.page_navigation import add_next_steps
+    add_next_steps(st, "37")
+except Exception:
+    pass
