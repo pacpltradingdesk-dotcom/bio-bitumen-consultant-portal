@@ -126,6 +126,11 @@ def build_dalle_prompt(plant_type, capacity_tpd, environment, visual_style,
     style = VISUAL_STYLES.get(visual_style, VISUAL_STYLES["Isometric 3D"])
     env = ENVIRONMENTS.get(environment, ENVIRONMENTS["Industrial Estate"])
 
+    # Override capacity in cfg with the parameter value
+    if cfg:
+        cfg = dict(cfg)
+        cfg["capacity_tpd"] = capacity_tpd
+
     # Get REAL computed specs if cfg available
     specs_text = ""
     if cfg and plant_type == "Bio-bitumen":

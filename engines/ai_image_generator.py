@@ -87,6 +87,10 @@ def get_prompts(tpd, cfg=None):
     if cfg is None:
         cfg = {"capacity_tpd": tpd, "bio_oil_yield_pct": 32, "bio_char_yield_pct": 28,
                "syngas_yield_pct": 22, "process_loss_pct": 18, "bio_blend_pct": 20}
+    else:
+        # Override capacity with the tpd parameter (user may have changed it on the page)
+        cfg = dict(cfg)
+        cfg["capacity_tpd"] = tpd
 
     comp, machinery, clearances = _get_specs(cfg)
 
