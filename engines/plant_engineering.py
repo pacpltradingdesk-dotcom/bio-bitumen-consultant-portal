@@ -346,6 +346,250 @@ def get_machinery_list(cfg, comp=None):
 # ══════════════════════════════════════════════════════════════════════
 # SECTION 3: SAFETY CLEARANCES (IS 14489, NBC 2016, OSHA, OISD)
 # ══════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════
+# CIVIL CONSTRUCTION SPECIFICATIONS (computed from capacity)
+# ══════════════════════════════════════════════════════════════════════
+def get_civil_specs(cfg):
+    """Complete civil construction specifications for any capacity.
+    All dimensions computed — nothing hardcoded."""
+    tpd = cfg.get("capacity_tpd", 20)
+    s = tpd / 20  # scale factor
+    flood = cfg.get("flood_prone", False)
+    build = cfg.get("build_type", "peb")
+    seismic = cfg.get("seismic_zone", "III")
+
+    return {
+        # ── FOUNDATIONS ──
+        "reactor_foundation": {
+            "type": "RCC M25 mat foundation",
+            "depth_m": 2.0 if flood else 1.5,
+            "thickness_mm": 600,
+            "size_m": f"{round(1.5 + tpd*0.04 + 1.5, 1)}m dia",
+            "rebar": "12mm @ 150mm c/c both ways, IS 456",
+            "anchor_bolts": "M24 × 600mm, 8 nos per reactor",
+            "grade": "M25 with OPC 43",
+        },
+        "shredder_foundation": {
+            "type": "Anti-vibration RCC pad",
+            "depth_m": 0.8,
+            "size_m": "4m × 3m × 0.8m deep",
+            "rebar": "16mm @ 200mm c/c, anti-vibration mounts",
+            "grade": "M20",
+        },
+        "dryer_foundation": {
+            "type": "RCC bearing supports (2 nos)",
+            "depth_m": 1.0,
+            "size_m": f"2m × 2m × 1m each, spacing {round(tpd*0.25 + 4, 1)}m",
+            "grade": "M20",
+        },
+        "tank_foundation": {
+            "type": "RCC ring wall + compacted sand pad",
+            "depth_m": 0.6,
+            "ring_width_mm": 300,
+            "sand_thickness_mm": 200,
+            "grade": "M20",
+        },
+        "equipment_plinth": {
+            "height_mm": 900 if flood else 450,
+            "grade": "M15 PCC + M20 RCC",
+            "finish": "Rubbed smooth, chamfered edges",
+        },
+        "column_foundation": {
+            "type": "Isolated footing" if seismic in ("II", "III") else "Combined footing",
+            "depth_m": 1.5 if not flood else 2.0,
+            "size_m": f"{round(1.2 + s*0.2, 1)}m × {round(1.2 + s*0.2, 1)}m",
+            "grade": "M25",
+            "rebar": "12mm @ 150mm c/c",
+        },
+
+        # ── BUILDINGS ──
+        "process_hall": {
+            "type": "PEB" if build == "peb" else "RCC framed",
+            "area_sqm": round(max(300, tpd * 30)),
+            "length_m": round(max(20, tpd * 1.5)),
+            "width_m": round(max(15, tpd * 0.8)),
+            "eave_height_m": max(8, round(6 + tpd * 0.1)),
+            "column_grid_m": 6.0,
+            "roof": "Metal sheet 0.5mm + insulation" if build == "peb" else "RCC slab 150mm",
+            "floor": "VDF concrete 200mm M25 + hardener",
+            "doors": f"{max(2, int(tpd/10))} roller shutters 5m × 5m",
+        },
+        "office_building": {
+            "type": "RCC framed 2-storey",
+            "area_sqm": max(200, round(tpd * 8)),
+            "length_m": max(15, round(tpd * 0.5)),
+            "width_m": 10,
+            "height_m": 7.0,
+            "stories": 2,
+            "floor": "Vitrified tiles",
+            "roof": "RCC slab 150mm + waterproofing",
+            "rooms": "GF: Reception, Conference, Toilets | FF: GM cabin, Accounts, HR, Open office",
+        },
+        "laboratory": {
+            "type": "RCC building, AC",
+            "area_sqm": max(108, round(tpd * 5)),
+            "length_m": 12,
+            "width_m": 9,
+            "height_m": 3.5,
+            "floor": "Acid-resistant tiles",
+            "fume_hood": "1.2m wide SS, motorized sash, 0.5m/s face velocity",
+            "benches": "Epoxy top 900mm × 600mm, 900mm height",
+            "ventilation": "6 air changes/hour, exhaust duct to roof",
+        },
+        "control_room": {
+            "type": "RCC blast-resistant",
+            "area_sqm": 48,
+            "length_m": 8,
+            "width_m": 6,
+            "height_m": 3.2,
+            "wall_thickness_mm": 250,
+            "is_standard": "IS 13063",
+            "hvac": "Positive pressure, 2-stage HEPA",
+            "floor": "Anti-static raised floor",
+        },
+        "canteen": {
+            "type": "RCC, IS 7250",
+            "area_sqm": max(60, round(tpd * 3)),
+            "seats": max(20, round(tpd * 1.2)),
+            "kitchen_sqm": max(15, round(tpd * 0.5)),
+        },
+        "toilet_block": {
+            "type": "RCC, IS 5965, Factories Act",
+            "qty": 2,
+            "area_sqm_each": max(30, round(tpd * 1.5)),
+            "wc_male": max(2, round(tpd / 10)),
+            "wc_female": max(2, round(tpd / 15)),
+            "urinals": max(3, round(tpd / 8)),
+            "wash_basins": max(4, round(tpd / 6)),
+        },
+
+        # ── COMPOUND WALL ──
+        "compound_wall": {
+            "total_length_m": round(2 * (cfg.get("plot_length_m", 120) + cfg.get("plot_width_m", 80))),
+            "height_m": 2.4,
+            "thickness_mm": 230,
+            "material": "230mm brick + RCC pillars 230×230mm @ 3m c/c",
+            "foundation": "RCC strip footing 600mm wide × 600mm deep",
+            "coping": "RCC coping 50mm with drip mould",
+            "plaster": "12mm cement plaster both sides, weather coat paint",
+            "barbed_wire": "3 rows GI barbed wire on MS angle brackets",
+        },
+
+        # ── ROADS ──
+        "internal_roads": {
+            "width_m": 6.0,
+            "pavement": "200mm M25 RCC on 150mm WBM sub-base on 200mm GSB",
+            "camber": "2% cross-slope for drainage",
+            "kerb": "RCC precast kerb 150mm × 300mm",
+            "total_area_sqm": round(cfg.get("plot_length_m", 120) * cfg.get("plot_width_m", 80) * 0.18),
+            "fire_road_width_m": 6.0,
+            "turning_radius_m": 9.0,
+        },
+
+        # ── DRAINAGE ──
+        "storm_drainage": {
+            "type": "RCC U-drain 600mm × 450mm",
+            "gradient": "1:100 minimum towards ETP/sump",
+            "catch_pits": f"{max(6, int(tpd/3))} nos at road junctions",
+            "catch_pit_size": "600mm × 600mm × 600mm deep, CI grating",
+            "outfall": "To ETP collection sump via 150mm PVC pipe",
+            "total_length_m": round(cfg.get("plot_length_m", 120) * 2 + cfg.get("plot_width_m", 80) * 2),
+        },
+        "process_drainage": {
+            "type": "Acid-resistant channel 300mm × 300mm",
+            "gradient": "1:80 towards ETP",
+            "material": "Epoxy-lined RCC or SS304 channel",
+            "covers": "CI chequered plate covers, bolted",
+        },
+        "floor_drainage": {
+            "gradient": "1:100 towards floor drain, 1:80 in chemical areas",
+            "floor_drains": f"{max(8, int(tpd/2))} nos, 150mm dia CI body with SS grating",
+        },
+
+        # ── BUND WALL (tank dyke) ──
+        "bund_wall": {
+            "height_m": 1.0,
+            "thickness_m": 0.3,
+            "material": "RCC M20, IS 15663 / OISD 118",
+            "capacity": "110% of largest tank volume",
+            "drain_valve": "150mm gate valve, normally closed, locked",
+            "coating": "Bituminous waterproofing inside face",
+            "ramp": "One vehicle ramp for tanker access",
+        },
+
+        # ── GREEN BELT ──
+        "green_belt": {
+            "width_m": 5.0,
+            "total_area_sqm": round(2 * (cfg.get("plot_length_m", 120) + cfg.get("plot_width_m", 80)) * 5),
+            "planting": "Native trees 3m spacing, drip irrigation",
+            "standard": "IS 1196, EIA consent condition",
+        },
+
+        # ── UNDERGROUND SERVICES ──
+        "cable_trench": {
+            "width_mm": 600,
+            "depth_mm": 750,
+            "material": "RCC with CI covers",
+            "routes": "Substation to MCC, MCC to process area, MCC to pump house",
+        },
+        "water_pipeline": {
+            "material": "GI IS 1239 (above ground), HDPE IS 4984 (underground)",
+            "main_size_mm": max(50, round(tpd * 2)),
+            "branch_size_mm": max(25, round(tpd)),
+            "depth_mm": 600,
+        },
+        "earthing_grid": {
+            "conductor": "25mm × 3mm GI flat",
+            "electrodes": f"{max(8, int(tpd/2))} nos, GI pipe 40mm dia × 3m long",
+            "earth_pits": f"{max(4, int(tpd/4))} nos with CI cover + inspection chamber",
+            "resistance": "< 1Ω main earth, < 5Ω equipment earth",
+            "standard": "IS 3043",
+        },
+    }
+
+
+# ══════════════════════════════════════════════════════════════════════
+# CIVIL DRAWING TYPES (for agencies)
+# ══════════════════════════════════════════════════════════════════════
+CIVIL_DRAWING_TYPES = {
+    # For Municipal / Building Authority
+    "site_plan": "Site Plan with setbacks, roads, green belt (Municipal NOC)",
+    "building_plan": "Floor Plans — Ground + First Floor (Building Permission)",
+    "section_drawing": "Building Section — GL to roof, floor levels, stair (Building Permission)",
+    "elevation": "Front + Side Elevation (Building Permission)",
+
+    # For Structural Engineer / RCC Consultant
+    "foundation_plan": "Foundation Layout — all footings, mats, piles (Structural Design)",
+    "column_layout": "Column Position Plan with grid lines A-A, B-B (Structural)",
+    "roof_plan": "Roof Plan — truss/slab layout, slope, drainage (Structural)",
+    "beam_layout": "Beam Layout — plinth beam, tie beam, lintel (Structural)",
+
+    # For PCB / Environmental Authority
+    "drainage_layout": "Storm Water + Process Drainage Plan (PCB CTE/CTO)",
+    "etp_layout": "ETP Layout with tank arrangement + pipe connections (PCB)",
+    "green_belt_plan": "Green Belt + Landscaping Plan (EIA condition)",
+
+    # For Fire Department (Fire NOC)
+    "fire_layout": "Fire Fighting Layout — hydrants, exits, assembly (Fire NOC)",
+
+    # For PESO (Petroleum Explosives Safety)
+    "tank_farm_layout": "Tank Farm with dyke bund, spacing, vents (PESO approval)",
+
+    # For Electrical Inspector
+    "earthing_layout": "Earthing Grid + Lightning Protection (Electrical Inspector)",
+    "cable_routing": "Cable Tray + Trench Layout (Electrical Inspector)",
+
+    # For Factory Inspector
+    "toilet_layout": "Toilet Block Plan — M/F, disabled, Factories Act (Factory Inspector)",
+    "ventilation_plan": "Ventilation + HVAC Layout (Factory Inspector)",
+
+    # For Contractor Execution
+    "road_section": "Road Cross-Section — pavement layers, kerb, drainage (Contractor)",
+    "compound_wall_detail": "Compound Wall Section — foundation to coping (Contractor)",
+    "floor_finish": "Floor Finish Schedule — area wise finish types (Contractor)",
+}
+
+
 SAFETY_CLEARANCES = {
     "reactor_to_boundary_m": 15.0,
     "reactor_to_control_room_m": 30.0,

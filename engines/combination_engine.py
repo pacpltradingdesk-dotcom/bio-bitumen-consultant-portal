@@ -12,7 +12,8 @@ Supports all combinations:
 
 Auto-Healing: If any input is missing, uses nearest logical match.
 """
-from engines.plant_engineering import compute_all, get_machinery_list, SAFETY_CLEARANCES, PIPE_COLOURS, EQUIPMENT_COLOURS
+from engines.plant_engineering import (compute_all, get_machinery_list, SAFETY_CLEARANCES,
+    PIPE_COLOURS, EQUIPMENT_COLOURS, get_civil_specs, CIVIL_DRAWING_TYPES)
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -62,6 +63,10 @@ DRAWING_TYPES = {
     "process_flow": "Process Flow Diagram (PFD)",
     "equipment_ga": "Equipment General Arrangement",
     "fire_safety": "Fire Safety & Emergency Layout",
+    "civil_foundation": "Civil Foundation Plan (for Structural Engineer)",
+    "civil_building": "Building Plan + Section (for Municipal Authority)",
+    "civil_drainage": "Drainage + ETP Layout (for PCB / Environmental)",
+    "civil_compound": "Compound Wall + Road Section (for Contractor)",
 }
 
 
@@ -233,9 +238,55 @@ def build_variable_block(cfg):
         "road_width": SAFETY_CLEARANCES.get("road_width_internal_m", 6),
         "turning_radius": SAFETY_CLEARANCES.get("turning_radius_min_m", 9),
         "green_belt_m": SAFETY_CLEARANCES.get("green_belt_min_m", 5),
+        # Civil construction specs
+        "civil_specs": "",  # placeholder — built below
         # Meta
         "healed_inputs": healed,
     }
+
+    # Add civil specs text block
+    try:
+        cs = get_civil_specs(cfg)
+        civil_lines = []
+        # Foundations
+        rf = cs["reactor_foundation"]
+        civil_lines.append(f"REACTOR FOUNDATION: {rf['type']}, {rf['size_m']}, depth {rf['depth_m']}m, {rf['thickness_mm']}mm thick, {rf['rebar']}, {rf['grade']}")
+        sf = cs["shredder_foundation"]
+        civil_lines.append(f"SHREDDER FOUNDATION: {sf['type']}, {sf['size_m']}, {sf['grade']}")
+        tf = cs["tank_foundation"]
+        civil_lines.append(f"TANK FOUNDATION: {tf['type']}, ring {tf['ring_width_mm']}mm, sand {tf['sand_thickness_mm']}mm")
+        cf_data = cs["column_foundation"]
+        civil_lines.append(f"COLUMN FOOTINGS: {cf_data['type']}, {cf_data['size_m']}, depth {cf_data['depth_m']}m, {cf_data['grade']}")
+        # Buildings
+        ph = cs["process_hall"]
+        civil_lines.append(f"PROCESS HALL: {ph['type']}, {ph['length_m']}m × {ph['width_m']}m × {ph['eave_height_m']}m eave, {ph['column_grid_m']}m grid, {ph['floor']}")
+        ob = cs["office_building"]
+        civil_lines.append(f"OFFICE: {ob['type']}, {ob['length_m']}m × {ob['width_m']}m × {ob['height_m']}m, {ob['stories']} storey, {ob['floor']}")
+        lb = cs["laboratory"]
+        civil_lines.append(f"LAB: {lb['type']}, {lb['length_m']}m × {lb['width_m']}m × {lb['height_m']}m, {lb['floor']}")
+        cr = cs["control_room"]
+        civil_lines.append(f"CONTROL ROOM: {cr['type']}, {cr['length_m']}m × {cr['width_m']}m, wall {cr['wall_thickness_mm']}mm, {cr['is_standard']}")
+        # Compound wall
+        cw = cs["compound_wall"]
+        civil_lines.append(f"COMPOUND WALL: {cw['total_length_m']}m perimeter, {cw['height_m']}m ht, {cw['material']}, {cw['foundation']}")
+        # Roads
+        rd = cs["internal_roads"]
+        civil_lines.append(f"ROADS: {rd['width_m']}m wide, {rd['pavement']}, {rd['camber']} camber, total {rd['total_area_sqm']} sqm")
+        # Drainage
+        sd = cs["storm_drainage"]
+        civil_lines.append(f"STORM DRAIN: {sd['type']}, gradient {sd['gradient']}, {sd['catch_pits']} catch pits, {sd['total_length_m']}m")
+        # Bund
+        bw = cs["bund_wall"]
+        civil_lines.append(f"BUND WALL: {bw['height_m']}m × {bw['thickness_m']}m, {bw['material']}, {bw['capacity']}")
+        # Underground
+        eg = cs["earthing_grid"]
+        civil_lines.append(f"EARTHING: {eg['conductor']}, {eg['electrodes']}, resistance {eg['resistance']}, {eg['standard']}")
+
+        result["civil_specs"] = "\n".join(civil_lines)
+    except Exception:
+        result["civil_specs"] = "Civil specs not available"
+
+    return result
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -367,6 +418,134 @@ FIRE PROTECTION:
 Show: hydrant positions FH-01 to FH-N, assembly points, exit routes (green arrows),
 fire tender access road {road_width}m wide with 9m turning radius, wind sock.
 Colour: Fire equipment=Red, Exits=Green, Assembly=Yellow.""",
+
+    "civil_foundation": """Civil Foundation Plan for {capacity_tpd} TPD {technology_short} plant.
+IS 456 (RCC), IS 1893 Zone {state} (Seismic), IS 800 (Steel). Plot: {plot_l_m}m × {plot_w_m}m.
+
+FOUNDATION SCHEDULE:
+{civil_specs}
+
+COLUMN LAYOUT:
+- Grid spacing: 6.0m × 6.0m standard bay
+- Grid lines: A, B, C... (horizontal) × 1, 2, 3... (vertical)
+- Column size: 230mm × 230mm RCC for single storey, 300×300mm for 2-storey
+- Plinth beam: 230mm × 300mm RCC M20 at plinth level (+{plinth_mm}mm)
+
+SECTION REQUIREMENTS:
+- Section A-A: Through reactor foundation (show mat, rebar, anchor bolts)
+- Section B-B: Through process hall (show footing, column, truss/beam, roof)
+- Section C-C: Through compound wall (show strip footing, brick, coping, barbed wire)
+
+LEVELS (show on drawing):
+- Natural Ground Level (NGL): ±0.000
+- Plinth Level: +{plinth_mm}mm
+- Floor Finish Level (FFL): +{plinth_mm}mm + 50mm
+- Tie Beam Level: +300mm
+- Lintel Level: +2100mm
+- Roof Level: varies per building
+
+Must include: All footing dimensions, rebar details, anchor bolt patterns, equipment tag numbers at each foundation.
+Engineering structural drawing, IS 456 notation, clean background.""",
+
+    "civil_building": """Building Plans + Sections for {capacity_tpd} TPD {technology_short} plant.
+For Municipal Building Permission + Factory License. IS 456, NBC 2016.
+
+FLOOR PLANS REQUIRED:
+1. Process Hall: {feed_shed_l_m}m × {feed_shed_w_m}m, eave height {capacity_tpd}m-scaled
+   - Show: equipment foundations, floor drains, roller shutter doors, fire exits
+2. Office (Ground Floor): Reception 4×3m, Conference 5×4m, Toilets M/F, Staircase
+3. Office (First Floor): GM cabin 4×3m, Accounts, HR, Open office {office_area_sqm}sqm
+4. Laboratory: 12m × 9m, fume hood, instrument room 4×3m, wash area, benches
+5. Control Room: 8m × 6m, blast walls {control_room_area_sqm}sqm, raised floor
+6. Canteen: seating area, kitchen, wash area, IS 7250
+7. Toilet Block: M/F separate, disabled WC, IS 5965, Factories Act
+
+BUILDING SECTIONS:
+- Section X-X through Office: Show NGL, plinth, GF slab, FF slab, parapet, stair
+- Section Y-Y through Process Hall: Show foundation, column, truss, ridge, gutter
+
+ELEVATIONS:
+- Front Elevation: Office building with signage, entrance, windows
+- Side Elevation: Process hall showing roof slope, louvers, doors
+
+DOOR/WINDOW SCHEDULE:
+- D1: Roller shutter 5m×5m (process hall), D2: MS door 1.2m×2.1m, D3: Fire exit 0.9m×2.1m
+- W1: Aluminium sliding 1.5m×1.2m, W2: Fixed glass 1.2m×1.2m, W3: Ventilator 0.6m×0.6m
+
+Must include: room names, areas in sqm, door/window marks, floor finish schedule, staircase detail.
+Architectural drawing style, IS 962 notation.""",
+
+    "civil_drainage": """Drainage + ETP Layout for {capacity_tpd} TPD {technology_short} plant.
+For PCB (Pollution Control Board) CTE/CTO application. CPCB norms, IS 10500.
+
+STORM WATER DRAINAGE:
+- U-drain 600mm × 450mm RCC along all internal roads
+- Gradient: 1:100 minimum towards collection sump
+- Catch pits: 600×600×600mm at all road junctions with CI grating
+- Total drain length: approx {plot_l_m}×2 + {plot_w_m}×2 = running metres
+- Outfall: to rainwater harvesting pit (50 KL underground)
+
+PROCESS DRAINAGE (separate system):
+- Acid-resistant channel 300×300mm in process area
+- Gradient: 1:80 towards ETP collection tank
+- Floor drains: 150mm dia every 6m in process area
+- Oil trap: before ETP entry
+
+ETP LAYOUT (show as separate area):
+- Collection tank → Equalization tank → Aeration tank → Clarifier → Treated water tank
+- Capacity: {capacity_tpd} KLD approximately
+- Outlet quality: IS 10500 for reuse, CPCB trade effluent norms
+- Sludge drying bed: 6m × 4m
+
+BUND WALL (around tank farm):
+- Height: 1.0m, thickness 300mm RCC M20
+- Capacity: 110% of largest tank
+- Drain valve: 150mm gate valve, normally closed
+- Waterproofing: bituminous coating inside
+
+GREEN BELT:
+- 5m wide around entire perimeter
+- Native trees at 3m spacing, drip irrigation
+- Total area: {plot_l_m}×2 + {plot_w_m}×2 multiplied by 5m width
+
+Must include: drain routes with gradient arrows, manhole positions, ETP equipment arrangement, bund outline.
+Environmental engineering drawing, clean layout.""",
+
+    "civil_compound": """Compound Wall + Road Section Details for {capacity_tpd} TPD plant.
+For Contractor Execution. IS 1596, IS 15658, NBC 2016.
+
+COMPOUND WALL SECTION:
+- Foundation: RCC strip footing 600mm wide × 600mm deep, M15 PCC 75mm
+- Plinth: 230mm brick, 2 courses below GL
+- Wall: 230mm brick masonry, cement mortar 1:6, total height 2.4m above GL
+- Pillars: RCC 230×230mm @ 3m c/c, M20, 4-12mm bars + 8mm stirrups @ 150mm
+- Coping: RCC coping 50mm with drip mould, weathering slope
+- Plaster: 12mm cement plaster both sides, exterior weather coat paint
+- Barbed wire: 3 rows GI wire on MS angle brackets 45°
+- Total perimeter: {plot_l_m}×2 + {plot_w_m}×2 metres
+
+GATE DETAILS:
+- Main gate: MS fabricated sliding, 6m opening, motor operated, RAL 5012
+- Emergency gate: 4m opening, swing type, manual + remote
+- Guard booth: 3m × 3m RCC, 3.2m height
+
+ROAD CROSS-SECTION (to scale):
+Layer 1: Compacted subgrade 300mm
+Layer 2: GSB (Granular Sub-Base) 200mm
+Layer 3: WBM (Wet Mix Macadam) 150mm
+Layer 4: RCC pavement M25, 200mm thick
+Surface: Broomed finish with joints @ 3m
+Kerb: RCC precast 150mm × 300mm, IS 15658
+Camber: 2% cross-slope
+Total road width: 6m carriageway + 0.15m kerb each side
+Turning area: {turning_radius}m radius at dead ends
+
+PARKING AREA:
+- Staff parking: {capacity_tpd} car bays × 2.5m × 5m
+- Truck parking: 4-6 bays × 3.5m × 12m (scale with capacity)
+
+Must include: wall section 1:10 scale, road section 1:20 scale, gate elevation, turning circle.
+Civil construction detail drawing style.""",
 }
 
 
