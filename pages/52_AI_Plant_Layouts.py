@@ -39,12 +39,10 @@ try:
 except Exception:
     has_key = False
 
-if not has_key:
-    st.error("OpenAI API key required for DALL-E 3 image generation. Go to AI Settings to add your key.")
-    st.page_link("pages/83_🔑_AI_Settings.py", label="Go to AI Settings", icon="🔑")
-    st.stop()
-
-st.success("OpenAI API connected — DALL-E 3 ready")
+if has_key:
+    st.success("OpenAI API connected — DALL-E 3 + Pollinations AI ready")
+else:
+    st.info("Pollinations AI ready (FREE, no key needed). Add OpenAI key in AI Settings for DALL-E 3 option.")
 
 # ── MASTER CONTEXT VALIDATION — Block if critical data missing ────
 from engines.master_context import validate_before_generation, get_parameter_popup
