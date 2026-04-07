@@ -136,16 +136,22 @@ with tab_custom:
                                             "1024x1792 (Portrait)"], index=0, key="dal_size")
         size_param = size.split(" ")[0]
 
-    # Show COMPUTED equipment specs (not generic list)
+    # Build LOCAL cfg from page inputs (not session cfg)
+    local_cfg = dict(cfg)
+    local_cfg["capacity_tpd"] = capacity
+    local_cfg["plot_length_m"] = plot_length
+    local_cfg["plot_width_m"] = plot_width
+
+    # Show COMPUTED equipment specs from LOCAL inputs
     plant = PLANT_MACHINES.get(plant_type, PLANT_MACHINES["Bio-bitumen"])
     st.markdown(f"**Process Flow:** {plant['flow']}")
 
     if plant_type == "Bio-bitumen":
         try:
             from engines.plant_engineering import compute_all, get_machinery_list
-            comp = compute_all(cfg)
-            real_machines = get_machinery_list(cfg, comp)
-            st.markdown(f"**Equipment ({len(real_machines)} items with COMPUTED specs):**")
+            comp = compute_all(local_cfg)
+            real_machines = get_machinery_list(local_cfg, comp)
+            st.markdown(f"**Equipment ({len(real_machines)} items with COMPUTED specs for {capacity} TPD):**")
             for m in real_machines[:8]:
                 st.caption(f"  {m['tag']}: {m['name']} — {m['dims'][:60]}")
             st.markdown(f"**Key Dimensions:** Reactor Ø{comp['reactor_dia_m']}m × {comp['reactor_ht_m']}m | "
@@ -158,9 +164,9 @@ with tab_custom:
 
     st.markdown(f"**Safety:** {plant['safety_zones']}")
 
-    # Build prompt WITH cfg for computed specs
+    # Build prompt from LOCAL inputs (capacity/plot from page, not session)
     prompt = build_dalle_prompt(plant_type, capacity, environment, visual_style,
-                                 plot_length, plot_width, cfg=cfg)
+                                 plot_length, plot_width, cfg=local_cfg)
 
     with st.expander("View/Edit Generated Prompt"):
         edited_prompt = st.text_area("DALL-E 3 Prompt", value=prompt, height=200,
