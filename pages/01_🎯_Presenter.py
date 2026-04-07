@@ -31,7 +31,7 @@ except Exception:
     pass
 
 
-TOTAL_SLIDES = 52  # 0-51
+TOTAL_SLIDES = 57  # 0-56
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE STATE + DISPLAY MODE + PRINT
@@ -126,10 +126,15 @@ SLIDE_TITLES = [
     "Our Competitive Advantage (SWOT)",     # 46
     "Client Success Stories",               # 47
     "Competitor Comparison",                # 48
-    # Section I: Final (49-51)
-    "Investment Summary & Next Steps",      # 49
-    "Contact & Appointment",                # 50
-    "Thank You & Call to Action",           # 51
+    # Section I: Convince & Close (49-56)
+    "With Us vs Without Us",                # 49 — NEW
+    "ROI Calculator — Play with Numbers",   # 50 — NEW
+    "Project Readiness Checklist",          # 51 — NEW
+    "Consulting Fee & Value Proposition",   # 52 — NEW
+    "Timeline with Deliverables",           # 53 — NEW
+    "Investment Summary & Next Steps",      # 54
+    "Contact & Appointment",                # 55
+    "Thank You & Call to Action",           # 56
 ]
 
 # Header with slide counter
@@ -960,58 +965,229 @@ elif slide == 48:
     except Exception:
         st.markdown("We are the only company offering end-to-end consulting + execution.")
 
-# ── Slides 49-51: Final ──
+# ══════════════════════════════════════════════════════════════════════
+# SLIDES 49-53: CONVINCE & CLOSE (5 NEW SLIDES)
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Slide 49: WITH US vs WITHOUT US ──
 elif slide == 49:
-    # Final Proposal (was slide 14)
+    st.markdown("### With PPS Anantams vs Without Us")
+    inv = cfg.get("investment_cr", 10)
+    st.markdown(f"""
+    | Parameter | Without Consultant | With PPS Anantams |
+    |---|---|---|
+    | **DPR Preparation** | Rs 3-5 Lac (external CA) | Included in fee |
+    | **Technology Selection** | Trial & error, wrong choice risk | CSIR-CRRI proven, pre-validated |
+    | **Machinery Procurement** | Overpay 15-25% (no benchmarks) | Best price from 4,452 contacts |
+    | **Bank Loan Process** | 6-12 months, multiple rejections | 3-4 months, bank-ready DPR |
+    | **Government Approvals** | 8-15 months (wrong sequence) | 4-6 months (parallel processing) |
+    | **Construction Mistakes** | Rs 20-50 Lac wasted on rework | Zero rework — pre-engineered layout |
+    | **Wrong Equipment** | Rs 30-80 Lac loss (wrong spec) | Exact specs from 10 plant experience |
+    | **Production Start** | 24-30 months | 12-15 months |
+    | **First Year Issues** | Low yield, quality rejection | 85%+ utilization, IS:73 certified |
+    | **TOTAL EXTRA COST** | **Rs {inv*0.3:.1f}-{inv*0.5:.1f} Cr wasted** | **Rs {inv*0.10:.1f} Cr consulting fee** |
+    """)
+    st.error(f"**Without us:** You risk Rs {inv*0.3:.1f}-{inv*0.5:.1f} Cr in mistakes, delays, and wrong decisions")
+    st.success(f"**With us:** You pay Rs {inv*0.10:.1f} Cr (10%) and save Rs {inv*0.2:.1f}-{inv*0.4:.1f} Cr + 12 months time")
+
+# ── Slide 50: ROI CALCULATOR (Client plays with sliders) ──
+elif slide == 50:
+    st.markdown("### Play with Numbers — See YOUR Return")
+    st.caption("Move the sliders to see how your investment performs")
+
+    rc1, rc2 = st.columns(2)
+    with rc1:
+        r_cap = st.slider("Your Plant Capacity (TPD)", 5, 100, int(cfg.get("capacity_tpd", 25)), 5, key="roi_play_cap")
+        r_price = st.slider("Selling Price (Rs/MT)", 30000, 55000, int(cfg.get("selling_price_per_mt", 44000)), 1000, key="roi_play_price")
+        r_days = st.slider("Working Days/Year", 250, 330, int(cfg.get("working_days", 300)), 10, key="roi_play_days")
+    with rc2:
+        r_cost = st.slider("Variable Cost (Rs/MT)", 15000, 35000, 22000, 1000, key="roi_play_cost")
+        r_inv = st.slider("Investment (Rs Crore)", 2.0, 30.0, float(cfg.get("investment_cr", 10)), 0.5, key="roi_play_inv")
+
+    # Calculate live
+    output_per_day = r_cap * 0.4  # 40% yield
+    annual_output = output_per_day * r_days
+    annual_revenue = annual_output * r_price
+    annual_cost = annual_output * r_cost
+    annual_profit = annual_revenue - annual_cost
+    monthly_profit = annual_profit / 12
+    roi = annual_profit / (r_inv * 1e7) * 100 if r_inv > 0 else 0
+    payback = (r_inv * 1e7) / annual_profit if annual_profit > 0 else 999
+
+    rk1, rk2, rk3, rk4 = st.columns(4)
+    rk1.metric("Annual Revenue", f"Rs {annual_revenue/1e7:.2f} Cr")
+    rk2.metric("Annual Profit", f"Rs {annual_profit/1e7:.2f} Cr",
+               delta="Profitable" if annual_profit > 0 else "Loss",
+               delta_color="normal" if annual_profit > 0 else "inverse")
+    rk3.metric("ROI", f"{roi:.1f}%")
+    rk4.metric("Payback", f"{payback:.1f} years" if payback < 100 else "N/A")
+
+    st.metric("Monthly Profit to Your Pocket", f"Rs {monthly_profit/1e5:.1f} Lac/month")
+
+# ── Slide 51: PROJECT READINESS CHECKLIST ──
+elif slide == 51:
+    st.markdown("### Project Readiness — What You Need vs What We Handle")
+
+    checklist = [
+        ("Land (owned or leased)", "YOU", "Identify 1-3 acre industrial plot"),
+        ("Company Registration (Pvt Ltd / LLP)", "WE HELP", "ROC filing, MOA/AOA drafting"),
+        ("GST + PAN + TAN Registration", "WE HANDLE", "Online filing within 7 days"),
+        ("Udyam (MSME) Registration", "WE HANDLE", "Instant online registration"),
+        ("DPR (Detailed Project Report)", "WE DELIVER", "21-section bank-ready DPR"),
+        ("Bank Loan Application + CMA Data", "WE PREPARE", "SBI/SIDBI format, CA certified"),
+        ("CTE (Pollution Board)", "WE APPLY", "Complete application with process flow"),
+        ("Factory License", "WE APPLY", "Form + plan + machinery list"),
+        ("Fire NOC", "WE APPLY", "Fire safety plan + equipment list"),
+        ("Machinery Procurement", "WE COORDINATE", "OEM selection, negotiation, inspection"),
+        ("Civil Construction", "WE SUPERVISE", "Contractor selection, quality check"),
+        ("Installation & Commissioning", "WE MANAGE", "Erection, piping, testing, trial run"),
+        ("Quality Testing (IS:73)", "WE ARRANGE", "CSIR-CRRI lab testing"),
+        ("NHAI / GeM Registration", "WE DO", "Supplier registration for govt supply"),
+        ("Buyer Network Setup", "WE CONNECT", "4,452 contacts — contractors, traders"),
+    ]
+
+    for item, who, detail in checklist:
+        color = "#00AA44" if "WE" in who else "#FF8800"
+        icon = "✅" if "WE" in who else "📋"
+        st.markdown(f"{icon} **{item}** — <span style='color:{color}; font-weight:bold'>{who}</span> — {detail}", unsafe_allow_html=True)
+
+    we_count = sum(1 for _, w, _ in checklist if "WE" in w)
+    st.success(f"**We handle {we_count} out of {len(checklist)} steps.** You focus on land and capital — we do everything else.")
+
+# ── Slide 52: CONSULTING FEE STRUCTURE ──
+elif slide == 52:
+    inv = cfg.get("investment_cr", 10)
+    fee = inv * 0.10  # 10% of project cost
+    st.markdown("### Our Consulting Fee — Transparent & Value-Based")
+
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #003366, #006699); padding: 25px; border-radius: 15px; color: white; text-align: center;">
+        <h2 style="color: white;">Consulting Fee: 10% of Project Cost</h2>
+        <p style="font-size: 2em; color: #ffcc00; font-weight: bold;">Rs {fee:.2f} Crore</p>
+        <p style="color: #99ccff;">(For Rs {inv:.2f} Crore project)</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("### Fee Bifurcation")
+    st.markdown(f"""
+    | Phase | Deliverable | Fee % | Amount |
+    |---|---|---|---|
+    | **Phase 1:** Feasibility + DPR | Complete DPR, financial model, drawings | 20% | Rs {fee*0.20:.2f} Cr |
+    | **Phase 2:** Bank Loan + Approvals | Loan sanction, CTE, Factory License, Fire NOC | 20% | Rs {fee*0.20:.2f} Cr |
+    | **Phase 3:** Procurement + Construction | Equipment order, civil work, quality check | 30% | Rs {fee*0.30:.2f} Cr |
+    | **Phase 4:** Commissioning + Handover | Installation, trial run, IS:73 testing, buyer setup | 30% | Rs {fee*0.30:.2f} Cr |
+    | **TOTAL** | **Complete Turnkey Consulting** | **100%** | **Rs {fee:.2f} Cr** |
+    """)
+
+    st.markdown("---")
+    st.markdown("### What Happens If You Go Without Consultant?")
+    st.markdown(f"""
+    | Risk | Typical Loss |
+    |---|---|
+    | Wrong technology selection | Rs {inv*0.05:.1f}-{inv*0.10:.1f} Cr |
+    | Overpaying for machinery (no benchmarks) | Rs {inv*0.04:.1f}-{inv*0.08:.1f} Cr |
+    | Bank loan rejection + reapplication | 6-12 months delay |
+    | Wrong sequence of approvals | 4-8 months delay |
+    | Construction rework (wrong layout) | Rs {inv*0.03:.1f}-{inv*0.05:.1f} Cr |
+    | Low production yield (no expert commissioning) | Rs {inv*0.02:.1f}-{inv*0.04:.1f} Cr/year |
+    | **TOTAL RISK WITHOUT CONSULTANT** | **Rs {inv*0.15:.1f}-{inv*0.30:.1f} Cr + 12-18 months delay** |
+    """)
+
+    st.success(f"**Our fee: Rs {fee:.2f} Cr | Risk without us: Rs {inv*0.15:.1f}-{inv*0.30:.1f} Cr** — You SAVE by hiring us")
+
+# ── Slide 53: TIMELINE WITH DELIVERABLES ──
+elif slide == 53:
+    st.markdown("### Month-by-Month Timeline with Deliverables")
+
+    timeline = [
+        ("Month 1", "DPR + Feasibility", [
+            "Complete DPR (21 sections, 35+ pages)",
+            "Financial Model (7-year P&L, DSCR, IRR)",
+            "BOQ with machinery quotations",
+            "Site evaluation report",
+        ]),
+        ("Month 2", "Company + Bank", [
+            "Company registration (if needed)",
+            "GST + Udyam + PAN + TAN",
+            "Bank loan application with CMA data",
+            "CA certifications",
+        ]),
+        ("Month 3-4", "Approvals (Parallel)", [
+            "CTE application to State PCB",
+            "Factory License application",
+            "Fire NOC application",
+            "Electricity HT connection sanction",
+            "Bank loan sanction expected",
+        ]),
+        ("Month 4-6", "Engineering + Procurement", [
+            "Detailed engineering drawings (9 types)",
+            "Equipment ordering (3-4 OEM quotes each)",
+            "Civil contractor finalization",
+            "Foundation + civil work begins",
+        ]),
+        ("Month 6-10", "Construction", [
+            "Civil construction (PEB/RCC)",
+            "Equipment delivery + installation",
+            "Piping + electrical work",
+            "Pollution control equipment",
+            "Progress reports every 15 days",
+        ]),
+        ("Month 10-12", "Commissioning", [
+            "Mechanical completion",
+            "Electrical testing + energizing",
+            "Cold commissioning (water run)",
+            "Hot commissioning (trial run)",
+            "IS:73 quality testing at CSIR-CRRI lab",
+            "CTO (Consent to Operate) from PCB",
+        ]),
+        ("Month 13+", "Production + Sales", [
+            "Commercial production begins",
+            "GeM portal + NHAI registration",
+            "First customer orders",
+            "Buyer network activation (4,452 contacts)",
+            "Monthly review + support for 6 months",
+        ]),
+    ]
+
+    for month, phase, deliverables in timeline:
+        with st.expander(f"**{month}: {phase}**", expanded=(month == "Month 1")):
+            for d in deliverables:
+                st.markdown(f"- {d}")
+
+# ── Slides 54-56: Original final slides (renumbered) ──
+elif slide == 54:
     st.markdown(f"""
     <div style="background: linear-gradient(135deg, #003366, #006699); padding: 25px; border-radius: 15px; color: white;">
         <h2 style="color: white; margin: 0;">{cfg.get('project_name', 'Bio-Bitumen Plant')}</h2>
         <p style="color: #99ccff;">For: {cfg.get('client_name', 'Client')} | {cfg.get('client_company', '')}</p>
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 15px;">
             <div><span style="font-size: 1.8em; font-weight: bold;">{cfg['capacity_tpd']:.0f}</span><br>MT/Day</div>
-            <div><span style="font-size: 1.8em; font-weight: bold;">₹{cfg['investment_cr']:.1f}Cr</span><br>Investment</div>
+            <div><span style="font-size: 1.8em; font-weight: bold;">Rs {cfg['investment_cr']:.1f}Cr</span><br>Investment</div>
             <div><span style="font-size: 1.8em; font-weight: bold;">{cfg.get('roi_pct', 0):.0f}%</span><br>ROI</div>
             <div><span style="font-size: 1.8em; font-weight: bold;">{cfg.get('break_even_months', 0)}</span><br>Month BE</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
-    st.markdown("---")
-    st.subheader("Next Steps")
-    st.markdown("""
-    1. Finalize capacity and location
-    2. Sign consulting agreement
-    3. DPR generation (7 days)
-    4. Bank loan application
-    5. Site identification and land
-    6. Government approvals (parallel)
-    7. Equipment procurement
-    8. Construction and commissioning
-    """)
 
-elif slide == 50:
-    st.markdown("### Book Your Appointment")
+elif slide == 55:
     st.markdown(f"""
     <div style="background: #003366; padding: 30px; border-radius: 15px; color: white; text-align: center;">
-        <h2 style="color: white;">Ready to Start Your Bio-Bitumen Journey?</h2>
+        <h2 style="color: white;">Ready to Start?</h2>
         <p style="font-size: 1.3em; color: #99ccff;">{COMPANY['owner']}</p>
-        <p style="font-size: 1.1em;">{COMPANY.get('trade_name', 'PPS Anantams')}</p>
         <p style="font-size: 1.5em; margin-top: 15px;">📞 {COMPANY.get('phone', '')}</p>
         <p>📧 {COMPANY.get('email', '')}</p>
         <p>📍 {COMPANY.get('hq', 'Vadodara, Gujarat')}</p>
-        <p style="margin-top: 15px; font-size: 0.9em; color: #99ccff;">GST: {COMPANY.get('gst', '')}</p>
     </div>
     """, unsafe_allow_html=True)
 
-elif slide == 51:
+elif slide == 56:
     st.markdown(f"""
     <div style="background: linear-gradient(135deg, #003366, #00AA44); padding: 40px; border-radius: 15px; color: white; text-align: center;">
         <h1 style="color: white; font-size: 2.5em;">Thank You</h1>
         <p style="font-size: 1.3em; color: #ccffcc;">{cfg.get('client_name', 'Dear Client')}</p>
         <p style="font-size: 1.1em; margin-top: 20px; color: white;">
             We look forward to building India's green infrastructure together.
-        </p>
-        <p style="font-size: 1em; margin-top: 15px; color: #99ffcc;">
-            {COMPANY.get('trade_name', 'PPS Anantams')} — From Agro-Waste to Roads
         </p>
         <p style="margin-top: 25px; font-size: 0.9em; color: #ccccff;">
             📞 {COMPANY.get('phone', '')} | 📧 {COMPANY.get('email', '')}
