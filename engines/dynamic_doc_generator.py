@@ -181,7 +181,7 @@ def generate_dpr_docx(cfg, company, customer=None):
     if cfg.get("roi_timeline"):
         headers = ["Year", "Revenue (Lac)", "EBITDA (Lac)", "PAT (Lac)", "DSCR"]
         rows = []
-        for yr in cfg["roi_timeline"]:
+        for yr in cfg.get("roi_timeline", 0):
             rows.append([
                 str(yr["Year"]),
                 f"{yr['Revenue (Lac)']:.0f}",
@@ -243,7 +243,7 @@ def generate_dpr_docx(cfg, company, customer=None):
     doc.add_paragraph(f"Equipment and material requirements for {cfg.get('capacity_tpd', 20):.0f} MT/Day plant:")
     try:
         from state_manager import calculate_boq
-        boq = calculate_boq(cfg["capacity_tpd"])
+        boq = calculate_boq(cfg.get("capacity_tpd", 0))
         boq_rows = []
         total_boq = 0
         for item in boq:
@@ -284,8 +284,8 @@ def generate_dpr_docx(cfg, company, customer=None):
 
     # 11. Environmental Impact
     _add_heading(doc, "11. ENVIRONMENTAL IMPACT & CARBON CREDITS")
-    co2_annual = cfg["capacity_tpd"] * 300 * 0.35
-    stubble = cfg["capacity_tpd"] * 300 * 2.5
+    co2_annual = cfg.get("capacity_tpd", 0) * 300 * 0.35
+    stubble = cfg.get("capacity_tpd", 0) * 300 * 2.5
     carbon_lac = co2_annual * 12 * 84 / 100000
     doc.add_paragraph(
         f"The Bio-Modified Bitumen plant provides significant environmental benefits by diverting "
@@ -318,7 +318,7 @@ def generate_dpr_docx(cfg, company, customer=None):
         ["Udyam Registration", "MSME Ministry", "Priority sector lending", "Eligible"],
         ["Technology Development Board", "DST", "Up to 50% for new technology", "Applicable"],
     ])
-    subsidy_amount = cfg["investment_cr"] * subsidy_pct / 100
+    subsidy_amount = cfg.get("investment_cr", 0) * subsidy_pct / 100
     doc.add_paragraph(
         f"\nTotal Estimated Subsidy: Rs {subsidy_amount:.2f} Crore ({subsidy_pct}% of investment)"
     )
@@ -671,7 +671,7 @@ def generate_investor_pptx(cfg, company):
     # Slide 6: Financial Projection
     if cfg.get("roi_timeline"):
         content = "Year | Revenue | EBITDA | PAT | DSCR\n"
-        for yr in cfg["roi_timeline"][:5]:
+        for yr in cfg.get("roi_timeline", 0)[:5]:
             content += f"Yr{yr['Year']} | Rs {yr['Revenue (Lac)']:.0f}L | Rs {yr['EBITDA (Lac)']:.0f}L | Rs {yr['PAT (Lac)']:.0f}L | {yr['DSCR']:.2f}x\n"
         add_slide("7-Year Financial Projection", content)
 
@@ -750,9 +750,9 @@ def generate_financial_xlsx(cfg, company):
     # Sheet 2: 7-Year P&L
     ws2 = wb.create_sheet("P&L_7Year")
     if cfg.get("roi_timeline"):
-        headers = list(cfg["roi_timeline"][0].keys())
+        headers = list(cfg.get("roi_timeline", 0)[0].keys())
         write_header(ws2, 1, headers)
-        for i, yr in enumerate(cfg["roi_timeline"]):
+        for i, yr in enumerate(cfg.get("roi_timeline", 0)):
             for j, h in enumerate(headers):
                 ws2.cell(row=i + 2, column=j + 1, value=yr[h])
 
@@ -760,15 +760,15 @@ def generate_financial_xlsx(cfg, company):
     ws3 = wb.create_sheet("Cost_Structure")
     write_header(ws3, 1, ["Cost Item", "Rs per MT"])
     costs = [
-        ("Raw Material", cfg["raw_material_cost_per_mt"]),
-        ("Power & Fuel", cfg["power_cost_per_mt"]),
-        ("Labour", cfg["labour_cost_per_mt"]),
-        ("Chemicals", cfg["chemical_cost_per_mt"]),
-        ("Packaging", cfg["packaging_cost_per_mt"]),
-        ("Transport", cfg["transport_cost_per_mt"]),
-        ("QC & Testing", cfg["qc_cost_per_mt"]),
-        ("Miscellaneous", cfg["misc_cost_per_mt"]),
-        ("TOTAL", cfg["total_variable_cost_per_mt"]),
+        ("Raw Material", cfg.get("raw_material_cost_per_mt", 0)),
+        ("Power & Fuel", cfg.get("power_cost_per_mt", 0)),
+        ("Labour", cfg.get("labour_cost_per_mt", 0)),
+        ("Chemicals", cfg.get("chemical_cost_per_mt", 0)),
+        ("Packaging", cfg.get("packaging_cost_per_mt", 0)),
+        ("Transport", cfg.get("transport_cost_per_mt", 0)),
+        ("QC & Testing", cfg.get("qc_cost_per_mt", 0)),
+        ("Miscellaneous", cfg.get("misc_cost_per_mt", 0)),
+        ("TOTAL", cfg.get("total_variable_cost_per_mt", 0)),
     ]
     for i, (item, val) in enumerate(costs):
         ws3.cell(row=i + 2, column=1, value=item)
@@ -779,7 +779,7 @@ def generate_financial_xlsx(cfg, company):
     if cfg.get("sensitivity_matrix"):
         write_header(ws4, 1, ["Cost \\ Price", "Low Price", "Base Price", "High Price"])
         labels = ["Low Cost", "Base Cost", "High Cost"]
-        for i, (label, row) in enumerate(zip(labels, cfg["sensitivity_matrix"])):
+        for i, (label, row) in enumerate(zip(labels, cfg.get("sensitivity_matrix", 0))):
             ws4.cell(row=i + 2, column=1, value=label).font = Font(bold=True)
             for j, val in enumerate(row):
                 ws4.cell(row=i + 2, column=j + 2, value=val)
@@ -789,7 +789,7 @@ def generate_financial_xlsx(cfg, company):
     write_header(ws5, 1, ["Parameter", "Value", "Source"])
     assumptions = [
         ("Capacity", f"{cfg.get('capacity_tpd', 20):.0f} MT/Day", "Client requirement"),
-        ("Working Days", str(cfg["working_days"]), "Industry standard"),
+        ("Working Days", str(cfg.get("working_days", 0)), "Industry standard"),
         ("Selling Price", f"Rs {cfg.get('selling_price_per_mt', 35000):,}/MT", "PetroBazaar Mar 2026"),
         ("Biomass Cost", f"Rs {cfg.get('raw_material_cost_per_mt', 8000):,}/MT output", "IndiaMART verified"),
         ("Interest Rate", f"{cfg.get('interest_rate', 0.115)*100:.1f}%", "SBI MCLR + 200 bps"),
