@@ -20,6 +20,11 @@ if st.sidebar.button("Print This Page", key="print_page"):
 
 st.title("Raw Material Analysis")
 st.markdown("**Agro-waste biomass availability, cost analysis, and seasonality planning**")
+try:
+    from engines.visual_content_engine import show_reference_image
+    show_reference_image(st, "raw_material", "Agricultural Biomass Feedstock — Rice Straw, Wheat, Bagasse")
+except Exception:
+    pass
 st.markdown("---")
 
 cfg = get_config()

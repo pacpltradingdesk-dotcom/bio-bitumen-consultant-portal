@@ -21,6 +21,11 @@ except Exception:
 
 st.title("Process Flow & Plant Sections")
 st.markdown(f"**Complete 13-Step Bio-Bitumen Manufacturing Process — {cfg['capacity_tpd']:.0f} TPD**")
+try:
+    from engines.visual_content_engine import show_reference_image
+    show_reference_image(st, "reactor", f"Pyrolysis Reactor — {cfg['capacity_tpd']:.0f} TPD")
+except Exception:
+    pass
 st.markdown("---")
 
 # ═══════════════════════════════════════════════════════════════════

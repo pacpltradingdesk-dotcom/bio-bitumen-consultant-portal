@@ -21,6 +21,14 @@ except Exception:
 
 st.title("Technology Validation & Process")
 st.markdown("**CSIR-CRRI Licensed Technology | KrishiBind Bio-Binder | Proven at Lab & Field Level**")
+
+# Reference image
+try:
+    from engines.visual_content_engine import show_reference_image
+    show_reference_image(st, "technology", "Biomass Pyrolysis Process — CSIR-CRRI Technology")
+except Exception:
+    pass
+
 st.markdown("---")
 
 # ═══════════════════════════════════════════════════════════════════

@@ -50,6 +50,11 @@ st.markdown(f"""
 **ONE-POINT SOLUTION: Land Selection > Plant Setup > Financial Closure > Sales Network**
 """)
 st.caption(f"{now.strftime('%A, %d %B %Y')} | Last refreshed: {now.strftime('%I:%M %p IST')}")
+try:
+    from engines.visual_content_engine import show_reference_image
+    show_reference_image(st, "road_bitumen", "Bio-Bitumen for India's Roads — NHAI Green Infrastructure")
+except Exception:
+    pass
 st.markdown("---")
 
 cfg = get_config()

@@ -24,6 +24,11 @@ except Exception:
 
 st.title("Plant Design & Layout — Complete BOQ")
 st.markdown("**15 zones | 82 items | Gate to Gate | Auto-scales with capacity**")
+try:
+    from engines.visual_content_engine import show_reference_image
+    show_reference_image(st, "plant_layout", f"Bio-Bitumen Plant Layout — {cfg['capacity_tpd']:.0f} TPD")
+except Exception:
+    pass
 st.markdown("---")
 
 # ── Capacity Selector ────────────────────────────────────────────────
