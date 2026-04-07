@@ -95,6 +95,7 @@ def get_prompts(tpd, cfg=None):
     comp, machinery, clearances = _get_specs(cfg)
 
     # Extract key dimensions
+    state = cfg.get("state", "Maharashtra")
     r_dia = comp.get("reactor_dia_m", 1.5)
     r_ht = comp.get("reactor_ht_m", 4.5)
     r_qty = comp.get("reactor_qty", 1)
@@ -139,10 +140,11 @@ def get_prompts(tpd, cfg=None):
         },
         "Site_Layout_GA_Drawing": {
             "prompt": (
-                f"Professional top-view architectural site layout plan, color coded, for {tpd} TPD bio-bitumen plant, "
-                f"rectangular plot {plot_l}m x {plot_w}m. "
-                f"Zone A (blue): Gate entry with weighbridge 18m x 3.5m, guard booth, boom barrier. "
-                f"Zone B (green): RM storage shed {shed_l}m x {shed_w}m, unloading ramp. "
+                f"Professional top-view site layout plan for {tpd} TPD bio-bitumen plant in {state}. "
+                f"Plot {plot_l}m x {plot_w}m. Output: bio-oil {oil_tpd}T/day, bio-char {char_tpd}T/day, blend {blend_tpd}T/day. "
+                f"IS 14489 safety clearances, IS 2379 colour codes. Equipment tags SC-101, PR-101, MX-101 visible. "
+                f"Zone A (blue): Gate with weighbridge 18m, guard booth. "
+                f"Zone B (green): RM shed {shed_l}m x {shed_w}m. "
                 f"Zone C (purple): Pre-processing building with shredder + dryer {d_dia}m x {d_len}m. "
                 f"Zone D (red): Reactor area {r_qty}x reactor {r_dia}m dia, {react_boundary}m clearance from boundary, HAZARDOUS. "
                 f"Zone E (light blue): Oil recovery with condenser + {tank_dia}m oil tanks in dyke bund. "

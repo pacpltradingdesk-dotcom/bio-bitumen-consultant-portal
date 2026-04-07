@@ -120,6 +120,7 @@ East: Zone G (Tank Farm) — Bio-oil tanks {comp['bio_oil_tank_dia_m']}m dia wit
 West: Zone I (Electrical) + Zone CR (Control Room, 30m from reactor)
 South: Main gate + weighbridge + guard cabin
 Perimeter: 6m fire access road + 5m green belt
+Daily Output: Bio-oil {comp['bio_oil_tpd']}T + Bio-char {comp['bio_char_tpd']}T + Blend {comp['blend_output_tpd']}T
 
 Show: All 15 zone boundaries (A-O), zone labels, equipment footprints,
 internal roads 6m wide, turning radius 9m, parking area, green belt hatched.

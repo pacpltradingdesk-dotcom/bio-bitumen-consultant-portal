@@ -332,6 +332,7 @@ SAFETY CLEARANCES (IS 14489 / NBC 2016):
 - Turning radius: {turning_radius}m for fire tender
 - Green belt: {green_belt_m}m around perimeter
 
+DAILY OUTPUT: Bio-oil {bio_oil_tpd}T + Bio-char {bio_char_tpd}T + Blend {blend_output_tpd}T (feed {feed_hr_kg:.0f} kg/hr)
 ELECTRICAL: {elec_kva} kVA transformer, {total_motor_kw} kW total load, {main_bus_amps:.0f}A bus
 
 PROCESS FLOW: {process_flow}

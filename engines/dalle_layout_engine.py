@@ -150,7 +150,13 @@ def build_dalle_prompt(plant_type, capacity_tpd, environment, visual_style,
             machine_list = ", ".join(real_machines) if real_machines else ", ".join((custom_machines or plant["machines"])[:10])
 
             # Build specs text with actual dimensions
+            state_name = cfg.get("state", "Maharashtra")
+            oil_tpd = comp.get("bio_oil_tpd", 0)
+            char_tpd = comp.get("bio_char_tpd", 0)
+            blend_tpd = comp.get("blend_output_tpd", 0)
             specs_text = (
+                f"Location: {state_name}. "
+                f"Output: bio-oil {oil_tpd}T/day, bio-char {char_tpd}T/day, blend {blend_tpd}T/day. "
                 f"Reactor: {comp['reactor_qty']}x cylindrical vessel "
                 f"{comp['reactor_dia_m']}m diameter x {comp['reactor_ht_m']}m height "
                 f"on 1.5m skirt, insulated with SS cladding (RAL 3002 red). "
@@ -158,7 +164,7 @@ def build_dalle_prompt(plant_type, capacity_tpd, environment, visual_style,
                 f"Oil tanks: 2x {comp['bio_oil_tank_dia_m']}m dia x {comp['bio_oil_tank_ht_m']}m "
                 f"inside concrete dyke bund. "
                 f"Feed shed: {comp['feed_shed_l_m']:.0f}m x {comp['feed_shed_w_m']:.0f}m covered. "
-                f"Safety: {SAFETY_CLEARANCES['reactor_to_boundary_m']}m reactor-to-boundary, "
+                f"Safety per IS 14489: {SAFETY_CLEARANCES['reactor_to_boundary_m']}m reactor-to-boundary, "
                 f"{SAFETY_CLEARANCES['reactor_to_control_room_m']}m to control room, "
                 f"{SAFETY_CLEARANCES['fire_hydrant_spacing_m']}m hydrant spacing. "
             )
