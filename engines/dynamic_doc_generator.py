@@ -140,6 +140,66 @@ def generate_dpr_docx(cfg, company, customer=None):
         f"while meeting NHAI green mandate requirements."
     )
 
+    # 2A. PROJECT JUSTIFICATION & RATIONALE
+    doc.add_heading("2.1 Project Justification & Rationale", level=2)
+    doc.add_paragraph(
+        f"India imports 49% of its bitumen requirement (Rs 25,000+ Crore/year). "
+        f"The Government has mandated 15% bio-bitumen usage by 2030 through NHAI. "
+        f"130-216 new bio-bitumen plants are needed in the next 5-7 years. "
+        f"This project addresses both import substitution and sustainable road construction."
+    )
+
+    # 2B. DEMAND-SUPPLY GAP
+    doc.add_heading("2.2 Demand-Supply Gap Analysis", level=2)
+    ann_prod = cfg.get('capacity_tpd', 20) * cfg.get('working_days', 300) * 0.4
+    _add_table(doc, ["Parameter", "Value"], [
+        ["India Annual Bitumen Demand", "8.8 Million MT"],
+        ["India Annual Bitumen Production", "4.5 Million MT"],
+        ["Import Dependency", "49% (~4.3 Million MT)"],
+        ["Bio-Bitumen Target (NHAI 15%)", "1.32 Million MT by 2030"],
+        ["Current Bio-Bitumen Supply", "< 10,000 MT (negligible)"],
+        [f"This Plant Annual Output", f"{ann_prod:,.0f} MT/year"],
+    ])
+
+    # 2C. TARGET CUSTOMERS
+    doc.add_heading("2.3 Target Customer Segments", level=2)
+    doc.add_paragraph(
+        "Primary Buyers: NHAI contractors, State PWD contractors, Municipal corporations. "
+        "Secondary: Private road developers, airport authorities, port trusts. "
+        "By-Products: Farmers (biochar), industrial boilers (bio-oil), carbon market (credits)."
+    )
+
+    # 2D. COMPETITION ANALYSIS
+    doc.add_heading("2.4 Competition Analysis", level=2)
+    _add_table(doc, ["Competitor", "Capacity", "Technology", "Our Advantage"], [
+        ["Praj Industries", "Pilot scale", "Lignocellulosic", "We are production-ready, they are pilot"],
+        ["Indian Oil (IOCL)", "In-house R&D", "Refinery-based", "We use agro-waste (lower cost)"],
+        ["Local pyrolysis units", "5-10 TPD", "Basic", "We have CSIR-CRRI license + IS:73 compliance"],
+        ["Import (Iran/Singapore)", "Bulk", "Conventional", "We eliminate import dependency"],
+    ])
+
+    # 2E. MARKETING STRATEGY
+    doc.add_heading("2.5 Marketing Strategy & Sales Plan", level=2)
+    doc.add_paragraph(
+        "1. GeM Portal registration for direct government supply\n"
+        "2. NHAI contractor partnerships (tie-up with 5-10 major contractors)\n"
+        "3. State PWD empanelment for each target state\n"
+        "4. Direct sales to private road developers\n"
+        "5. Bio-char sales through agricultural cooperatives\n"
+        "6. Carbon credit registration with voluntary market (Verra/Gold Standard)"
+    )
+
+    # 2F. REVENUE MODEL
+    doc.add_heading("2.6 Revenue Model & Pricing Strategy", level=2)
+    _add_table(doc, ["Product", "Price (Rs/MT)", "Share of Revenue"], [
+        ["Bio-Bitumen VG30", f"{cfg.get('sale_bio_bitumen_vg30', 44000):,}", "60-70%"],
+        ["Bio-Bitumen VG40", f"{cfg.get('sale_bio_bitumen_vg40', 48000):,}", "15-20%"],
+        ["Bio-Char (Agriculture)", f"{cfg.get('sale_biochar_agri', 26000):,}", "8-12%"],
+        ["Bio-Oil (Fuel)", f"{cfg.get('sale_bio_oil_fuel', 22000):,}", "3-5%"],
+        ["Carbon Credits", f"{cfg.get('sale_carbon_credit', 12500):,}/credit", "2-3%"],
+    ])
+    doc.add_page_break()
+
     # 3. Technical Details
     _add_heading(doc, "3. TECHNICAL DETAILS")
     doc.add_heading("3.1 Process Flow", level=2)
@@ -378,6 +438,126 @@ def generate_dpr_docx(cfg, company, customer=None):
     doc.add_page_break()
 
     # 16. Consultant Profile
+    # 15A. NPV CALCULATION
+    doc.add_heading("15.1 Net Present Value (NPV)", level=2)
+    npv = cfg.get('npv_lac', 0)
+    doc.add_paragraph(
+        f"NPV at 15% discount rate: Rs {npv:.1f} Lac. "
+        f"A positive NPV indicates the project generates returns above the cost of capital."
+    )
+
+    # 15B. PROJECTED BALANCE SHEET
+    doc.add_heading("15.2 Projected Balance Sheet Summary", level=2)
+    if cfg.get('balance_sheet'):
+        bs_rows = [[item.get('Item', ''), f"Rs {item.get('Amount (Lac)', 0):.1f} Lac"]
+                    for item in cfg['balance_sheet']]
+        _add_table(doc, ["Item", "Amount"], bs_rows)
+    else:
+        inv_lac = cfg.get('investment_cr', 8) * 100
+        doc.add_paragraph(
+            f"Total Assets (Year 5): Rs {inv_lac * 0.7:.0f} Lac (net of depreciation)\n"
+            f"Net Worth (Year 5): Rs {cfg.get('net_worth_yr5_lac', inv_lac * 0.5):.0f} Lac"
+        )
+
+    # 15C. TERM LOAN REPAYMENT SCHEDULE
+    doc.add_heading("15.3 Term Loan Repayment Schedule", level=2)
+    loan_lac = cfg.get('loan_cr', 6) * 100
+    emi = cfg.get('emi_lac_mth', 7)
+    tenure = cfg.get('emi_tenure_months', 84)
+    doc.add_paragraph(
+        f"Loan Amount: Rs {loan_lac:.0f} Lac | EMI: Rs {emi:.2f} Lac/month | "
+        f"Tenure: {tenure} months ({tenure//12} years) | "
+        f"Interest Rate: {cfg.get('interest_rate', 0.115)*100:.1f}% p.a."
+    )
+    _add_table(doc, ["Year", "Opening Balance", "Interest", "Principal", "Closing Balance"], [
+        [f"Year {y}", f"Rs {max(0, loan_lac - loan_lac/7*(y-1)):.0f}L",
+         f"Rs {max(0, loan_lac - loan_lac/7*(y-1))*cfg.get('interest_rate', 0.115):.0f}L",
+         f"Rs {loan_lac/7:.0f}L",
+         f"Rs {max(0, loan_lac - loan_lac/7*y):.0f}L"]
+        for y in range(1, 8)
+    ])
+
+    # 15D. COST OF PRODUCTION PER UNIT
+    doc.add_heading("15.4 Cost of Production per MT", level=2)
+    _add_table(doc, ["Cost Head", "Rs/MT"], [
+        ["Raw Material", f"{cfg.get('raw_material_cost_per_mt', 8000):,}"],
+        ["Power & Fuel", f"{cfg.get('power_cost_per_mt', 4500):,}"],
+        ["Labour", f"{cfg.get('labour_cost_per_mt', 3000):,}"],
+        ["Chemicals", f"{cfg.get('chemical_cost_per_mt', 1500):,}"],
+        ["Packing", f"{cfg.get('packaging_cost_per_mt', 500):,}"],
+        ["Transport", f"{cfg.get('transport_cost_per_mt', 2000):,}"],
+        ["QC & Testing", f"{cfg.get('qc_cost_per_mt', 500):,}"],
+        ["Overheads & Misc", f"{cfg.get('misc_cost_per_mt', 1000):,}"],
+        ["TOTAL VARIABLE COST", f"{cfg.get('total_variable_cost_per_mt', 22000):,}"],
+        ["Selling Price", f"{cfg.get('selling_price_per_mt', 35000):,}"],
+        ["PROFIT PER MT", f"{cfg.get('profit_per_mt', 5000):,}"],
+    ])
+
+    # 15E. INSURANCE PLAN
+    doc.add_heading("15.5 Insurance Plan", level=2)
+    _add_table(doc, ["Insurance Type", "Coverage", "Premium (approx)"], [
+        ["Fire + Allied Perils", f"Rs {cfg.get('investment_cr', 8):.2f} Cr (all fixed assets)", "0.15-0.25% of value"],
+        ["Marine Transit", "Imported machinery in transit", "0.1-0.2%"],
+        ["Public Liability", "Third party claims (hazardous substance)", "Rs 50,000-1,00,000/year"],
+        ["Workmen Compensation", "All factory workers", "Rs 30,000-60,000/year"],
+        ["Keyman Insurance", "Key promoter", "As per bank requirement"],
+    ])
+
+    # 15F. BANK BENCHMARK COMPARISON
+    doc.add_heading("15.6 Bank Benchmark Comparison", level=2)
+    _add_table(doc, ["Parameter", "Bank Minimum", "This Project", "Status"], [
+        ["Promoter Contribution", "25%", f"{cfg.get('equity_ratio', 0.4)*100:.0f}%",
+         "PASS" if cfg.get('equity_ratio', 0.4) >= 0.25 else "REVIEW"],
+        ["DSCR (Average)", "1.50x", f"{cfg.get('dscr_yr3', 0):.2f}x",
+         "PASS" if cfg.get('dscr_yr3', 0) >= 1.5 else "REVIEW"],
+        ["IRR", "> 15%", f"{cfg.get('irr_pct', 0):.1f}%",
+         "PASS" if cfg.get('irr_pct', 0) >= 15 else "REVIEW"],
+        ["Break-Even", "< 60% capacity", f"{cfg.get('break_even_months', 0)} months",
+         "PASS" if cfg.get('break_even_months', 0) <= 36 else "REVIEW"],
+        ["Current Ratio", "> 1.33", f"{cfg.get('current_ratio', 1.5):.2f}",
+         "PASS" if cfg.get('current_ratio', 1.5) >= 1.33 else "REVIEW"],
+        ["D/E Ratio", "< 3.0", f"{cfg.get('debt_equity_ratio', 1.5):.2f}",
+         "PASS" if cfg.get('debt_equity_ratio', 1.5) <= 3.0 else "REVIEW"],
+    ])
+
+    # 15G. PROJECT COST BREAKUP (BANK FORMAT)
+    doc.add_heading("15.7 Project Cost Breakup (Standard Bank Format)", level=2)
+    inv = cfg.get('investment_cr', 8)
+    _add_table(doc, ["Component", "Rs Lac", "% of Total"], [
+        ["Land & Site Development", f"{inv*100*0.12:.0f}", "12%"],
+        ["Building & Civil Works", f"{inv*100*0.22:.0f}", "22%"],
+        ["Plant & Machinery (Indigenous)", f"{inv*100*0.40:.0f}", "40%"],
+        ["Miscellaneous Fixed Assets", f"{inv*100*0.04:.0f}", "4%"],
+        ["Consultancy & Technical Fees", f"{inv*100*0.03:.0f}", "3%"],
+        ["Pre-operative Expenses", f"{inv*100*0.04:.0f}", "4%"],
+        ["Contingency (5%)", f"{inv*100*0.05:.0f}", "5%"],
+        ["Working Capital Margin", f"{inv*100*0.10:.0f}", "10%"],
+        ["TOTAL PROJECT COST", f"{inv*100:.0f}", "100%"],
+    ])
+
+    # 15H. CA CERTIFICATE TEMPLATE
+    doc.add_heading("15.8 Chartered Accountant Certificate (Template)", level=2)
+    doc.add_paragraph(
+        "To Whom It May Concern\n\n"
+        "I, [CA Name], (Membership No: [ICAI No], FRN: [Firm Reg No]), "
+        "hereby certify that:\n\n"
+        "1. The projected financial statements in this DPR are prepared on reasonable "
+        "assumptions and accepted accounting principles.\n"
+        "2. The net worth of the promoter(s) as on [date] is Rs [amount] as verified "
+        "from audited books and supporting documents.\n"
+        "3. The promoter(s) have no overdue loan/advance with any bank/financial institution.\n"
+        "4. The DSCR, BEP, and IRR calculations are mathematically correct.\n"
+        "5. The CMA data forms (I to VI) are prepared as per RBI guidelines.\n\n"
+        "UDIN: [Auto-generated]\n"
+        "Date: [Date]\n"
+        "Place: [City]\n\n"
+        "[CA Name]\n"
+        "[Firm Name]\n"
+        "[Membership No] | [FRN]\n"
+        "[Seal & Signature]"
+    )
+    doc.add_page_break()
+
     _add_heading(doc, "16. CONSULTANT PROFILE")
     doc.add_paragraph(f"{company['trade_name']} — {company.get('tagline', '')}")
     doc.add_paragraph(f"Owner & Managing Director: {company['owner']}")
