@@ -161,38 +161,85 @@ with tab_prompts:
         # Generate all 9 prompts
         all_prompts = generate_all_prompts_for_config(combo_cfg)
 
-        st.markdown(f"**{len(all_prompts)} drawing prompts ready** — each with exact specs for {cap_sel} TPD")
+        # ── Check cache status ──
+        try:
+            from engines.image_cache_engine import (get_cached_for_config, get_or_generate,
+                get_combo_id, get_cache_stats, save_to_cache, pre_generate_batch)
+            cache_status = get_cached_for_config(process_sel, cap_sel, combo_cfg.get("state", ""))
+            cached_count = sum(1 for v in cache_status.values() if v["cached"])
+            stats = get_cache_stats()
+            cache_available = True
+        except Exception:
+            cached_count = 0
+            cache_available = False
 
-        # ── MASTER BUTTON: Generate ALL images at once ──
-        if st.button(f"Generate ALL {len(all_prompts)} Drawings (FREE — Pollinations AI)", type="primary", key="gen_all_combo"):
-            progress = st.progress(0)
-            status = st.empty()
-            generated = 0
+        st.markdown(f"**{len(all_prompts)} drawings** | {cached_count} cached (instant) | "
+                    f"{len(all_prompts) - cached_count} need generation")
 
-            for idx, (dt_key, result) in enumerate(all_prompts.items()):
-                dt_label = DRAWING_TYPES.get(dt_key, dt_key)
-                status.text(f"Generating {idx+1}/{len(all_prompts)}: {dt_label}...")
-                progress.progress((idx + 1) / len(all_prompts))
+        if cache_available and stats["total_cached"] > 0:
+            st.caption(f"Cache: {stats['total_cached']} images ({stats['size_mb']} MB) at {stats['cache_dir']}")
 
-                fname = f"{dt_key}_{int(cap_sel)}TPD_P{process_sel}.png"
-                path = generate_with_pollinations(result["prompt"], fname)
+        # ── Show cached images immediately (no internet needed) ──
+        if cached_count > 0:
+            st.success(f"{cached_count} drawings available OFFLINE — showing instantly:")
+            for dt_key, cs in cache_status.items():
+                if cs["cached"]:
+                    dt_label = DRAWING_TYPES.get(dt_key, dt_key)
+                    st.image(cs["path"], caption=f"{dt_label} — {cap_sel} TPD (cached)", use_container_width=True)
+                    with open(cs["path"], "rb") as f:
+                        st.download_button(f"Download {dt_label}", f.read(),
+                            os.path.basename(cs["path"]), key=f"dlcache_{dt_key}")
 
-                if path:
-                    generated += 1
-                    st.image(path, caption=f"{dt_label} — {cap_sel} TPD Process {process_sel}", use_container_width=True)
-                    with open(path, "rb") as f:
-                        st.download_button(f"Download {dt_label}", f.read(), fname, key=f"dlall_{dt_key}")
-                else:
-                    st.warning(f"Failed: {dt_label}")
+        # ── Generate missing images ──
+        missing = [dt for dt, cs in cache_status.items() if not cs["cached"]] if cache_available else list(DRAWING_TYPES.keys())
 
-            progress.progress(1.0)
-            status.text(f"Done! {generated}/{len(all_prompts)} images generated.")
-            if generated == len(all_prompts):
-                st.success(f"ALL {generated} drawings generated! Scroll down to view and download.")
-            st.balloons()
+        if missing:
+            st.markdown("---")
+            if st.button(f"Generate {len(missing)} Missing Drawings (FREE — saves to cache)", type="primary", key="gen_missing"):
+                progress = st.progress(0)
+                status_text = st.empty()
+                generated = 0
+
+                for idx, dt_key in enumerate(missing):
+                    dt_label = DRAWING_TYPES.get(dt_key, dt_key)
+                    result = all_prompts[dt_key]
+                    combo_id = get_combo_id(process_sel, cap_sel, combo_cfg.get("state", ""), dt_key)
+                    status_text.text(f"Generating {idx+1}/{len(missing)}: {dt_label}...")
+                    progress.progress((idx + 1) / len(missing))
+
+                    path, source = get_or_generate(combo_id, result["prompt"], dt_label)
+                    if path:
+                        generated += 1
+                        st.image(path, caption=f"{dt_label} — {cap_sel} TPD (saved to cache)", use_container_width=True)
+                        with open(path, "rb") as f:
+                            st.download_button(f"Download {dt_label}", f.read(),
+                                f"{combo_id}.png", key=f"dlgen_{dt_key}")
+
+                progress.progress(1.0)
+                status_text.text(f"Done! {generated}/{len(missing)} generated and cached.")
+                if generated > 0:
+                    st.success(f"{generated} drawings generated and saved! Next time they load instantly (even offline).")
+                    st.balloons()
+
+        # ── Pre-generate batch button ──
+        st.markdown("---")
+        if cache_available:
+            with st.expander("Pre-Generate Top Combinations (for offline use)"):
+                st.markdown("Generate images for the most common client configurations. "
+                            "Once cached, they load instantly without internet.")
+                max_img = st.slider("Max images to generate", 5, 50, 10, key="batch_max")
+                if st.button("Start Batch Pre-Generation", key="batch_gen"):
+                    prog = st.progress(0)
+                    stat = st.empty()
+                    def batch_cb(curr, total, cid):
+                        prog.progress(curr / total)
+                        stat.text(f"Pre-generating {curr}/{total}: {cid}")
+                    result = pre_generate_batch(progress_callback=batch_cb, max_images=max_img)
+                    prog.progress(1.0)
+                    stat.text(f"Done! Generated: {result['generated']} | Already cached: {result['cached']} | Failed: {result['failed']}")
 
         st.markdown("---")
-        st.caption("Or generate individual drawings below:")
+        st.caption("Or view/edit individual prompts below:")
 
         # Show each prompt with individual generate button
         for dt_key, dt_label in DRAWING_TYPES.items():
