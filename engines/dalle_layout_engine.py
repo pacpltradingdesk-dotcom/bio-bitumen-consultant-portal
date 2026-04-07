@@ -200,7 +200,7 @@ def build_dalle_prompt(plant_type, capacity_tpd, environment, visual_style,
         f"The core components: {machine_list}. "
         f"Connect using industrial piping, belt conveyors, safety walkways. "
         f"Include {safety}. "
-        f"Show {SAFETY_CLEARANCES.get('road_width_internal_m', 6) if cfg else 6}m wide road, "
+        f"Show 6m wide road, "
         f"pipe rack at 4.5m height, green belt boundary. "
         f"Clean modern industrial colors (steel, concrete grey, safety orange). "
         f"Floating labels pointing to equipment. "
