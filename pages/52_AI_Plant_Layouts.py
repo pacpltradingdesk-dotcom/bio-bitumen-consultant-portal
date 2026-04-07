@@ -168,12 +168,13 @@ with tab_custom:
     prompt = build_dalle_prompt(plant_type, capacity, environment, visual_style,
                                  plot_length, plot_width, cfg=local_cfg)
 
+    # Dynamic key so prompt refreshes when inputs change
+    prompt_key = f"prompt_{plant_type}_{capacity}_{plot_length}_{plot_width}_{visual_style}_{environment}"
+
     with st.expander("View/Edit Generated Prompt"):
-        edited_prompt = st.text_area("DALL-E 3 Prompt", value=prompt, height=200,
-                                      key="dal_prompt_edit")
+        edited_prompt = st.text_area("Generated Prompt", value=prompt, height=200,
+                                      key=prompt_key)
         st.caption(f"Characters: {len(edited_prompt)}/4000")
-        if len(edited_prompt) > 4000:
-            st.error("Prompt exceeds 4000 character DALL-E limit. Shorten it.")
 
     st.markdown("---")
 
