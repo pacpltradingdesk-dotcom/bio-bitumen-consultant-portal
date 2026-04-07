@@ -173,31 +173,39 @@ with tab_custom:
 
     st.markdown("---")
 
+    gen_method = st.radio("Generation Method", ["Pollinations AI (FREE, no limits)", "DALL-E 3 (OpenAI, paid)"],
+                           index=0, key="gen_method", horizontal=True)
+
     if st.button("Generate Layout Image", type="primary", key="dal_generate"):
-        with st.spinner("Generating layout with DALL-E 3... (30-60 seconds)"):
-            final_prompt = edited_prompt if edited_prompt != prompt else prompt
-            img_url, info = generate_layout_image(final_prompt, size_param)
+        final_prompt = edited_prompt if edited_prompt != prompt else prompt
+        filename = f"{plant_type.replace(' ','_')}_{capacity}TPD_{visual_style.replace(' ','_')}.png"
 
-        if img_url:
-            st.success("Layout generated successfully!")
-            st.image(img_url, caption=f"{plant_type} — {capacity} TPD — {visual_style}",
-                     use_container_width=True)
-            st.caption("⚠️ AI-generated image — text labels may be approximate. For precise engineering drawings, use Drawings section.")
-
-            # Save button
-            filename = f"{plant_type.replace(' ','_')}_{capacity}TPD_{visual_style.replace(' ','_')}.png"
-            saved_path = save_layout_image(img_url, filename)
-            if saved_path:
-                st.success(f"Saved to: {filename}")
-                with open(saved_path, "rb") as f:
+        if gen_method.startswith("Pollinations"):
+            with st.spinner("Generating with Pollinations AI (FREE)... 30-60 seconds"):
+                from engines.ai_image_generator import generate_with_pollinations
+                path = generate_with_pollinations(final_prompt, filename)
+            if path:
+                st.success("Layout generated successfully!")
+                st.image(path, caption=f"{plant_type} — {capacity} TPD — {visual_style}",
+                         use_container_width=True)
+                with open(path, "rb") as f:
                     st.download_button("Download Layout Image", f.read(), filename,
                                         "image/png", key="dl_layout")
-
-            if info:
-                with st.expander("DALL-E Revised Prompt"):
-                    st.text(info)
+            else:
+                st.error("Generation failed. Check internet connection.")
         else:
-            st.error(f"Generation failed: {info}")
+            with st.spinner("Generating with DALL-E 3... 30-60 seconds"):
+                img_url, info = generate_layout_image(final_prompt, size_param)
+            if img_url:
+                st.success("Layout generated!")
+                st.image(img_url, caption=f"{plant_type} — {capacity} TPD",
+                         use_container_width=True)
+                saved_path = save_layout_image(img_url, filename)
+                if saved_path:
+                    with open(saved_path, "rb") as f:
+                        st.download_button("Download", f.read(), filename, "image/png", key="dl_layout")
+            else:
+                st.error(f"DALL-E failed: {info}\n\nTip: Try Pollinations AI instead (FREE, no content filter).")
 
 # ── TAB: SMART PROMPTS (Combination Engine) ─────────────────────────
 with tab_combo:
