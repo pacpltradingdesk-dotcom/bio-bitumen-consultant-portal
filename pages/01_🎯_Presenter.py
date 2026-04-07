@@ -31,7 +31,7 @@ except Exception:
     pass
 
 
-TOTAL_SLIDES = 57  # 0-56
+TOTAL_SLIDES = 62  # 0-61
 
 # ══════════════════════════════════════════════════════════════════════
 # SLIDE STATE + DISPLAY MODE + PRINT
@@ -126,15 +126,20 @@ SLIDE_TITLES = [
     "Our Competitive Advantage (SWOT)",     # 46
     "Client Success Stories",               # 47
     "Competitor Comparison",                # 48
-    # Section I: Convince & Close (49-56)
-    "With Us vs Without Us",                # 49 — NEW
-    "ROI Calculator — Play with Numbers",   # 50 — NEW
-    "Project Readiness Checklist",          # 51 — NEW
-    "Consulting Fee & Value Proposition",   # 52 — NEW
-    "Timeline with Deliverables",           # 53 — NEW
-    "Investment Summary & Next Steps",      # 54
-    "Contact & Appointment",                # 55
-    "Thank You & Call to Action",           # 56
+    # Section I: Convince & Close (49-61)
+    "With Us vs Without Us",                # 49
+    "ROI Calculator — Play with Numbers",   # 50
+    "Project Readiness Checklist",          # 51
+    "Consulting Fee & Value Proposition",   # 52
+    "Timeline with Deliverables",           # 53
+    "Your Project Summary — One Screen",    # 54 — NEW
+    "Government Subsidy — Exact Amount",    # 55 — NEW
+    "Cost of Delay — What You Lose",        # 56 — NEW
+    "Bio-Bitumen vs Conventional Business", # 57 — NEW
+    "Cash in Hand — After EMI",             # 58 — NEW
+    "Investment Summary & Next Steps",      # 59
+    "Contact & Appointment",                # 60
+    "Thank You & Call to Action",           # 61
 ]
 
 # Header with slide counter
@@ -1164,8 +1169,120 @@ elif slide == 53:
             for d in deliverables:
                 st.markdown(f"- {d}")
 
-# ── Slides 54-56: Original final slides (renumbered) ──
+# ══════════════════════════════════════════════════════════════════════
+# SLIDES 54-58: CLIENT CONVINCER SLIDES (5 NEW)
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Slide 54: YOUR PROJECT SUMMARY ──
 elif slide == 54:
+    try:
+        from engines.client_convincer import get_project_summary_card
+        card = get_project_summary_card(cfg)
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #003366, #006699); padding: 25px; border-radius: 15px; color: white;">
+            <h2 style="color: white; margin: 0;">{card['title']}</h2>
+            <p style="color: #99ccff;">For: {card['client']} | {card['company']}</p>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px;">
+                <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                    <p style="color: #99ccff; margin: 0;">YOUR INVESTMENT</p>
+                    <p style="font-size: 1.5em; font-weight: bold; margin: 5px 0;">{card['your_equity']}</p>
+                    <p style="color: #99ccff; margin: 0;">Bank Loan: {card['bank_loan']}</p>
+                </div>
+                <div style="background: rgba(0,170,68,0.3); padding: 15px; border-radius: 10px;">
+                    <p style="color: #99ffcc; margin: 0;">CASH IN YOUR POCKET</p>
+                    <p style="font-size: 1.5em; font-weight: bold; margin: 5px 0; color: #00ff88;">{card['cash_in_hand']}</p>
+                    <p style="color: #99ffcc; margin: 0;">After EMI deduction</p>
+                </div>
+                <div style="background: rgba(255,200,0,0.2); padding: 15px; border-radius: 10px;">
+                    <p style="color: #ffcc00; margin: 0;">RETURN ON INVESTMENT</p>
+                    <p style="font-size: 1.5em; font-weight: bold; margin: 5px 0; color: #ffcc00;">{card['roi']}</p>
+                    <p style="color: #ffcc00; margin: 0;">Payback: {card['payback']}</p>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; font-size: 0.9em;">
+                <div>Daily: {card['daily_output']}</div>
+                <div>Revenue: {card['annual_revenue']}</div>
+                <div>Land: {card['land_needed']}</div>
+                <div>Staff: {card['staff']}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    except Exception as e:
+        st.error(f"Summary: {e}")
+
+# ── Slide 55: SUBSIDY CALCULATOR ──
+elif slide == 55:
+    try:
+        from engines.client_convincer import get_subsidy_calculator
+        sub = get_subsidy_calculator(cfg)
+        st.success(f"**Total Government Support: Rs {sub['total_subsidy_cr']:.2f} Crore** — "
+                   f"Your effective investment drops from {sub['original_investment']} to {sub['effective_investment']} "
+                   f"(save {sub['savings_pct']:.0f}%)")
+        for s in sub["subsidies"]:
+            with st.expander(f"{s['scheme']} — Rs {s['amount_lac']:.1f} Lac ({s['probability']})"):
+                st.markdown(f"**How:** {s['how']}")
+                st.markdown(f"**Status:** {s['status']}")
+    except Exception as e:
+        st.error(f"Subsidy: {e}")
+
+# ── Slide 56: COST OF DELAY ──
+elif slide == 56:
+    try:
+        from engines.client_convincer import get_cost_of_delay
+        delay = get_cost_of_delay(cfg)
+        st.error(f"**Every month you delay = Rs {delay['monthly_profit_lost']:.1f} Lac profit LOST**")
+        for d in delay["delays"]:
+            col_d, col_v = st.columns([1, 2])
+            col_d.metric(f"{d['months']} Month Delay", f"Rs {d['profit_lost']:.1f} Lac lost")
+            col_v.caption(f"Common cause: {d['reason']}")
+        st.warning(f"**Market Risk:** {delay['market_risk']}")
+        st.success("**Start now with PPS Anantams — save time, save money, start earning sooner.**")
+    except Exception as e:
+        st.error(f"Delay: {e}")
+
+# ── Slide 57: BIO vs CONVENTIONAL ──
+elif slide == 57:
+    try:
+        from engines.client_convincer import get_bio_vs_conventional
+        comp = get_bio_vs_conventional(cfg)
+        rows = ""
+        for row in comp["rows"]:
+            rows += f"| {row[0]} | {row[1]} | {row[2]} |\n"
+        st.markdown(f"| {comp['headers'][0]} | {comp['headers'][1]} | {comp['headers'][2]} |\n|---|---|---|\n{rows}")
+        st.success("**Bio-Bitumen wins on every parameter** — lower cost, govt support, carbon credits, growing market, technology moat.")
+    except Exception as e:
+        st.error(f"Comparison: {e}")
+
+# ── Slide 58: CASH IN HAND ──
+elif slide == 58:
+    try:
+        from engines.client_convincer import get_cash_in_hand_display
+        cash = get_cash_in_hand_display(cfg)
+        st.markdown(f"""
+        <div style="background: #003366; padding: 30px; border-radius: 15px; color: white; text-align: center;">
+            <p style="color: #99ccff; font-size: 1.1em;">During Loan Repayment (Year 1-7)</p>
+            <p style="font-size: 1em;">Monthly Profit: Rs {cash['during_loan']['monthly_profit']:.1f} Lac — EMI: Rs {cash['during_loan']['monthly_emi']:.1f} Lac</p>
+            <p style="font-size: 2.5em; font-weight: bold; color: #00ff88; margin: 10px 0;">
+                Rs {cash['during_loan']['cash_in_hand']:.1f} Lac/month
+            </p>
+            <p style="color: #99ccff;">= Rs {cash['during_loan']['annual_cash']:.1f} Lac/year in your pocket</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("")
+        st.markdown(f"""
+        <div style="background: #00AA44; padding: 20px; border-radius: 15px; color: white; text-align: center;">
+            <p style="font-size: 1em;">After Loan Fully Repaid (Year 8 onwards) — NO EMI</p>
+            <p style="font-size: 2em; font-weight: bold; margin: 5px 0;">
+                Rs {cash['after_loan']['cash_in_hand']:.1f} Lac/month
+            </p>
+            <p>= Rs {cash['after_loan']['annual_cash']:.1f} Lac/year — ALL yours</p>
+        </div>
+        """, unsafe_allow_html=True)
+    except Exception as e:
+        st.error(f"Cash: {e}")
+
+# ── Slides 59-61: Original final slides (renumbered) ──
+elif slide == 59:
     st.markdown(f"""
     <div style="background: linear-gradient(135deg, #003366, #006699); padding: 25px; border-radius: 15px; color: white;">
         <h2 style="color: white; margin: 0;">{cfg.get('project_name', 'Bio-Bitumen Plant')}</h2>
@@ -1179,7 +1296,7 @@ elif slide == 54:
     </div>
     """, unsafe_allow_html=True)
 
-elif slide == 55:
+elif slide == 60:
     st.markdown(f"""
     <div style="background: #003366; padding: 30px; border-radius: 15px; color: white; text-align: center;">
         <h2 style="color: white;">Ready to Start?</h2>
@@ -1190,7 +1307,7 @@ elif slide == 55:
     </div>
     """, unsafe_allow_html=True)
 
-elif slide == 56:
+elif slide == 61:
     st.markdown(f"""
     <div style="background: linear-gradient(135deg, #003366, #00AA44); padding: 40px; border-radius: 15px; color: white; text-align: center;">
         <h1 style="color: white; font-size: 2.5em;">Thank You</h1>
