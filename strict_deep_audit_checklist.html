@@ -1,0 +1,301 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wrap{padding:1.5rem 0;max-width:860px}
+h1{font-size:22px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.sub{font-size:13px;color:var(--color-text-secondary);margin-bottom:1.5rem}
+.progress-bar-outer{background:var(--color-background-secondary);border-radius:8px;height:10px;margin-bottom:6px;border:0.5px solid var(--color-border-tertiary)}
+.progress-bar-inner{height:100%;border-radius:8px;background:#1D9E75;transition:width 0.3s}
+.progress-label{font-size:13px;color:var(--color-text-secondary);margin-bottom:1.5rem;display:flex;justify-content:space-between}
+.section{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;margin-bottom:1rem;overflow:hidden}
+.sec-header{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;user-select:none;background:var(--color-background-secondary)}
+.sec-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
+.sec-title{font-size:15px;font-weight:500;color:var(--color-text-primary);flex:1}
+.sec-count{font-size:12px;color:var(--color-text-secondary);white-space:nowrap}
+.sec-arrow{font-size:11px;color:var(--color-text-tertiary);transition:transform 0.2s}
+.sec-body{padding:0 16px 12px;display:none}
+.sec-body.open{display:block}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.check-item:last-child{border-bottom:none}
+.check-item input[type=checkbox]{margin-top:3px;flex-shrink:0;width:15px;height:15px;cursor:pointer;accent-color:#1D9E75}
+.check-label{font-size:13px;color:var(--color-text-primary);line-height:1.5;flex:1}
+.check-label.done{color:var(--color-text-tertiary);text-decoration:line-through}
+.check-tag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:4px;margin-left:6px;white-space:nowrap;vertical-align:middle}
+.tag-crit{background:#FCEBEB;color:#A32D2D}
+.tag-high{background:#FAEEDA;color:#854F0B}
+.tag-med{background:#E6F1FB;color:#185FA5}
+.tag-low{background:#EAF3DE;color:#3B6D11}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.2rem}
+.btn{font-size:13px;padding:7px 14px;border:0.5px solid var(--color-border-secondary);border-radius:8px;background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;font-family:var(--font-sans)}
+.btn:hover{background:var(--color-background-secondary)}
+.btn-green{background:#1D9E75;color:#fff;border-color:#1D9E75}
+.btn-green:hover{background:#0F6E56}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.5rem}
+.stat-card{background:var(--color-background-secondary);border-radius:8px;padding:10px 12px;text-align:center}
+.stat-num{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.stat-lbl{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+@media print{
+  .toolbar{display:none}
+  .sec-body{display:block!important}
+  .sec-header{background:none!important}
+  .section{break-inside:avoid}
+  .wrap{max-width:100%}
+}
+</style>
+<div class="wrap">
+<h1>Strict Deep Audit Checklist</h1>
+<p class="sub">Cross-links · Skills · AI · API · Workers · Outputs · PDF · Drawings · Layouts — check everything, run everything, download everything</p>
+
+<div class="stats">
+<div class="stat-card"><div class="stat-num" id="s-done">0</div><div class="stat-lbl">Done</div></div>
+<div class="stat-card"><div class="stat-num" id="s-left">0</div><div class="stat-lbl">Remaining</div></div>
+<div class="stat-card"><div class="stat-num" id="s-crit">0</div><div class="stat-lbl">Critical left</div></div>
+<div class="stat-card"><div class="stat-num" id="s-pct">0%</div><div class="stat-lbl">Complete</div></div>
+</div>
+
+<div class="progress-bar-outer"><div class="progress-bar-inner" id="pbar" style="width:0%"></div></div>
+<div class="progress-label"><span id="plbl">0 of 0 checks passed</span><span id="ppct">0%</span></div>
+
+<div class="toolbar">
+<button class="btn btn-green" onclick="window.print()">Print / Save as PDF</button>
+<button class="btn" onclick="expandAll()">Expand all</button>
+<button class="btn" onclick="collapseAll()">Collapse all</button>
+<button class="btn" onclick="resetAll()">Reset all</button>
+<button class="btn" onclick="checkAll()">Check all</button>
+<button class="btn" onclick="filterCrit()">Show critical only</button>
+<button class="btn" onclick="showAll()">Show all</button>
+<button class="btn" onclick="sendPrompt('Run the full audit report and fix all failing items')">Ask Claude to fix issues ↗</button>
+</div>
+
+<div id="sections"></div>
+</div>
+
+<script>
+const DATA = [
+{id:'crosslink',title:'Cross-link integrity',color:'#534AB7',bg:'#EEEDFE',items:[
+{t:'All internal navigation links resolve to a valid page/section',p:'crit'},
+{t:'All anchor (#id) links point to existing IDs on the page',p:'crit'},
+{t:'No 404 / broken links anywhere in the app or docs',p:'crit'},
+{t:'All "Back", "Home", "Next" buttons route correctly',p:'high'},
+{t:'Breadcrumb trail matches actual URL hierarchy',p:'high'},
+{t:'All external links open in new tab with rel="noopener noreferrer"',p:'high'},
+{t:'No circular redirect loops between pages',p:'crit'},
+{t:'Sitemap.xml matches all current live routes',p:'med'},
+{t:'robots.txt does not block essential crawlable pages',p:'med'},
+{t:'All deep links tested after page refresh',p:'high'},
+]},
+{id:'skills',title:'Skills audit',color:'#185FA5',bg:'#E6F1FB',items:[
+{t:'Every skill file (SKILL.md) is readable and complete',p:'crit'},
+{t:'Skill descriptions accurately reflect what they do (no stale docs)',p:'high'},
+{t:'Skill trigger keywords match real user request patterns',p:'high'},
+{t:'All skill paths in /mnt/skills/ are correctly mounted and accessible',p:'crit'},
+{t:'No skill file returns 404 or permission error',p:'crit'},
+{t:'Public skills do not expose private/user data',p:'crit'},
+{t:'Skill chaining (multi-skill workflows) tested end-to-end',p:'high'},
+{t:'SKILL.md files pass linting — no broken markdown',p:'med'},
+{t:'Skill outputs match expected format (PDF, DOCX, PPTX, XLSX)',p:'high'},
+{t:'All example skill outputs are runnable and downloadable',p:'high'},
+{t:'Skill version is up to date — no deprecated API calls inside',p:'med'},
+]},
+{id:'ai',title:'AI / Claude API audit',color:'#0F6E56',bg:'#E1F5EE',items:[
+{t:'API key is valid and not expired',p:'crit'},
+{t:'Model name is correct (e.g. claude-sonnet-4-20250514)',p:'crit'},
+{t:'System prompt is present and does not conflict with user prompt',p:'crit'},
+{t:'max_tokens is set and sufficient for the expected output',p:'high'},
+{t:'API responses are parsed correctly — no silent null/undefined',p:'crit'},
+{t:'All content blocks (text, tool_use, tool_result, image) handled',p:'high'},
+{t:'Streaming responses assembled correctly without missing chunks',p:'high'},
+{t:'Error states (rate limit, 529, 400, 401, 500) handled gracefully',p:'crit'},
+{t:'JSON-only prompts return valid JSON — strip markdown fences before parse',p:'high'},
+{t:'Multi-turn conversation history passed correctly every request',p:'high'},
+{t:'No API key exposed in frontend code or localStorage',p:'crit'},
+{t:'Token usage logged and within budget per request',p:'med'},
+{t:'Fallback behavior defined when AI response is empty or malformed',p:'high'},
+{t:'Bias and safety guardrails tested on edge-case inputs',p:'high'},
+]},
+{id:'api',title:'REST / external API audit',color:'#854F0B',bg:'#FAEEDA',items:[
+{t:'All API endpoints return expected HTTP status codes',p:'crit'},
+{t:'Auth headers (Bearer token, API key) sent on every protected request',p:'crit'},
+{t:'No sensitive data (passwords, keys) in URL query params or logs',p:'crit'},
+{t:'CORS headers correct — no blocked cross-origin requests',p:'high'},
+{t:'All POST/PUT/PATCH bodies validated before sending',p:'high'},
+{t:'Pagination handled — all pages fetched, not just page 1',p:'high'},
+{t:'API versioning checked — no deprecated v1 endpoints still in use',p:'med'},
+{t:'Rate limits respected — backoff/retry logic implemented',p:'high'},
+{t:'Timeouts set on all fetch() calls (no infinite hangs)',p:'high'},
+{t:'All API responses validated against expected schema',p:'high'},
+{t:'MCP server URLs tested and reachable',p:'crit'},
+{t:'MCP tool results parsed by type field, not by position',p:'high'},
+{t:'Webhook endpoints verified — correct events subscribed',p:'med'},
+]},
+{id:'workers',title:'Workers / background tasks audit',color:'#993C1D',bg:'#FAECE7',items:[
+{t:'All Web Workers / Service Workers load without error',p:'crit'},
+{t:'Worker scripts are at correct paths — no 404 on worker file',p:'crit'},
+{t:'Worker message protocol (postMessage) tested both directions',p:'high'},
+{t:'Worker errors bubble up and are displayed to user',p:'high'},
+{t:'Service Worker cache strategy correct (network-first vs cache-first)',p:'high'},
+{t:'Stale cached assets force-cleared on new deploy',p:'high'},
+{t:'Background jobs complete even if user navigates away',p:'med'},
+{t:'Worker thread does not block the main thread',p:'high'},
+{t:'Long-running worker tasks have progress reporting',p:'med'},
+{t:'Worker cleanup (terminate/unregister) on component unmount',p:'med'},
+]},
+{id:'output',title:'Outputs & downloads audit',color:'#3C3489',bg:'#EEEDFE',items:[
+{t:'All download buttons produce a valid, non-corrupted file',p:'crit'},
+{t:'Downloaded file opens correctly in target app (PDF reader, Word, Excel)',p:'crit'},
+{t:'File saved to /mnt/user-data/outputs/ before present_files called',p:'crit'},
+{t:'present_files tool called for every file the user should see',p:'crit'},
+{t:'File name is meaningful — not "output.pdf" but "audit_report_2026.pdf"',p:'high'},
+{t:'All output files match the format the user requested',p:'high'},
+{t:'Large output files chunked or streamed — no memory overflow',p:'high'},
+{t:'Binary files (DOCX, PPTX, XLSX) not corrupted by text encoding',p:'crit'},
+{t:'Download link does not expire immediately after generation',p:'high'},
+{t:'Output file tested on Windows, Mac, mobile if relevant',p:'med'},
+]},
+{id:'pdf',title:'PDF export / generation audit',color:'#639922',bg:'#EAF3DE',items:[
+{t:'PDF skill (SKILL.md) read before any PDF generation',p:'crit'},
+{t:'PDF renders all text correctly — no missing glyphs or garbled chars',p:'crit'},
+{t:'All images embedded in PDF are visible and not broken',p:'crit'},
+{t:'Page numbers, headers, footers appear correctly on every page',p:'high'},
+{t:'Table of contents links jump to correct pages',p:'high'},
+{t:'PDF is searchable (text-based, not image-only scan)',p:'high'},
+{t:'PDF passes accessibility check (tagged PDF, alt text on images)',p:'med'},
+{t:'Page size and orientation (A4/Letter, portrait/landscape) correct',p:'high'},
+{t:'Fonts embedded in PDF — not relying on system fonts',p:'high'},
+{t:'Fill-in PDF forms tested — values save and submit correctly',p:'high'},
+{t:'PDF file size is reasonable — images compressed, not raw bitmap',p:'med'},
+{t:'Encrypted PDFs: password protection tested open/restricted',p:'med'},
+{t:'Merged PDFs: page order correct and no duplicate pages',p:'high'},
+]},
+{id:'drawing',title:'Diagrams / drawings / SVG audit',color:'#993556',bg:'#FBEAF0',items:[
+{t:'All SVG diagrams render correctly in both light and dark mode',p:'crit'},
+{t:'SVG text uses CSS color classes — not hardcoded hex',p:'crit'},
+{t:'All <text> elements have a class (t, ts, th) — no missing fill',p:'high'},
+{t:'Diagram fits container — no horizontal scroll or clipping',p:'high'},
+{t:'Arrows and connector lines attach to correct nodes',p:'high'},
+{t:'Node labels are readable — font-size not below 11px',p:'high'},
+{t:'Color ramps used correctly — max 2-3 per diagram',p:'med'},
+{t:'Legend present when colors encode meaning',p:'med'},
+{t:'Diagram exports cleanly to PNG/SVG download',p:'high'},
+{t:'Interactive diagrams (D3, Mermaid) render without console errors',p:'high'},
+{t:'Mermaid diagrams validated — no syntax errors in definition',p:'high'},
+{t:'Flowchart decision nodes have all branches labeled (yes/no)',p:'high'},
+]},
+{id:'layout',title:'UI layout & rendering audit',color:'#5F5E5A',bg:'#F1EFE8',items:[
+{t:'No horizontal scroll on any viewport width (360px to 1440px)',p:'crit'},
+{t:'All grid columns use minmax(0, 1fr) not plain 1fr',p:'high'},
+{t:'No fixed-position elements inside iframes/artifacts',p:'crit'},
+{t:'All text visible in dark mode — no hardcoded color:#333',p:'crit'},
+{t:'No font-size below 11px anywhere',p:'high'},
+{t:'Tables with many columns use table-layout:fixed or scroll wrapper',p:'high'},
+{t:'Buttons are minimum 36px tall — touch target meets a11y spec',p:'high'},
+{t:'Focus rings visible on all interactive elements (keyboard nav)',p:'high'},
+{t:'Loading states shown while async data fetches',p:'high'},
+{t:'Error states shown with user-friendly message (not raw JSON error)',p:'crit'},
+{t:'Empty states handled — not blank white box when list is empty',p:'high'},
+{t:'All modals/overlays use min-height wrapper (not position:fixed)',p:'high'},
+{t:'No emoji in UI — use CSS shapes or SVG icons',p:'med'},
+{t:'Spacing uses rem for vertical, px for component-internal gaps',p:'low'},
+{t:'Border-radius consistent — using CSS variable --border-radius-md/lg',p:'low'},
+]},
+{id:'run',title:'Run & execute audit',color:'#185FA5',bg:'#E6F1FB',items:[
+{t:'All bash scripts run without error in the container',p:'crit'},
+{t:'pip installs use --break-system-packages flag',p:'crit'},
+{t:'npm/yarn installs complete — no dependency conflicts',p:'crit'},
+{t:'Python scripts use correct interpreter (python3 not python)',p:'high'},
+{t:'File paths use absolute paths — no assumption of cwd',p:'high'},
+{t:'All created files copied to /mnt/user-data/outputs/ before sharing',p:'crit'},
+{t:'Scripts tested after install — not just installed and assumed working',p:'crit'},
+{t:'Long-running scripts have timeout protection',p:'high'},
+{t:'Scripts do not hardcode secrets or API keys',p:'crit'},
+{t:'Cleanup: temp files removed after task completes',p:'med'},
+{t:'Error output (stderr) captured and checked — not silently ignored',p:'high'},
+]}
+];
+
+let critOnly = false;
+
+function tag(p){
+  const m={crit:['CRITICAL','tag-crit'],high:['HIGH','tag-high'],med:['MEDIUM','tag-med'],low:['LOW','tag-low']};
+  const [l,c]=m[p]||['',''];
+  return `<span class="check-tag ${c}">${l}</span>`;
+}
+
+function buildSections(){
+  const el = document.getElementById('sections');
+  el.innerHTML='';
+  DATA.forEach(sec=>{
+    const div = document.createElement('div');
+    div.className='section';
+    div.id='sec-'+sec.id;
+    const items = critOnly ? sec.items.filter(i=>i.p==='crit') : sec.items;
+    if(items.length===0) return;
+    div.innerHTML=`
+    <div class="sec-header" onclick="toggle('${sec.id}')">
+      <div class="sec-icon" style="background:${sec.bg};color:${sec.color}">${sec.items.filter(i=>i.p==='crit').length}</div>
+      <span class="sec-title">${sec.title}</span>
+      <span class="sec-count" id="cnt-${sec.id}">0/${items.length} done</span>
+      <span class="sec-arrow" id="arr-${sec.id}">&#9660;</span>
+    </div>
+    <div class="sec-body open" id="body-${sec.id}">
+      ${items.map((item,i)=>`
+      <div class="check-item" id="row-${sec.id}-${i}">
+        <input type="checkbox" id="cb-${sec.id}-${i}" onchange="update('${sec.id}',${i},this)">
+        <label class="check-label" id="lbl-${sec.id}-${i}" for="cb-${sec.id}-${i}">${item.t}${tag(item.p)}</label>
+      </div>`).join('')}
+    </div>`;
+    el.appendChild(div);
+  });
+  updateStats();
+}
+
+function toggle(id){
+  const b=document.getElementById('body-'+id);
+  const a=document.getElementById('arr-'+id);
+  if(b.classList.contains('open')){b.classList.remove('open');a.style.transform='rotate(-90deg)';}
+  else{b.classList.add('open');a.style.transform='';}
+}
+
+function update(sid,idx,cb){
+  const lbl=document.getElementById('lbl-'+sid+'-'+idx);
+  if(cb.checked)lbl.classList.add('done'); else lbl.classList.remove('done');
+  updateStats();
+}
+
+function updateStats(){
+  let total=0,done=0,critLeft=0;
+  DATA.forEach(sec=>{
+    const items=critOnly?sec.items.filter(i=>i.p==='crit'):sec.items;
+    items.forEach((item,i)=>{
+      total++;
+      const cb=document.getElementById('cb-'+sec.id+'-'+i);
+      if(cb&&cb.checked){done++;}
+      else if(item.p==='crit'){critLeft++;}
+    });
+    const cnt=document.getElementById('cnt-'+sec.id);
+    if(cnt){
+      const secTotal=items.length;
+      const secDone=items.filter((_,i)=>{const cb=document.getElementById('cb-'+sec.id+'-'+i);return cb&&cb.checked;}).length;
+      cnt.textContent=secDone+'/'+secTotal+' done';
+    }
+  });
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('s-done').textContent=done;
+  document.getElementById('s-left').textContent=total-done;
+  document.getElementById('s-crit').textContent=critLeft;
+  document.getElementById('s-pct').textContent=pct+'%';
+  document.getElementById('pbar').style.width=pct+'%';
+  document.getElementById('plbl').textContent=done+' of '+total+' checks passed';
+  document.getElementById('ppct').textContent=pct+'%';
+}
+
+function expandAll(){DATA.forEach(s=>{const b=document.getElementById('body-'+s.id);const a=document.getElementById('arr-'+s.id);if(b){b.classList.add('open');a.style.transform='';}})}
+function collapseAll(){DATA.forEach(s=>{const b=document.getElementById('body-'+s.id);const a=document.getElementById('arr-'+s.id);if(b){b.classList.remove('open');a.style.transform='rotate(-90deg)';}})}
+function resetAll(){document.querySelectorAll('input[type=checkbox]').forEach(cb=>{cb.checked=false;});document.querySelectorAll('.check-label').forEach(l=>l.classList.remove('done'));updateStats();}
+function checkAll(){document.querySelectorAll('input[type=checkbox]').forEach(cb=>{cb.checked=true;});document.querySelectorAll('.check-label').forEach(l=>l.classList.add('done'));updateStats();}
+function filterCrit(){critOnly=true;buildSections();}
+function showAll(){critOnly=false;buildSections();}
+
+buildSections();
+</script>

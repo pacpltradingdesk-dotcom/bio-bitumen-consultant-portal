@@ -97,7 +97,7 @@ with tab_stakeholder:
                     with st.spinner(f"Generating {d['name']}... (30-60 seconds)"):
                         img_url, info = generate_layout_image(prompt, "1792x1024")
                     if img_url:
-                        st.image(img_url, caption=d['name'], use_container_width=True)
+                        st.image(img_url, caption=f"{d['name']} [DALL-E 3]", use_container_width=True)
                         st.caption("⚠️ AI-generated image — text labels may be approximate. For precise engineering drawings, use Drawings section.")
                         fname = f"{d['id']}_{int(cfg['capacity_tpd'])}TPD.png"
                         saved = save_layout_image(img_url, fname)
@@ -105,7 +105,17 @@ with tab_stakeholder:
                             with open(saved, "rb") as f:
                                 st.download_button(f"Download", f.read(), fname, "image/png", key=f"dl_{d['id']}")
                     else:
-                        st.error(f"Failed: {info}")
+                        # Fallback to Pollinations
+                        st.warning(f"DALL-E 3 unavailable ({info}). Trying Pollinations AI...")
+                        from engines.ai_image_generator import generate_with_pollinations
+                        fname = f"{d['id']}_{int(cfg['capacity_tpd'])}TPD.png"
+                        path = generate_with_pollinations(prompt, fname)
+                        if path:
+                            st.image(path, caption=f"{d['name']} [Pollinations]", use_container_width=True)
+                            with open(path, "rb") as f:
+                                st.download_button(f"Download", f.read(), fname, "image/png", key=f"dl_{d['id']}")
+                        else:
+                            st.error("Both DALL-E 3 and Pollinations failed. Check internet.")
             else:
                 st.info("This drawing requires a human CAD engineer. AI can generate concept only.")
 

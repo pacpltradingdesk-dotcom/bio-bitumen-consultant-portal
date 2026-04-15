@@ -10,8 +10,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import streamlit as st
 from state_manager import get_config, init_state
 from engines.ai_image_generator import (generate_all_ai_images, get_existing_ai_images,
-                                          generate_with_pollinations, get_prompt_for_custom,
-                                          get_prompts)
+                                          generate_with_pollinations, generate_image,
+                                          get_prompt_for_custom, get_prompts)
 
 st.set_page_config(page_title="AI 3D Drawings", page_icon="🎨", layout="wide")
 init_state()
@@ -25,7 +25,18 @@ except Exception:
 
 
 st.title("AI-Generated 3D Drawings & Renders")
-st.markdown(f"**Professional 3D renders for {cfg['capacity_tpd']:.0f} TPD plant — powered by Pollinations AI (FREE)**")
+try:
+    from engines.ai_engine import load_ai_config as _load_ai_cfg
+    _has_openai = bool(_load_ai_cfg().get("openai_key"))
+except Exception:
+    _has_openai = False
+
+if _has_openai:
+    st.markdown(f"**Professional HD renders for {cfg['capacity_tpd']:.0f} TPD plant — DALL-E 3 (OpenAI) + Pollinations fallback**")
+    st.success("OpenAI DALL-E 3 active — high-quality HD drawings")
+else:
+    st.markdown(f"**Professional 3D renders for {cfg['capacity_tpd']:.0f} TPD plant — powered by Pollinations AI (FREE)**")
+    st.info("Add OpenAI key in **AI Settings** (page 83) to upgrade to DALL-E 3 HD quality")
 st.markdown("---")
 
 tab_gallery, tab_generate, tab_prompts, tab_custom = st.tabs(["Image Gallery", "Generate New Set", "Prompt Library", "Custom Drawing"])
@@ -113,10 +124,10 @@ with tab_generate:
             status_text.text(f"Generating {i+1}/{len(selected)}: {key.replace('_', ' ')}...")
             progress_bar.progress((i + 1) / len(selected))
 
-            path = generate_with_pollinations(data["prompt"], data["filename"])
+            path, provider = generate_image(data["prompt"], data["filename"])
             if path:
                 generated += 1
-                st.image(path, caption=key.replace("_", " "), width="stretch")
+                st.image(path, caption=f"{key.replace('_', ' ')} [{provider}]", width="stretch")
                 with open(path, "rb") as f:
                     st.download_button(f"Download {key}", f.read(), data["filename"], key=f"gen_{key}")
             else:
@@ -258,9 +269,9 @@ with tab_prompts:
                 if st.button(f"Generate This Drawing", key=f"gen1_{dt_key}", type="primary"):
                     with st.spinner(f"Generating {dt_label}..."):
                         fname = f"{dt_key}_{int(cap_sel)}TPD_P{process_sel}.png"
-                        path = generate_with_pollinations(result["prompt"], fname)
+                        path, provider = generate_image(result["prompt"], fname)
                         if path:
-                            st.image(path, caption=dt_label, use_container_width=True)
+                            st.image(path, caption=f"{dt_label} [{provider}]", use_container_width=True)
                             with open(path, "rb") as f:
                                 st.download_button("Download", f.read(), fname, key=f"dl1_{dt_key}")
                         else:
@@ -292,9 +303,9 @@ with tab_custom:
             with st.spinner("Generating custom drawing..."):
                 prompt = get_prompt_for_custom(custom_desc, cfg)
                 st.caption(f"Prompt: {prompt[:200]}...")
-                path = generate_with_pollinations(prompt, custom_name)
+                path, provider = generate_image(prompt, custom_name)
                 if path:
-                    st.success("Generated!")
+                    st.success(f"Generated via {provider}!")
                     st.image(path, width="stretch")
                     with open(path, "rb") as f:
                         st.download_button("Download", f.read(), custom_name)

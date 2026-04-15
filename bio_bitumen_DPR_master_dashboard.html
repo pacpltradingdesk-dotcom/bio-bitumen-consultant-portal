@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Bio-Bitumen DPR Master Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
+:root{
+  --bg:#07080a;--s1:#0e1117;--s2:#151a22;--s3:#1c232e;
+  --bdr:#232c38;--bdr2:#2e3a4a;
+  --amber:#f59e0b;--amber2:#fbbf24;--amber3:#fde68a;
+  --green:#22c55e;--red:#ef4444;--blue:#38bdf8;--purple:#a78bfa;
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#4b5563;
+  --slide-bg:#080b10;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* ── TOP BAR ── */
+.topbar{
+  height:52px;background:var(--s1);border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;padding:0 20px;gap:16px;
+  position:relative;z-index:200;
+}
+.logo{font-size:15px;font-weight:800;letter-spacing:-0.5px;color:var(--amber);white-space:nowrap}
+.logo span{color:var(--text2);font-weight:400}
+.topbar-center{flex:1;display:flex;align-items:center;justify-content:center;gap:8px}
+.mode-btn{
+  padding:5px 16px;border-radius:4px;font-family:'Syne',sans-serif;font-size:12px;
+  font-weight:600;border:1px solid var(--bdr2);background:transparent;
+  color:var(--text2);cursor:pointer;letter-spacing:0.5px;transition:all 0.15s;
+}
+.mode-btn.active{background:var(--amber);color:#000;border-color:var(--amber)}
+.mode-btn:hover:not(.active){background:var(--s3);color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.project-name{font-size:12px;color:var(--text2);font-family:'JetBrains Mono',monospace}
+.input-toggle{
+  padding:5px 14px;border-radius:4px;border:1px solid var(--amber);
+  background:rgba(245,158,11,0.1);color:var(--amber);font-size:12px;
+  font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;transition:all 0.15s;
+}
+.input-toggle:hover{background:rgba(245,158,11,0.2)}
+.print-btn{
+  padding:5px 14px;border-radius:4px;border:1px solid var(--bdr2);
+  background:transparent;color:var(--text2);font-size:12px;cursor:pointer;
+  font-family:'Syne',sans-serif;transition:all 0.15s;
+}
+.print-btn:hover{background:var(--s3);color:var(--text)}
+
+/* ── LAYOUT ── */
+.layout{display:flex;height:calc(100vh - 52px)}
+
+/* ── INPUT PANEL ── */
+.input-panel{
+  width:340px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--bdr);
+  overflow-y:auto;transition:width 0.25s,opacity 0.25s;
+}
+.input-panel.collapsed{width:0;opacity:0;overflow:hidden}
+.ip-header{
+  padding:14px 16px 10px;background:var(--s2);border-bottom:1px solid var(--bdr);
+  position:sticky;top:0;z-index:10;
+}
+.ip-title{font-size:13px;font-weight:700;color:var(--amber);letter-spacing:0.3px}
+.ip-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:'JetBrains Mono',monospace}
+.ip-section{border-bottom:1px solid var(--bdr)}
+.ip-sec-head{
+  padding:10px 16px;font-size:11px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:1px;background:var(--s2);
+  display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;
+}
+.ip-sec-head:hover{background:var(--s3)}
+.ip-sec-body{padding:12px 16px;display:grid;gap:10px}
+.ip-sec-body.hidden{display:none}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px}
+.fi,.fs{
+  background:var(--bg);border:1px solid var(--bdr);border-radius:4px;
+  color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;
+  padding:6px 10px;outline:none;width:100%;transition:border 0.15s;
+}
+.fi:focus,.fs:focus{border-color:var(--amber)}
+.fi[readonly]{background:var(--s3);color:var(--text3);cursor:not-allowed}
+.fs option{background:var(--s2)}
+.fi-note{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:2px}
+.range-row{display:flex;align-items:center;gap:8px}
+.range-row input[type=range]{flex:1;accent-color:var(--amber)}
+.rval{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--amber);min-width:48px;text-align:right}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.changed-badge{
+  font-size:9px;padding:1px 6px;background:rgba(245,158,11,0.15);
+  color:var(--amber);border-radius:3px;font-family:'JetBrains Mono',monospace;
+  border:1px solid rgba(245,158,11,0.3);
+}
+
+/* ── MAIN CONTENT ── */
+.main{flex:1;overflow:hidden;position:relative}
+
+/* ── DASHBOARD MODE ── */
+.dashboard{height:100%;overflow-y:auto;padding:20px;display:grid;gap:16px}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.kpi{
+  background:var(--s1);border:1px solid var(--bdr);border-radius:8px;
+  padding:14px 16px;position:relative;overflow:hidden;
+}
+.kpi::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--kpi-color,var(--amber))}
+.kpi-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px}
+.kpi-val{font-size:22px;font-weight:700;font-family:'JetBrains Mono',monospace;margin:6px 0 2px;color:var(--kpi-color,var(--amber))}
+.kpi-sub{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.dash-grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:8px;overflow:hidden}
+.card-head{
+  padding:10px 16px;background:var(--s2);border-bottom:1px solid var(--bdr);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.card-title{font-size:12px;font-weight:700;color:var(--text);letter-spacing:0.3px}
+.card-body{padding:14px 16px}
+.chart-wrap{padding:12px 16px;height:200px;position:relative}
+
+/* ── TABLE ── */
+.t{width:100%;border-collapse:collapse;font-size:11px}
+.t th{padding:6px 10px;background:var(--s2);font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bdr)}
+.t td{padding:7px 10px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.t tr:last-child td{border-bottom:none}
+.t tr:hover td{background:rgba(255,255,255,0.02)}
+.tr{text-align:right;font-family:'JetBrains Mono',monospace}
+.tc-amber{color:var(--amber);font-family:'JetBrains Mono',monospace}
+.tc-green{color:var(--green);font-family:'JetBrains Mono',monospace}
+.tc-red{color:var(--red);font-family:'JetBrains Mono',monospace}
+.tc-blue{color:var(--blue);font-family:'JetBrains Mono',monospace}
+.total-r td{background:rgba(245,158,11,0.06);font-weight:700;color:var(--amber);font-family:'JetBrains Mono',monospace}
+.sub-r td{background:rgba(34,197,94,0.05);font-weight:600;color:var(--green);font-family:'JetBrains Mono',monospace}
+.tag{padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.tag-a{background:rgba(245,158,11,0.12);color:var(--amber);border:1px solid rgba(245,158,11,0.25)}
+.tag-g{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.tag-r{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+
+/* ── SLIDE MODE ── */
+.slide-container{
+  position:absolute;inset:0;background:var(--slide-bg);
+  display:none;flex-direction:column;
+}
+.slide-container.active{display:flex}
+.slide-nav{
+  height:48px;background:rgba(0,0,0,0.6);border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;
+}
+.snav-btn{
+  padding:5px 14px;border-radius:4px;border:1px solid var(--bdr2);
+  background:transparent;color:var(--text2);font-size:12px;font-weight:600;
+  cursor:pointer;font-family:'Syne',sans-serif;transition:all 0.15s;
+}
+.snav-btn:hover{background:var(--s3);color:var(--text)}
+.snav-btn.primary{background:var(--amber);color:#000;border-color:var(--amber)}
+.slide-indicator{
+  display:flex;gap:6px;align-items:center;flex:1;justify-content:center;
+  overflow-x:auto;
+}
+.slide-dot{
+  width:28px;height:4px;border-radius:2px;background:var(--bdr2);
+  cursor:pointer;transition:all 0.2s;flex-shrink:0;
+}
+.slide-dot.active{background:var(--amber);width:36px}
+.slide-dot:hover:not(.active){background:var(--text3)}
+.slide-counter{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text3)}
+
+.slides-viewport{flex:1;position:relative;overflow:hidden}
+.slide{
+  position:absolute;inset:0;padding:40px 52px;
+  display:flex;flex-direction:column;
+  opacity:0;transform:translateX(60px);transition:all 0.4s cubic-bezier(0.4,0,0.2,1);
+  pointer-events:none;
+}
+.slide.active{opacity:1;transform:none;pointer-events:all}
+.slide.prev{opacity:0;transform:translateX(-60px)}
+
+/* slide content components */
+.sl-tag{
+  font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--amber);margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.sl-tag::before{content:'';width:24px;height:2px;background:var(--amber)}
+.sl-h1{font-size:42px;font-weight:800;line-height:1.1;letter-spacing:-1px;margin-bottom:8px}
+.sl-h2{font-size:28px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px;color:var(--text)}
+.sl-sub{font-size:15px;color:var(--text2);margin-bottom:28px;font-weight:400;line-height:1.5}
+.sl-body{flex:1;display:flex;flex-direction:column;justify-content:center}
+.sl-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;flex:1}
+.sl-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;flex:1}
+.sl-grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px}
+.sl-card{
+  background:rgba(255,255,255,0.03);border:1px solid var(--bdr);
+  border-radius:10px;padding:18px;
+}
+.sl-card-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px}
+.sl-big{font-size:36px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--amber);line-height:1}
+.sl-big2{font-size:26px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--green);line-height:1}
+.sl-med{font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text)}
+.sl-note{font-size:12px;color:var(--text3);margin-top:6px;line-height:1.5}
+.kpi-row-slide{display:flex;gap:16px;margin-bottom:24px}
+.kpi-sl{
+  flex:1;background:rgba(255,255,255,0.03);border:1px solid var(--bdr);
+  border-radius:8px;padding:14px 18px;border-top:2px solid;
+}
+.kv{font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace;margin:4px 0}
+.kl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px}
+.ks{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace}
+.flow-row{display:flex;align-items:center;gap:0;flex:1}
+.flow-box{
+  flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--bdr);
+  border-radius:6px;padding:12px;text-align:center;
+}
+.flow-arrow{color:var(--amber);font-size:20px;padding:0 6px;flex-shrink:0}
+.flow-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px}
+.flow-val{font-size:16px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--amber);margin:4px 0}
+.flow-sub{font-size:10px;color:var(--text3)}
+.bar-row{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--bdr)}
+.bar-row:last-child{border:none}
+.bar-label{font-size:11px;color:var(--text2);width:180px;flex-shrink:0}
+.bar-track{flex:1;height:6px;background:var(--s3);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width 0.6s ease}
+.bar-val{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--amber);width:80px;text-align:right;flex-shrink:0}
+.profit-highlight{
+  background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(245,158,11,0.05));
+  border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:20px;
+}
+.ph-label{font-size:12px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px}
+.ph-val{font-size:40px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--green)}
+.ph-sub{font-size:13px;color:var(--text2);margin-top:4px}
+
+/* slide chart canvas */
+.sl-chart{position:relative;flex:1;min-height:0}
+
+/* watermark */
+.watermark{
+  position:fixed;bottom:12px;right:16px;font-size:10px;
+  color:var(--text3);font-family:'JetBrains Mono',monospace;
+  pointer-events:none;z-index:1000;
+}
+
+/* update flash */
+@keyframes flash{0%{opacity:1}50%{opacity:0.4}100%{opacity:1}}
+.flash{animation:flash 0.4s ease}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+
+/* print */
+@media print{
+  .topbar,.input-panel,.slide-container{display:none!important}
+  .dashboard{display:block;overflow:visible;padding:20px}
+  .kpi-row,.dash-grid,.dash-grid-2{display:block}
+  .kpi,.card{break-inside:avoid;margin-bottom:16px}
+  *{background:white!important;color:#000!important;border-color:#ccc!important}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">BIO<span>BITUMEN</span> DPR</div>
+  <div class="topbar-center">
+    <button class="mode-btn active" id="btn-dash" onclick="switchMode('dashboard')">DASHBOARD</button>
+    <button class="mode-btn" id="btn-slide" onclick="switchMode('slide')">PRESENTATION</button>
+  </div>
+  <div class="topbar-right">
+    <span class="project-name" id="top-proj">Loading...</span>
+    <button class="input-toggle" onclick="toggleInputs()">⚙ DPR INPUTS</button>
+    <button class="print-btn" onclick="window.print()">↓ PDF</button>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- ═══ DPR INPUT PANEL ═══ -->
+<div class="input-panel" id="inputPanel">
+  <div class="ip-header">
+    <div class="ip-title">⚙ MASTER DPR INPUT PANEL</div>
+    <div class="ip-sub">All fields linked → all slides & workings update instantly</div>
+  </div>
+
+  <!-- PROJECT -->
+  <div class="ip-section">
+    <div class="ip-sec-head" onclick="toggleSec(this)">📁 PROJECT DETAILS <span style="margin-left:auto">▾</span></div>
+    <div class="ip-sec-body">
+      <div class="fg"><label class="fl">Project / Company Name</label><input class="fi" id="d-proj" value="Green Roads Bio-Bitumen Pvt. Ltd." oninput="recalc()"></div>
+      <div class="two-col">
+        <div class="fg"><label class="fl">Report Date</label><input class="fi" type="date" id="d-date" oninput="recalc()"></div>
+        <div class="fg"><label class="fl">DPR Version</label><input class="fi" id="d-ver" value="v1.0" oninput="recalc()"></div>
+      </div>
+      <div class="fg"><label class="fl">Prepared By</label><input class="fi" id="d-by" value="Project Team" oninput="recalc()"></div>
+    </div>
+  </div>
+
+  <!-- LOCATION & SCALE -->
+  <div class="ip-section">
+    <div class="ip-sec-head" onclick="toggleSec(this)">📍 LOCATION & SCALE <span style="margin-left:auto">▾</span></div>
+    <div class="ip-sec-body">
+      <div class="fg">
+        <label class="fl">Production State / Zone</label>
+        <select class="fs" id="d-state" onchange="recalc()">
+          <option value="punjab">Punjab / Haryana</option>
+          <option value="up">Uttar Pradesh</option>
+          <option value="mp">Madhya Pradesh</option>
+          <option value="maharashtra" selected>Maharashtra</option>
+          <option value="gujarat">Gujarat</option>
+          <option value="rajasthan">Rajasthan</option>
+          <option value="karnataka">Karnataka</option>
+          <option value="tamilnadu">Tamil Nadu</option>
+          <option value="ne">North East (Meghalaya/Assam)</option>
+        </select>
+      </div>
+      <div class="two-col">
+        <div class="fg"><label class="fl">Capacity (TPD Feed)</label><input class="fi" type="number" id="d-cap" value="20" oninput="recalc()"></div>
+        <div class="fg"><label class="fl">Operating Days/yr</label><input class="fi" type="number" id="d-days" value="300" oninput="recalc()"></div>
+      </div>
+      <div class="fg"><label class="fl">Plant Investment (₹ Crore)</label><input class="fi" type="number" id="d-invest" value="3.5" step="0.1" oninput="recalc()"></div>
+      <div class="fg"><label class="fl">Working Capital (₹ Crore)</label><input class="fi" type="number" id="d-wc" value="1.2" step="0.1" oninput="recalc()"></div>
+    </div>
+  </div>
+
+  <!-- PROCESS YIELDS -->
+  <div class="ip-section">
+    <div class="ip-sec-head" onclick="toggleSec(this)">⚗ PROCESS YIELDS <span style="margin-left:auto">▾</span></div>
+    <div class="ip-sec-body">
+      <div class="fg"><label class="fl">Bio-Oil Yield (% of feed)</label>
+        <div class="range-row"><input type="range" min="20" max="40" value="32" id="d-oil" oninput="document.getElementById('rv-oil').textContent=this.value+'%';recalc()"><span class="rval" id="rv-oil">32%</span></div>
+        <div class="fi-note">Pyrolysis typical: 28–35%</div>
+      </div>
+      <div class="fg"><label class="fl">Bio-Char Yield (% of feed)</label>
+        <div class="range-row"><input type="range" min="20" max="38" value="28" id="d-char" oninput="document.getElementById('rv-char').textContent=this.value+'%';recalc()"><span class="rval" id="rv-char">28%</span></div>
+      </div>
+      <div class="fg"><label class="fl">Syngas Yield (% of feed)</label>
+        <div class="range-row"><input type="range" min="10" max="30" value="22" id="d-gas" oninput="document.getElementById('rv-gas').textContent=this.value+'%';recalc()"><span class="rval" id="rv-gas">22%</span></div>
+      </div>
+      <div class="fg"><label class="fl">Bio-Bitumen Blend Ratio (%)</label>
+        <div class="range-row"><input type="range" min="10" max="35" value="15" id="d-blend" oninput="document.getElementById('rv-blend').textContent=this.value+'%';recalc()"><span class="rval" id="rv-blend">15%</span></div>
+        <div class="fi-note">CSIR approved up to 35%</div>
+      </div>
+      <div class="fg"><label class="fl">Process Loss / Evaporation (%)</label>
+        <div class="range-row"><input type="range" min="5" max="25" value="18" id="d-loss" oninput="document.getElementById('rv-loss').textContent=this.value+'%';recalc()"><span class="rval" id="rv-loss">18%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RAW MATERIAL PRICES -->
+  <div class="ip-section">
+    <div class="ip-sec-head" onclick="toggleSec(this)">🌾 RAW MATERIAL (₹/Tonne) <span style="margin-left:auto">▾</span></div>
+    <div class="ip-sec-body">
+      <div class="two-col">
+        <div class="fg"><label class="fl">Rice Straw (loose)</label><input class="fi" type="number" id="d-rs1" value="1200" oninput="recalc()"><div class="fi-note">Punjab farm gate</div></div>
+        <div class="fg"><label class="fl">Rice Straw (baled)</label><input class="fi" type="number" id="d-rs2" value="2700" oninput="recalc()"><div class="fi-note">Compressed bale</div></div>
+        <div class="fg"><label class="fl">Wheat Straw</label><input class="fi" type="number" id="d-ws" value="1700" oninput="recalc()"><div class="fi-note">UP / Haryana</div></div>
+        <div class="fg"><label class="fl">Bagasse</label><input class="fi" type="number" id="d-bg" value="1000" oninput="recalc()"><div class="fi-note">Ex-sugar mill</div></div>
+        <div class="fg"><label class="fl">Lignin</label><input class="fi" type="number" id="d-lg" value="4000" oninput="recalc()"><div class="fi-note">Kraft lignin</div></div>
+        <div class="fg"><label class="fl">Other Agro Waste</label><input class="fi" type="number" id="d-ow" value="900" oninput="recalc()"><div class="fi-note">Groundnut/mustard</div></div>
+      </div>
+      <div class="fg"><label class="fl">Agro Waste Feed Mix (blended ₹/T)</label><input class="fi" id="d-rmblend" readonly></div>
+      <div class="fg"><label class="fl">Conv. Bitumen Price ₹/T (ex-IOCL/BPCL)</label><input class="fi" type="number" id="d-bit" value="45750" oninput="recalc()"><div class="fi-note">VG30 bulk Jan 2025 ₹45,750/T</div></div>
+    </div>
+  </div>
+
+  <!-- LANDING COSTS -->
+  <div class="ip-section">
+    <div class="ip-sec-head" onclick="toggleSec(this)">🚛 LANDING SURCHARGES (₹/T) <span style="margin-left:auto">▾</span></div>
+    <div class="ip-sec-body">
+      <div class="two-col">
+        <div class="fg"><label class="fl">Baling Cost</label><input class="fi" type="number" id="d-lc1" value="350" oninput="recalc()"></div>
+        <div class="fg"><label class="fl">Primary Transport</label><input class="fi" type="number" id="d-lc2" value="250" oninput="recalc()"></div>
+        <div class="fg"><label class="fl">Depot Storage</label><input class="fi" type="number" id="d-lc3" value="300" oninput="recalc()"></div>
+        <div class="fg"><label class="fl">Long Haul (depot→plant)</label><input class="fi" type="number" id="d-lc4" value="480" oninput="recalc()"></div>
+        <div class="fg"><label class="fl">Loading + Unloading</label><input class="fi" type="number" id="d-lc5" value="140" oninput="recalc()"></div>
+        <div class="fg"><label class="fl">Testing & Misc.</label><input class="fi" type="number" id="d-lc6" value="65" oninput="recalc()"></div>
+      </div>
+      <div class="fg"><label class="fl">Bitumen Transport ₹/T</label><input class="fi" type="number" id="d-btr" value="650" oninput="recalc()"></div>
+    </div>
+  </div>
+
+  <!-- PRODUCTION COSTS -->
+  <div class="ip-section">
+    <div class="ip-sec-head" onclick="toggleSec(this)">⚙ PRODUCTION COSTS (Daily ₹) <span style="margin-left:auto">▾</span></div>
+    <div class="ip-sec-body">
+      <div class="two-col">
+        <div class="fg"><label class="fl">Electricity Rate ₹/kWh</label><input class="fi" type="number" id="d-er" value="7.5" step="0.1" oninput="recalc()"></div>
+        <div class="fg"><label class="fl">kWh Consumed/day</label><input class="fi" type="number" id="d-ekwh" value="1200" oninput="recalc()"></div>
+        <div class="fg"><label class="fl">Diesel Rate ₹/L</label><input class="fi" type="number" id="d-dr" value="92" oninput="recalc()"></div>
+        <div class="fg"><label class="fl">Litres Diesel/day</label><input class="fi" type="number" id="d-dl" value="120" oninput="recalc()"></div>
+      </div>
+      <div class="fg"><label class="fl">Labour Cost (daily total ₹)</label><input class="fi" type="number" id="d-labour" value="18000" oninput="recalc()"></div>
+      <div class="fg"><label class="fl">Overheads / Misc (daily ₹)</label><input class="fi" type="number" id="d-oh" value="12000" oninput="recalc()"></div>
+      <div class="fg"><label class="fl">Chemicals & Catalysts (daily ₹)</label><input class="fi" type="number" id="d-chem" value="2500" oninput="recalc()"></div>
+      <div class="fg"><label class="fl">Waste/Loss Cost Factor (%)</label>
+        <div class="range-row"><input type="range" min="2" max="10" value="5" id="d-wf" oninput="document.getElementById('rv-wf').textContent=this.value+'%';recalc()"><span class="rval" id="rv-wf">5%</span></div>
+        <div class="fi-note">% of daily prod cost added for waste</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SALE PRICES -->
+  <div class="ip-section">
+    <div class="ip-sec-head" onclick="toggleSec(this)">💰 SALE PRICES (₹/Tonne) <span style="margin-left:auto">▾</span></div>
+    <div class="ip-sec-body">
+      <div class="two-col">
+        <div class="fg"><label class="fl">Bio-Bitumen VG30</label><input class="fi" type="number" id="d-sp1" value="44000" oninput="recalc()"><div class="fi-note">Market: 42-48k</div></div>
+        <div class="fg"><label class="fl">Bio-Bitumen VG40</label><input class="fi" type="number" id="d-sp2" value="48000" oninput="recalc()"><div class="fi-note">Market: 46-52k</div></div>
+        <div class="fg"><label class="fl">Bio-Char (Agri grade)</label><input class="fi" type="number" id="d-sp3" value="26000" oninput="recalc()"><div class="fi-note">Market: 22-35k</div></div>
+        <div class="fg"><label class="fl">Bio-Char (Ind. grade)</label><input class="fi" type="number" id="d-sp4" value="32000" oninput="recalc()"><div class="fi-note">Market: 28-40k</div></div>
+        <div class="fg"><label class="fl">Bio-Oil (fuel grade)</label><input class="fi" type="number" id="d-sp5" value="22000" oninput="recalc()"><div class="fi-note">Market: 18-28k</div></div>
+        <div class="fg"><label class="fl">Biomass Pellets</label><input class="fi" type="number" id="d-sp6" value="9000" oninput="recalc()"><div class="fi-note">Market: 7-14k</div></div>
+      </div>
+      <div class="two-col">
+        <div class="fg"><label class="fl">Empty Drum Return ₹/drum</label><input class="fi" type="number" id="d-drum" value="280" oninput="recalc()"></div>
+        <div class="fg"><label class="fl">Carbon Credit ₹/unit</label><input class="fi" type="number" id="d-cc" value="12500" oninput="recalc()"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINANCE -->
+  <div class="ip-section">
+    <div class="ip-sec-head" onclick="toggleSec(this)">🏦 FINANCE ASSUMPTIONS <span style="margin-left:auto">▾</span></div>
+    <div class="ip-sec-body">
+      <div class="two-col">
+        <div class="fg"><label class="fl">Debt (% of invest)</label>
+          <div class="range-row"><input type="range" min="0" max="80" value="60" id="d-debt" oninput="document.getElementById('rv-debt').textContent=this.value+'%';recalc()"><span class="rval" id="rv-debt">60%</span></div>
+        </div>
+        <div class="fg"><label class="fl">Interest Rate %pa</label><input class="fi" type="number" id="d-ir" value="12" step="0.5" oninput="recalc()"></div>
+        <div class="fg"><label class="fl">Depreciation Rate %</label><input class="fi" type="number" id="d-dep" value="10" step="1" oninput="recalc()"></div>
+        <div class="fg"><label class="fl">Tax Rate %</label><input class="fi" type="number" id="d-tax" value="25" step="1" oninput="recalc()"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end input panel -->
+
+<!-- ═══ MAIN CONTENT AREA ═══ -->
+<div class="main">
+
+  <!-- DASHBOARD VIEW -->
+  <div class="dashboard" id="dashView">
+
+    <!-- KPI ROW -->
+    <div class="kpi-row">
+      <div class="kpi" style="--kpi-color:var(--amber)">
+        <div class="kpi-label">Net Cost / Tonne</div>
+        <div class="kpi-val" id="k-cpt">—</div>
+        <div class="kpi-sub">all-in landed cost</div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--green)">
+        <div class="kpi-label">Revenue / Day</div>
+        <div class="kpi-val" id="k-rev">—</div>
+        <div class="kpi-sub">all products combined</div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--blue)">
+        <div class="kpi-label">Gross Margin %</div>
+        <div class="kpi-val" id="k-gm">—</div>
+        <div class="kpi-sub">on total revenue</div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--purple)">
+        <div class="kpi-label">Annual Net Profit</div>
+        <div class="kpi-val" id="k-np">—</div>
+        <div class="kpi-sub">post-tax (₹ Crore)</div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--amber2)">
+        <div class="kpi-label">Payback Period</div>
+        <div class="kpi-val" id="k-pb">—</div>
+        <div class="kpi-sub">years on total invest</div>
+      </div>
+    </div>
+
+    <!-- ROW 2: cost breakdown + production flow -->
+    <div class="dash-grid-2">
+      <div class="card">
+        <div class="card-head"><span class="card-title">COMPLETE COST SHEET — ₹ per Tonne of Bio-Bitumen Blend</span><span id="d-loc-tag" class="tag tag-a">—</span></div>
+        <div style="overflow-x:auto">
+          <table class="t" id="cost-table">
+            <thead><tr><th>#</th><th>Cost Head</th><th>₹/T Blend</th><th>%</th></tr></thead>
+            <tbody id="cost-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-head"><span class="card-title">PRODUCTION OUTPUTS / Day</span></div>
+          <div class="card-body">
+            <table class="t" id="output-table">
+              <thead><tr><th>Product</th><th>T/day</th><th>Sale Price</th><th>Daily ₹</th></tr></thead>
+              <tbody id="output-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">P&L SUMMARY (Annual)</span></div>
+          <div class="card-body">
+            <table class="t" id="pnl-table">
+              <tbody id="pnl-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3: charts -->
+    <div class="dash-grid">
+      <div class="card">
+        <div class="card-head"><span class="card-title">COST BREAKDOWN</span></div>
+        <div class="chart-wrap"><canvas id="chartCost"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">REVENUE BY PRODUCT</span></div>
+        <div class="chart-wrap"><canvas id="chartRev"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">ANNUAL CASH FLOW (₹ Cr)</span></div>
+        <div class="chart-wrap"><canvas id="chartFlow"></canvas></div>
+      </div>
+    </div>
+
+  </div><!-- end dashboard -->
+
+  <!-- SLIDE CONTAINER -->
+  <div class="slide-container" id="slideView">
+    <div class="slide-nav">
+      <button class="snav-btn" onclick="prevSlide()">← PREV</button>
+      <div class="slide-indicator" id="slide-indicator"></div>
+      <span class="slide-counter" id="slide-counter">1 / 10</span>
+      <button class="snav-btn primary" onclick="nextSlide()">NEXT →</button>
+    </div>
+    <div class="slides-viewport" id="slides-viewport">
+      <!-- slides injected by JS -->
+    </div>
+  </div>
+
+</div><!-- end main -->
+</div><!-- end layout -->
+
+<div class="watermark" id="watermark-stamp">BIO-BITUMEN DPR</div>
+
+<script>
+// ═══ STATE ═══
+let charts = {};
+let currentSlide = 0;
+let R = {}; // all computed results
+
+const LOCS = {
+  punjab:      {rm:1.0, lb:0.9, tr:1.0, to:1.1, en:0.95, name:'Punjab / Haryana'},
+  up:          {rm:1.05,lb:0.92,tr:1.05,to:1.05,en:1.0,  name:'Uttar Pradesh'},
+  mp:          {rm:1.1, lb:0.95,tr:1.12,to:1.08,en:0.98, name:'Madhya Pradesh'},
+  maharashtra: {rm:1.12,lb:1.1, tr:1.15,to:0.95,en:1.05, name:'Maharashtra'},
+  gujarat:     {rm:1.1, lb:1.05,tr:1.1, to:0.9, en:1.02, name:'Gujarat'},
+  rajasthan:   {rm:1.08,lb:0.88,tr:1.08,to:1.1, en:1.0,  name:'Rajasthan'},
+  karnataka:   {rm:1.18,lb:1.08,tr:1.2, to:1.0, en:1.08, name:'Karnataka'},
+  tamilnadu:   {rm:1.22,lb:1.1, tr:1.25,to:1.0, en:1.1,  name:'Tamil Nadu'},
+  ne:          {rm:1.05,lb:0.85,tr:0.9, to:1.35,en:1.25, name:'North East'}
+};
+
+function v(id){ return parseFloat(document.getElementById(id).value)||0; }
+function fmt(n,dec=0){ return '₹'+Math.abs(n).toLocaleString('en-IN',{maximumFractionDigits:dec}); }
+function fmtC(n){ return '₹'+(n/1e7).toFixed(2)+' Cr'; }
+function fmtPct(n){ return n.toFixed(1)+'%'; }
+function set(id,v){ const el=document.getElementById(id); if(el) el.textContent=v; }
+function setHTML(id,v){ const el=document.getElementById(id); if(el) el.innerHTML=v; }
+
+// ═══ MASTER RECALCULATION ═══
+function recalc(){
+  const loc = document.getElementById('d-state').value;
+  const lm = LOCS[loc];
+  const cap = v('d-cap');
+  const days = v('d-days');
+  const feed = cap; // TPD feed
+
+  // Yields
+  const oilY = v('d-oil')/100;
+  const charY = v('d-char')/100;
+  const gasY = v('d-gas')/100;
+  const lossY = v('d-loss')/100;
+  const blend = v('d-blend')/100;
+
+  const oilT = feed * oilY;
+  const charT = feed * charY;
+  const gasT = feed * gasY;
+  const lossT = feed * lossY;
+
+  const bioOilForBlend = oilT * 0.85;
+  const bioOilSurplus = oilT * 0.15;
+  const blendTotal = bioOilForBlend / blend;
+  const convBitT = blendTotal - bioOilForBlend;
+
+  // Raw material blended price
+  const rmPrices = [v('d-rs1'),v('d-rs2'),v('d-ws'),v('d-bg'),v('d-lg'),v('d-ow')];
+  const rmWeights = [0.35,0.2,0.15,0.1,0.05,0.15];
+  const rmBlend = rmPrices.reduce((s,p,i)=>s+p*rmWeights[i],0) * lm.rm;
+  document.getElementById('d-rmblend').value = Math.round(rmBlend);
+
+  const rmDailyCost = rmBlend * feed;
+  const bitPrice = v('d-bit');
+  const bitGST = bitPrice * 0.18;
+  const bitLandingPT = bitPrice + bitGST + v('d-btr') + 120 + bitPrice*0.015;
+  const bitDailyCost = bitLandingPT * convBitT;
+
+  // Landing
+  const lcPT = (v('d-lc1')+v('d-lc2')+v('d-lc3')+v('d-lc4')+v('d-lc5')+v('d-lc6')) * lm.tr * 1.02;
+  const lcDailyAgro = lcPT * feed;
+  const lcDailyBit = v('d-btr') * convBitT;
+
+  // Production
+  const elec = v('d-er') * v('d-ekwh') * lm.en;
+  const diesel = v('d-dr') * v('d-dl') * lm.en;
+  const syngasCredit = gasT * 1000;
+  const energyNet = elec + diesel - syngasCredit;
+  const labour = v('d-labour') * lm.lb;
+  const oh = v('d-oh');
+  const chem = v('d-chem');
+  const totalProd = energyNet + labour + oh + chem;
+
+  // Packing
+  const packCost = blendTotal * 420 * 0.3 + charT * 1000 * 0.5; // approx
+  const packScrap = blendTotal * 280 * 0.3 + charT * 500 * 0.3;
+  const packNet = packCost - packScrap;
+
+  // Waste
+  const wasteFactor = v('d-wf')/100;
+  const wasteCost = totalProd * wasteFactor + oilT * 0.03 * 5000 + charT * 0.05 * 2000;
+
+  // Outbound
+  const outbound = blendTotal * 800 * lm.to;
+
+  // Total gross cost daily
+  const grossDaily = rmDailyCost + bitDailyCost + lcDailyAgro + lcDailyBit + totalProd + packNet + wasteCost + outbound;
+
+  // Revenue & Credits
+  const revBit = blendTotal*0.7*v('d-sp1') + blendTotal*0.3*v('d-sp2');
+  const revChar = charT*0.7*v('d-sp3') + charT*0.15*v('d-sp4');
+  const revOil = bioOilSurplus * v('d-sp5');
+  const revPellet = 1.0 * v('d-sp6');
+  const revDrums = blendTotal/0.18*0.3 * v('d-drum');
+  const revCC = 5 * v('d-cc');
+  const totalRevDaily = revBit + revChar + revOil + revPellet + revDrums + revCC;
+
+  // By-product credit (non-bitumen products sold)
+  const byProdCredit = revChar + revOil + revPellet + revDrums + revCC;
+
+  // Net cost of blend
+  const netDaily = grossDaily - byProdCredit;
+  const netCPT = blendTotal > 0 ? netDaily / blendTotal : 0;
+  const salePT = v('d-sp1')*0.7 + v('d-sp2')*0.3;
+  const gmPct = salePT > 0 ? (salePT - netCPT)/salePT*100 : 0;
+
+  // Annual P&L
+  const annRev = totalRevDaily * days;
+  const annRM = (rmDailyCost + bitDailyCost) * days;
+  const annLand = (lcDailyAgro + lcDailyBit) * days;
+  const annProd = (totalProd + wasteCost) * days;
+  const annPack = packNet * days;
+  const annOut = outbound * days;
+  const annGP = annRev - annRM - annLand - annProd - annPack - annOut;
+  const annGM = annRev > 0 ? annGP/annRev*100 : 0;
+
+  const invest = v('d-invest') * 1e7;
+  const debtR = v('d-debt')/100;
+  const ir = v('d-ir')/100;
+  const depRate = v('d-dep')/100;
+  const taxRate = v('d-tax')/100;
+  const annDep = invest * depRate;
+  const annInt = invest * debtR * ir;
+  const annSGA = annRev * 0.02;
+  const ebt = annGP - annDep - annInt - annSGA;
+  const tax = ebt > 0 ? ebt * taxRate : 0;
+  const annNP = ebt - tax;
+  const annNM = annRev > 0 ? annNP/annRev*100 : 0;
+  const totalInvest = invest + v('d-wc')*1e7;
+  const payback = annNP > 0 ? totalInvest/annNP : 99;
+
+  // Store all results
+  R = {
+    loc, lm, cap, days, feed, oilT, charT, gasT, lossT,
+    blendTotal, convBitT, bioOilSurplus,
+    rmBlend, rmDailyCost, bitDailyCost, bitLandingPT,
+    lcDailyAgro, lcDailyBit, lcPT,
+    elec, diesel, syngasCredit, energyNet, labour, oh, chem, totalProd,
+    packNet, wasteCost, outbound, grossDaily,
+    revBit, revChar, revOil, revPellet, revDrums, revCC, totalRevDaily, byProdCredit,
+    netDaily, netCPT, salePT, gmPct,
+    annRev, annRM, annLand, annProd, annPack, annOut, annGP, annGM,
+    annDep, annInt, annSGA, ebt, tax, annNP, annNM,
+    totalInvest, invest, payback
+  };
+
+  updateUI();
+  updateCharts();
+  updateSlides();
+
+  const proj = document.getElementById('d-proj').value || 'Bio-Bitumen DPR';
+  document.getElementById('top-proj').textContent = proj + ' · ' + lm.name + ' · ' + cap + ' TPD';
+  document.getElementById('watermark-stamp').textContent = proj.toUpperCase();
+}
+
+// ═══ UPDATE DASHBOARD UI ═══
+function updateUI(){
+  const R2 = R;
+  // KPIs
+  set('k-cpt', fmt(R2.netCPT));
+  set('k-rev', fmt(R2.totalRevDaily));
+  set('k-gm', fmtPct(R2.annGM));
+  set('k-np', fmtC(R2.annNP));
+  set('k-pb', R2.payback.toFixed(1)+' yrs');
+
+  // location tag
+  setHTML('d-loc-tag', R2.lm.name);
+
+  // Cost table
+  const ct = document.getElementById('cost-tbody');
+  const d = R2.blendTotal > 0 ? R2.blendTotal : 1;
+  const rows = [
+    ['1','Agro Waste — Farm Gate', R2.rmDailyCost/d, R2.rmDailyCost/d / (R2.grossDaily/d) * 100],
+    ['2','Conventional Bitumen + GST', R2.bitDailyCost/d, R2.bitDailyCost/d / (R2.grossDaily/d) * 100],
+    ['3','Landing / Inbound Logistics', (R2.lcDailyAgro+R2.lcDailyBit)/d, (R2.lcDailyAgro+R2.lcDailyBit)/d / (R2.grossDaily/d) * 100],
+    ['4','Energy (net of syngas credit)', R2.energyNet/d, R2.energyNet/d / (R2.grossDaily/d) * 100],
+    ['5','Labour (incl. PF/ESI est.)', R2.labour/d, R2.labour/d / (R2.grossDaily/d) * 100],
+    ['6','Chemicals, Catalysts, QC', R2.chem/d, R2.chem/d / (R2.grossDaily/d) * 100],
+    ['7','Overheads, Depreciation, WC', R2.oh/d, R2.oh/d / (R2.grossDaily/d) * 100],
+    ['8','Packing (net of scrap return)', R2.packNet/d, R2.packNet/d / (R2.grossDaily/d) * 100],
+    ['9','Waste, Rejection & Loss', R2.wasteCost/d, R2.wasteCost/d / (R2.grossDaily/d) * 100],
+    ['10','Outbound Delivery', R2.outbound/d, R2.outbound/d / (R2.grossDaily/d) * 100],
+  ];
+  ct.innerHTML = rows.map(r=>`<tr><td class="mono" style="color:var(--text3)">${r[0]}</td><td>${r[1]}</td><td class="tc-amber">${fmt(r[2])}</td><td class="mono" style="color:var(--text3)">${r[3].toFixed(1)}%</td></tr>`).join('')
+    + `<tr class="total-r"><td colspan="2">GROSS COST / Tonne</td><td>${fmt(R2.grossDaily/d)}</td><td>100%</td></tr>`
+    + `<tr><td colspan="2" style="color:var(--green);font-size:11px">Less: By-product Credits</td><td class="tc-green">-${fmt(R2.byProdCredit/d)}</td><td></td></tr>`
+    + `<tr class="sub-r"><td colspan="2">NET COST / Tonne of Blend</td><td>${fmt(R2.netCPT)}</td><td></td></tr>`
+    + `<tr style="background:rgba(34,197,94,0.08)"><td colspan="2" style="font-weight:700;color:var(--green)">Sale Price − Net Cost = MARGIN</td><td class="tc-green" style="font-size:14px;font-weight:700">${fmt(R2.salePT - R2.netCPT)}</td><td class="tc-green">${fmtPct(R2.gmPct)}</td></tr>`;
+
+  // Output table
+  const ot = document.getElementById('output-tbody');
+  ot.innerHTML = [
+    ['Bio-Bitumen Blend (VG30 70%)', (R2.blendTotal*0.7).toFixed(1), fmt(v('d-sp1')), fmt(R2.blendTotal*0.7*v('d-sp1'))],
+    ['Bio-Bitumen Blend (VG40 30%)', (R2.blendTotal*0.3).toFixed(1), fmt(v('d-sp2')), fmt(R2.blendTotal*0.3*v('d-sp2'))],
+    ['Bio-Char (Agriculture Grade)', (R2.charT*0.7).toFixed(1), fmt(v('d-sp3')), fmt(R2.charT*0.7*v('d-sp3'))],
+    ['Bio-Char (Industrial Grade)', (R2.charT*0.15).toFixed(1), fmt(v('d-sp4')), fmt(R2.charT*0.15*v('d-sp4'))],
+    ['Bio-Oil (surplus, fuel grade)', R2.bioOilSurplus.toFixed(1), fmt(v('d-sp5')), fmt(R2.bioOilSurplus*v('d-sp5'))],
+    ['Biomass Pellets', '1.0', fmt(v('d-sp6')), fmt(v('d-sp6'))],
+    ['Drum Scrap + Carbon Credits', '—', '—', fmt(R2.revDrums+R2.revCC)],
+  ].map(r=>`<tr><td>${r[0]}</td><td class="tr">${r[1]}</td><td class="tr">${r[2]}</td><td class="tc-green">${r[3]}</td></tr>`).join('')
+  + `<tr class="total-r"><td colspan="3">TOTAL DAILY REVENUE</td><td>${fmt(R2.totalRevDaily)}</td></tr>`;
+
+  // P&L table
+  const pl = document.getElementById('pnl-tbody');
+  pl.innerHTML = [
+    ['Revenue (all products, annual)', fmt(R2.annRev),'green'],
+    ['Less: Raw Material', '-'+fmt(R2.annRM),'red'],
+    ['Less: Landing & Logistics', '-'+fmt(R2.annLand),'red'],
+    ['Less: Production Costs', '-'+fmt(R2.annProd),'red'],
+    ['Less: Packing', '-'+fmt(R2.annPack),'red'],
+    ['Less: Outbound Delivery', '-'+fmt(R2.annOut),'red'],
+  ].map(r=>`<tr><td style="font-size:11px">${r[0]}</td><td class="tr tc-${r[2]}">${r[1]}</td></tr>`).join('')
+  + `<tr class="sub-r"><td>GROSS PROFIT</td><td class="tr">${fmtC(R2.annGP)} (${fmtPct(R2.annGM)})</td></tr>`
+  + `<tr><td style="font-size:11px;color:var(--text3)">Less: Depreciation</td><td class="tr tc-red">-${fmtC(R2.annDep)}</td></tr>`
+  + `<tr><td style="font-size:11px;color:var(--text3)">Less: Interest</td><td class="tr tc-red">-${fmtC(R2.annInt)}</td></tr>`
+  + `<tr><td style="font-size:11px;color:var(--text3)">Less: SGA (2%)</td><td class="tr tc-red">-${fmtC(R2.annSGA)}</td></tr>`
+  + `<tr><td style="font-size:11px;color:var(--text3)">Less: Tax (${v('d-tax')}%)</td><td class="tr tc-red">-${fmtC(R2.tax)}</td></tr>`
+  + `<tr class="total-r"><td>NET PROFIT (Post Tax)</td><td class="tr">${fmtC(R2.annNP)} (${fmtPct(R2.annNM)})</td></tr>`
+  + `<tr><td style="font-size:11px">Payback Period</td><td class="tr tc-blue">${R2.payback.toFixed(1)} Years</td></tr>`;
+}
+
+// ═══ CHARTS ═══
+function updateCharts(){
+  const R2 = R;
+  const d = R2.blendTotal > 0 ? R2.blendTotal : 1;
+
+  // Cost pie
+  const costLabels = ['Raw Agro Waste','Conv. Bitumen','Logistics','Energy','Labour','Chemicals','OH+Dep','Packing','Waste','Delivery'];
+  const costData = [
+    R2.rmDailyCost/d, R2.bitDailyCost/d,
+    (R2.lcDailyAgro+R2.lcDailyBit)/d, R2.energyNet/d,
+    R2.labour/d, R2.chem/d, R2.oh/d,
+    R2.packNet/d, R2.wasteCost/d, R2.outbound/d
+  ].map(v=>Math.max(0,Math.round(v)));
+
+  if(charts.cost){ charts.cost.data.datasets[0].data = costData; charts.cost.update(); }
+  else{
+    const ctx = document.getElementById('chartCost').getContext('2d');
+    charts.cost = new Chart(ctx,{
+      type:'doughnut',
+      data:{labels:costLabels,datasets:[{data:costData,backgroundColor:['#f59e0b','#ef4444','#38bdf8','#a78bfa','#34d399','#fb923c','#64748b','#f472b6','#94a3b8','#4ade80'],borderWidth:0,hoverOffset:4}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#94a3b8',font:{family:'JetBrains Mono',size:9},boxWidth:10,padding:6}}}}
+    });
+  }
+
+  // Revenue bar
+  const revLabels = ['Bitumen Blend','Bio-Char','Bio-Oil','Pellets','Scraps+CC'];
+  const revData = [R2.revBit, R2.revChar, R2.revOil, R2.revPellet, R2.revDrums+R2.revCC].map(v=>Math.round(v));
+  if(charts.rev){ charts.rev.data.datasets[0].data = revData; charts.rev.update(); }
+  else{
+    const ctx2 = document.getElementById('chartRev').getContext('2d');
+    charts.rev = new Chart(ctx2,{
+      type:'bar',
+      data:{labels:revLabels,datasets:[{data:revData,backgroundColor:['#f59e0b','#22c55e','#38bdf8','#a78bfa','#fb923c'],borderRadius:4,borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#64748b',font:{family:'JetBrains Mono',size:9}},grid:{color:'#1c232e'}},y:{ticks:{color:'#64748b',font:{family:'JetBrains Mono',size:9},callback:v=>'₹'+Math.round(v/1000)+'K'},grid:{color:'#1c232e'}}}}
+    });
+  }
+
+  // Cash flow 5-year
+  const years = ['Yr1','Yr2','Yr3','Yr4','Yr5'];
+  const cfData = years.map((_,i)=>Math.round((R2.annNP * (1+i*0.05))/1e7*100)/100);
+  if(charts.flow){ charts.flow.data.datasets[0].data = cfData; charts.flow.update(); }
+  else{
+    const ctx3 = document.getElementById('chartFlow').getContext('2d');
+    charts.flow = new Chart(ctx3,{
+      type:'line',
+      data:{labels:years,datasets:[{data:cfData,borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,0.08)',borderWidth:2,fill:true,pointBackgroundColor:'#22c55e',pointRadius:4,tension:0.3}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#64748b',font:{family:'JetBrains Mono',size:9}},grid:{color:'#1c232e'}},y:{ticks:{color:'#64748b',font:{family:'JetBrains Mono',size:9},callback:v=>v+' Cr'},grid:{color:'#1c232e'}}}}
+    });
+  }
+}
+
+// ═══ SLIDES ═══
+const SLIDE_DEFS = [
+  {id:'s0',label:'Title'},
+  {id:'s1',label:'Overview'},
+  {id:'s2',label:'Location'},
+  {id:'s3',label:'Raw Mat.'},
+  {id:'s4',label:'Process'},
+  {id:'s5',label:'Production Cost'},
+  {id:'s6',label:'Finished Goods'},
+  {id:'s7',label:'Cost Sheet'},
+  {id:'s8',label:'P&L'},
+  {id:'s9',label:'Investment'},
+];
+
+function buildSlidesHTML(){
+  const vp = document.getElementById('slides-viewport');
+  vp.innerHTML = SLIDE_DEFS.map((s,i)=>`<div class="slide${i===0?' active':''}" id="${s.id}"></div>`).join('');
+  const ind = document.getElementById('slide-indicator');
+  ind.innerHTML = SLIDE_DEFS.map((s,i)=>`<div class="slide-dot${i===0?' active':''}" onclick="goSlide(${i})" title="${s.label}"></div>`).join('');
+}
+
+function updateSlides(){
+  if(!R.lm) return;
+  const R2 = R;
+  const proj = document.getElementById('d-proj').value || 'Green Roads Bio-Bitumen';
+  const dateStr = document.getElementById('d-date').value || new Date().toISOString().slice(0,10);
+  const by = document.getElementById('d-by').value;
+  const ver = document.getElementById('d-ver').value;
+
+  // SLIDE 0: TITLE
+  document.getElementById('s0').innerHTML = `
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+      <div class="sl-tag">DETAILED PROJECT REPORT — ${ver}</div>
+      <div class="sl-h1" style="font-size:52px;color:var(--amber)">${proj}</div>
+      <div class="sl-sub" style="font-size:18px;max-width:640px">
+        Bio-Bitumen from Agricultural Waste via Pyrolysis Technology<br>
+        Production Location: <strong style="color:var(--text)">${R2.lm.name}</strong> &nbsp;·&nbsp;
+        Capacity: <strong style="color:var(--text)">${R2.cap} TPD</strong> &nbsp;·&nbsp;
+        Technology: <strong style="color:var(--text)">CSIR-CRRI Approved</strong>
+      </div>
+      <div style="display:flex;gap:32px;margin-top:32px">
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Date</div><div class="mono" style="color:var(--text2)">${dateStr}</div></div>
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Prepared By</div><div class="mono" style="color:var(--text2)">${by}</div></div>
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Net Profit (Annual)</div><div class="mono" style="color:var(--green);font-size:20px;font-weight:700">${fmtC(R2.annNP)}</div></div>
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Payback</div><div class="mono" style="color:var(--amber);font-size:20px;font-weight:700">${R2.payback.toFixed(1)} yrs</div></div>
+      </div>
+    </div>
+    <div style="position:absolute;bottom:32px;left:52px;right:52px;height:1px;background:linear-gradient(90deg,var(--amber),transparent)"></div>`;
+
+  // SLIDE 1: EXECUTIVE OVERVIEW
+  document.getElementById('s1').innerHTML = `
+    <div class="sl-tag">EXECUTIVE OVERVIEW</div>
+    <div class="sl-h2">Financial Highlights at a Glance</div>
+    <div class="kpi-row-slide">
+      ${[
+        ['--amber','Net Cost/T',fmt(R2.netCPT),'All-in production'],
+        ['--blue','Daily Revenue',fmt(R2.totalRevDaily),'All products'],
+        ['--green','Gross Margin',fmtPct(R2.annGM),'Annual basis'],
+        ['--purple','Net Profit',fmtC(R2.annNP),'Post-tax, annual'],
+        ['--amber2','Payback',R2.payback.toFixed(1)+' yrs','On total investment'],
+      ].map(([c,l,v,s])=>`<div class="kpi-sl" style="border-top-color:var(${c})"><div class="kl">${l}</div><div class="kv" style="color:var(${c})">${v}</div><div class="ks">${s}</div></div>`).join('')}
+    </div>
+    <div class="sl-grid-3" style="flex:1">
+      <div class="sl-card">
+        <div class="sl-card-title">What We Make</div>
+        ${[['Bio-Bitumen Blend',(R2.blendTotal).toFixed(1)+' T/day'],['Bio-Char',(R2.charT*0.85).toFixed(1)+' T/day'],['Bio-Oil (surplus)',(R2.bioOilSurplus).toFixed(1)+' T/day']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr);font-size:13px"><span style="color:var(--text2)">${k}</span><span class="mono" style="color:var(--amber)">${v}</span></div>`).join('')}
+      </div>
+      <div class="sl-card">
+        <div class="sl-card-title">Key Cost Drivers</div>
+        ${[['Conv. Bitumen',Math.round(R2.bitDailyCost/R2.blendTotal)],['Agro Waste',Math.round(R2.rmDailyCost/R2.blendTotal)],['Logistics',Math.round((R2.lcDailyAgro+R2.lcDailyBit)/R2.blendTotal)]].map(([k,v])=>`<div class="bar-row"><span class="bar-label">${k}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,v/600*100)}%;background:var(--amber)"></div></div><span class="bar-val">${fmt(v)}/T</span></div>`).join('')}
+      </div>
+      <div class="sl-card">
+        <div class="sl-card-title">Why Bio-Bitumen</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.8">
+          ✓ India saves ₹4,500–10,000 Cr/yr<br>
+          ✓ CSIR-CRRI tested & approved<br>
+          ✓ Up to 35% blend with conv. bitumen<br>
+          ✓ 70% lower GHG emissions<br>
+          ✓ Farmers earn ₹1.5-2/kg for waste<br>
+          ✓ Commercial production since 2026
+        </div>
+      </div>
+    </div>`;
+
+  // SLIDE 2: LOCATION
+  document.getElementById('s2').innerHTML = `
+    <div class="sl-tag">PRODUCTION LOCATION ANALYSIS</div>
+    <div class="sl-h2">${R2.lm.name} — Cost Multiplier Impact</div>
+    <div class="sl-sub">Location drives raw material cost, labour, transport & energy rates. All workings auto-adjust.</div>
+    <div class="sl-grid-2">
+      <div>
+        <div class="sl-card" style="margin-bottom:16px">
+          <div class="sl-card-title">Location Cost Multipliers vs. Base (Punjab)</div>
+          ${[['Raw Material Procurement',R2.lm.rm],['Labour (all categories)',R2.lm.lb],['Inbound Transport',R2.lm.tr],['Outbound Delivery',R2.lm.to],['Energy / Electricity',R2.lm.en]].map(([k,m])=>`
+          <div class="bar-row">
+            <span class="bar-label" style="width:220px">${k}</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${m*50}%;background:${m>1.1?'var(--red)':m<0.95?'var(--green)':'var(--amber)'}"></div></div>
+            <span class="bar-val" style="color:${m>1.1?'var(--red)':m<0.95?'var(--green)':'var(--amber)'}">${m.toFixed(2)}×</span>
+          </div>`).join('')}
+        </div>
+        <div class="sl-card">
+          <div class="sl-card-title">Plant Parameters</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${[['Feed Capacity',R2.cap+' TPD'],['Operating Days',R2.days+'/yr'],['Annual Feed',Math.round(R2.cap*R2.days).toLocaleString('en-IN')+' T'],['Blend Output',Math.round(R2.blendTotal*R2.days).toLocaleString('en-IN')+' T/yr']].map(([k,v])=>`<div style="background:rgba(255,255,255,0.03);border:1px solid var(--bdr);border-radius:6px;padding:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">${k}</div><div class="mono" style="color:var(--amber);font-size:16px;font-weight:700">${v}</div></div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="sl-card">
+        <div class="sl-card-title">Select a Different Location → All Numbers Recalculate</div>
+        <div style="display:grid;gap:6px;margin-top:8px">
+          ${Object.entries(LOCS).map(([k,l])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:6px;background:${k===R2.loc?'rgba(245,158,11,0.1)':'rgba(255,255,255,0.02)'};border:1px solid ${k===R2.loc?'var(--amber)':'var(--bdr)'};cursor:pointer" onclick="document.getElementById('d-state').value='${k}';recalc()">
+            <span style="font-size:12px;color:${k===R2.loc?'var(--amber)':'var(--text2)'}">${l.name}</span>
+            <span class="mono" style="font-size:11px;color:var(--text3)">RM:${l.rm}× TR:${l.tr}× LB:${l.lb}×</span>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  // SLIDE 3: RAW MATERIAL
+  document.getElementById('s3').innerHTML = `
+    <div class="sl-tag">RAW MATERIAL PROCUREMENT</div>
+    <div class="sl-h2">Agro-Waste Feedstock — Purchase & Landing Cost</div>
+    <div class="sl-sub">Avg blended feedstock: <strong style="color:var(--amber)">${fmt(R2.rmBlend)}/tonne</strong> at plant gate · Total daily RM cost: <strong style="color:var(--amber)">${fmt(R2.rmDailyCost)}</strong></div>
+    <div class="sl-grid-2">
+      <div class="sl-card">
+        <div class="sl-card-title">Feedstock Types & Farm-Gate Prices (₹/T)</div>
+        <table class="t">
+          <thead><tr><th>Feedstock</th><th>Zone</th><th>Farm Gate</th><th>% Mix</th></tr></thead>
+          <tbody>
+            ${[['Rice Straw (loose)','Punjab/Haryana',v('d-rs1'),'35%'],['Rice Straw (baled)','Punjab/UP',v('d-rs2'),'20%'],['Wheat Straw','UP/MP',v('d-ws'),'15%'],['Sugarcane Bagasse','Maharashtra/TN',v('d-bg'),'10%'],['Lignin (kraft)','Paper mills',v('d-lg'),'5%'],['Other Agro Waste','Various',v('d-ow'),'15%']].map(r=>`<tr><td>${r[0]}</td><td style="color:var(--text3);font-size:10px">${r[1]}</td><td class="tc-amber">${fmt(r[2])}</td><td class="mono" style="color:var(--text3)">${r[3]}</td></tr>`).join('')}
+            <tr class="total-r"><td colspan="2">Blended Avg (location-adjusted)</td><td>${fmt(R2.rmBlend)}</td><td>100%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="sl-card" style="margin-bottom:16px">
+          <div class="sl-card-title">Landing Cost Breakdown (₹/T agro waste)</div>
+          ${[['Farm Gate Price',fmt(R2.rmBlend)],['Baling + Loading',fmt((v('d-lc1')+140)*R2.lm.tr)],['Primary Transport',fmt(v('d-lc2')*R2.lm.tr)],['Depot Storage',fmt(v('d-lc3'))],['Long Haul (depot→plant)',fmt(v('d-lc4')*R2.lm.tr)],['Unloading + Testing',fmt((v('d-lc5')+v('d-lc6'))*1.02)],['TOTAL LANDED ₹/T',fmt(R2.lcPT+R2.rmBlend)]].map(([k,v],i)=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:12px${i===6?';font-weight:700;color:var(--amber)':''}"><span style="color:${i===6?'var(--amber)':'var(--text2)'}">${k}</span><span class="mono" style="color:${i===6?'var(--amber)':'var(--text)'}">${v}</span></div>`).join('')}
+        </div>
+        <div class="sl-card">
+          <div class="sl-card-title">Conventional Bitumen Landing ₹/T</div>
+          ${[['Ex-IOCL/BPCL Price',fmt(v('d-bit'))],['GST @18%',fmt(v('d-bit')*0.18)],['Transport + Tanker Hire',fmt(v('d-btr')+180)],['Storage Loss 1.5%',fmt(v('d-bit')*0.015)],['TOTAL BITUMEN LANDED',fmt(R2.bitLandingPT)]].map(([k,v],i)=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:12px${i===4?';font-weight:700;color:var(--red)':''}"><span style="color:${i===4?'var(--red)':'var(--text2)'}">${k}</span><span class="mono" style="color:${i===4?'var(--red)':'var(--text)'}">${v}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  // SLIDE 4: PROCESS FLOW
+  document.getElementById('s4').innerHTML = `
+    <div class="sl-tag">PRODUCTION PROCESS</div>
+    <div class="sl-h2">Pyrolysis → Bio-Oil → Bio-Bitumen Blend</div>
+    <div class="sl-sub">Thermochemical conversion at 450–550°C in oxygen-free reactor. CSIR-CRRI & Indian Institute of Petroleum validated technology.</div>
+    <div class="flow-row" style="margin-bottom:20px">
+      ${[
+        ['COLLECT','Agro Waste',R2.feed.toFixed(1)+' T/day','Rice/wheat straw baled'],
+        ['SIZE REDUCTION','Chopping & Grinding','50-100mm','Hammer mill'],
+        ['DRY','Moisture Reduction','<12% moisture','Rotary dryer'],
+        ['PYROLYSIS','450-550°C, No O₂','Bio-oil + Char + Gas','Heart of process'],
+        ['UPGRADE','Bio-oil Refining','Hydrotreating','Remove impurities'],
+        ['BLEND','Mix with Conv. Bitumen',R2.blendTotal.toFixed(1)+' T/day output',v('d-blend')+'% bio ratio'],
+      ].map((f,i)=>`${i>0?'<div class="flow-arrow">→</div>':''}<div class="flow-box"><div class="flow-label">${f[0]}</div><div class="flow-val">${f[1]}</div><div class="flow-sub">${f[2]}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">${f[3]}</div></div>`).join('')}
+    </div>
+    <div class="sl-grid-4">
+      ${[
+        ['Bio-Oil',R2.oilT.toFixed(1)+' T/day',v('d-oil')+'% of feed','Used for bio-bitumen + sold','--amber'],
+        ['Bio-Char',R2.charT.toFixed(1)+' T/day',v('d-char')+'% of feed','Soil amendment + carbon credits','--green'],
+        ['Syngas',R2.gasT.toFixed(1)+' T/day',v('d-gas')+'% of feed','Internal energy recovery','--blue'],
+        ['Loss/Evap',R2.lossT.toFixed(1)+' T/day',v('d-loss')+'% of feed','Moisture + flue gas','--red'],
+      ].map(([n,q,p,u,c])=>`<div class="sl-card"><div style="font-size:10px;font-weight:700;color:var(${c});text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">${n}</div><div class="mono" style="font-size:24px;font-weight:800;color:var(${c})">${q}</div><div style="font-size:12px;color:var(--text3);margin-top:4px">${p}</div><div style="font-size:11px;color:var(--text2);margin-top:4px">${u}</div></div>`).join('')}
+    </div>`;
+
+  // SLIDE 5: PRODUCTION COST
+  document.getElementById('s5').innerHTML = `
+    <div class="sl-tag">PRODUCTION COST BIFURCATION</div>
+    <div class="sl-h2">All Cost Heads — Daily & Per Tonne</div>
+    <div class="sl-sub">Location: ${R2.lm.name} | Capacity: ${R2.cap} TPD | Daily Blend Output: ${R2.blendTotal.toFixed(1)} T</div>
+    <div class="sl-grid-2">
+      <div class="sl-card">
+        <div class="sl-card-title">Cost per Tonne — Gross (before credits)</div>
+        <table class="t">
+          <thead><tr><th>Item</th><th class="tr">₹/T</th><th class="tr">%</th></tr></thead>
+          <tbody>
+            ${[
+              ['Agro Waste (landed)',R2.rmDailyCost+R2.lcDailyAgro],
+              ['Conv. Bitumen (incl. GST+freight)',R2.bitDailyCost+R2.lcDailyBit],
+              ['Energy (net of syngas)',R2.energyNet],
+              ['Labour (all + PF/ESI est.)',R2.labour],
+              ['Chemicals & Catalysts',R2.chem],
+              ['Overheads, Depreciation',R2.oh],
+              ['Packing (net)',R2.packNet],
+              ['Waste & Rejection',R2.wasteCost],
+              ['Outbound Logistics',R2.outbound],
+            ].map(([k,v])=>{
+              const pT=v/R2.blendTotal; const pct=pT/(R2.grossDaily/R2.blendTotal)*100;
+              return `<tr><td style="font-size:11px">${k}</td><td class="tr tc-amber">${fmt(pT)}</td><td class="tr mono" style="color:var(--text3)">${pct.toFixed(1)}%</td></tr>`;
+            }).join('')}
+            <tr class="total-r"><td>GROSS COST / T</td><td class="tr">${fmt(R2.grossDaily/R2.blendTotal)}</td><td class="tr">100%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="sl-card" style="margin-bottom:16px">
+          <div class="sl-card-title">By-Product Credits (reduce effective cost)</div>
+          ${[
+            ['Bio-Char Sales',fmt(R2.revChar/R2.blendTotal)],
+            ['Surplus Bio-Oil',fmt(R2.revOil/R2.blendTotal)],
+            ['Carbon Credits + Drums',fmt((R2.revCC+R2.revDrums)/R2.blendTotal)],
+            ['TOTAL CREDIT / T',fmt(R2.byProdCredit/R2.blendTotal)],
+          ].map(([k,v],i)=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr);font-size:12px${i===3?';font-weight:700':''}"><span style="color:${i===3?'var(--green)':'var(--text2)'}">${k}</span><span class="mono" style="color:var(--green)">-${v}</span></div>`).join('')}
+        </div>
+        <div class="profit-highlight">
+          <div class="ph-label">NET COST / TONNE OF BIO-BITUMEN BLEND</div>
+          <div class="ph-val">${fmt(R2.netCPT)}</div>
+          <div class="ph-sub">vs. Conventional Bitumen Landed: ${fmt(R2.bitLandingPT)}/T</div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(34,197,94,0.2)">
+            <div class="ph-label">GROSS MARGIN / TONNE</div>
+            <div class="ph-val" style="font-size:28px">${fmt(R2.salePT - R2.netCPT)} &nbsp;<span style="font-size:18px">(${fmtPct(R2.gmPct)})</span></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // SLIDE 6: FINISHED GOODS
+  document.getElementById('s6').innerHTML = `
+    <div class="sl-tag">FINISHED GOODS & PAN INDIA MARKET</div>
+    <div class="sl-h2">Products, Quantities, Prices & Buyers</div>
+    <div class="sl-sub">Daily revenue: <strong style="color:var(--green)">${fmt(R2.totalRevDaily)}</strong> &nbsp;·&nbsp; Annual: <strong style="color:var(--green)">${fmtC(R2.annRev)}</strong></div>
+    <table class="t" style="flex:1">
+      <thead><tr><th>Product</th><th>Grade / Spec</th><th class="tr">Qty T/day</th><th class="tr">Sale Price ₹/T</th><th class="tr">Daily Revenue</th><th>Pan India Buyers (Ready)</th></tr></thead>
+      <tbody>
+        ${[
+          ['Bio-Bitumen Blend (VG30)','15% bio+85% conv, paving grade',(R2.blendTotal*0.7).toFixed(1),v('d-sp1'),fmt(R2.blendTotal*0.7*v('d-sp1')),'NHAI, State PWDs, L&T, KNR Constructions'],
+          ['Bio-Bitumen Blend (VG40)','Heavy traffic & airports',(R2.blendTotal*0.3).toFixed(1),v('d-sp2'),fmt(R2.blendTotal*0.3*v('d-sp2')),'Airport Authority India, Highway contractors'],
+          ['Bio-Char (Agriculture)','80%+ carbon, soil amendment',(R2.charT*0.7).toFixed(1),v('d-sp3'),fmt(R2.charT*0.7*v('d-sp3')),'IFFCO, Coromandel Intl, organic farms'],
+          ['Bio-Char (Industrial)','Water filtration grade',(R2.charT*0.15).toFixed(1),v('d-sp4'),fmt(R2.charT*0.15*v('d-sp4')),'WTP companies, Carbon credit buyers'],
+          ['Bio-Oil (surplus, fuel)','8,000+ kcal/kg calorific value',R2.bioOilSurplus.toFixed(1),v('d-sp5'),fmt(R2.bioOilSurplus*v('d-sp5')),'Brick kilns, ceramic units, cement co.'],
+          ['Biomass Pellets','6-8mm, <12% moisture, 3400+ kcal','1.0',v('d-sp6'),fmt(v('d-sp6')),'NTPC, MAHAGENCO, co-firing plants'],
+          ['Carbon Credits + Scrap','Gold Standard / VERRA verified','—','—',fmt(R2.revCC+R2.revDrums),'Global carbon market, scrap traders'],
+        ].map(r=>`<tr><td style="font-weight:600">${r[0]}</td><td style="color:var(--text3);font-size:10px">${r[1]}</td><td class="tr tc-amber">${r[2]}</td><td class="tr mono">${fmt(r[3])}</td><td class="tr tc-green">${r[4]}</td><td style="font-size:10px;color:var(--text3)">${r[5]}</td></tr>`).join('')}
+        <tr class="total-r"><td colspan="4">TOTAL DAILY REVENUE</td><td class="tr">${fmt(R2.totalRevDaily)}</td><td></td></tr>
+      </tbody>
+    </table>`;
+
+  // SLIDE 7: COST SHEET
+  document.getElementById('s7').innerHTML = `
+    <div class="sl-tag">COMPLETE COST SHEET — FOR BUYER NEGOTIATIONS</div>
+    <div class="sl-h2">Net Cost vs. Sale Price vs. Margin</div>
+    <div class="sl-grid-2">
+      <div class="sl-card">
+        <div class="sl-card-title">Cost Bifurcation ₹ per Tonne of Blend — ${R2.lm.name}</div>
+        <table class="t">
+          <thead><tr><th>Head</th><th class="tr">₹/T</th><th class="tr">%</th></tr></thead>
+          <tbody>
+            ${[
+              ['A. Agro Waste (farm gate + landing)',Math.round((R2.rmDailyCost+R2.lcDailyAgro)/R2.blendTotal)],
+              ['B. Conventional Bitumen (incl. GST)',Math.round(R2.bitDailyCost/R2.blendTotal)],
+              ['C. Bitumen Logistics Surcharge',Math.round(R2.lcDailyBit/R2.blendTotal)],
+              ['D. Energy (net of syngas)',Math.round(R2.energyNet/R2.blendTotal)],
+              ['E. Labour & HR Costs',Math.round(R2.labour/R2.blendTotal)],
+              ['F. Chemicals & Catalysts',Math.round(R2.chem/R2.blendTotal)],
+              ['G. Overheads & Depreciation',Math.round(R2.oh/R2.blendTotal)],
+              ['H. Packing (net of scrap)',Math.round(R2.packNet/R2.blendTotal)],
+              ['I. Waste & Process Losses',Math.round(R2.wasteCost/R2.blendTotal)],
+              ['J. Outbound Delivery',Math.round(R2.outbound/R2.blendTotal)],
+            ].map(([k,v])=>`<tr><td style="font-size:11px">${k}</td><td class="tr tc-amber">${fmt(v)}</td><td class="tr mono" style="color:var(--text3)">${(v/(R2.grossDaily/R2.blendTotal)*100).toFixed(1)}%</td></tr>`).join('')}
+            <tr class="total-r"><td>GROSS COST</td><td class="tr">${fmt(R2.grossDaily/R2.blendTotal)}</td><td class="tr">100%</td></tr>
+            <tr><td style="color:var(--green)">Less: By-product Credits</td><td class="tr tc-green">-${fmt(R2.byProdCredit/R2.blendTotal)}</td><td></td></tr>
+            <tr class="sub-r"><td>NET EFFECTIVE COST</td><td class="tr">${fmt(R2.netCPT)}</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="sl-card" style="margin-bottom:16px">
+          <div class="sl-card-title">Pricing vs. Conventional Bitumen</div>
+          ${[
+            ['Conventional VG30 (IOCL bulk)',fmt(v('d-bit')),'var(--red)'],
+            ['Conv. Bitumen + all taxes landed',fmt(R2.bitLandingPT),'var(--red)'],
+            ['Our Bio-Bitumen Sale Price (VG30)',fmt(v('d-sp1')),'var(--amber)'],
+            ['Our Net Cost of Production',fmt(R2.netCPT),'var(--blue)'],
+            ['Our Gross Margin / Tonne',fmt(R2.salePT-R2.netCPT),'var(--green)'],
+          ].map(([k,v,c])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr);font-size:12px"><span style="color:var(--text2)">${k}</span><span class="mono" style="color:${c};font-weight:600">${v}</span></div>`).join('')}
+        </div>
+        <div class="profit-highlight">
+          <div class="ph-label">Buyer Saves vs. Conventional (GST included)</div>
+          <div class="ph-val" style="color:var(--amber)">${fmt(R2.bitLandingPT - v('d-sp1'))}/T</div>
+          <div class="ph-sub">on ${Math.round(R2.blendTotal*R2.days).toLocaleString('en-IN')} T/yr = ${fmtC((R2.bitLandingPT-v('d-sp1'))*R2.blendTotal*R2.days)} savings</div>
+        </div>
+      </div>
+    </div>`;
+
+  // SLIDE 8: P&L
+  document.getElementById('s8').innerHTML = `
+    <div class="sl-tag">PROFIT & LOSS — ANNUAL WORKING</div>
+    <div class="sl-h2">Complete P&L at ${R2.lm.name}, ${R2.cap} TPD, ${R2.days} Days</div>
+    <div class="sl-grid-2">
+      <div class="sl-card">
+        <div class="sl-card-title">Annual P&L Statement</div>
+        <table class="t">
+          <tbody>
+            <tr><td style="font-weight:600">REVENUE</td><td class="tr tc-green" style="font-size:15px;font-weight:700">${fmtC(R2.annRev)}</td></tr>
+            <tr><td style="color:var(--text3);font-size:11px;padding-left:16px">— Bitumen blend sales</td><td class="tr" style="color:var(--text3);font-size:11px">${fmtC(R2.revBit*R2.days)}</td></tr>
+            <tr><td style="color:var(--text3);font-size:11px;padding-left:16px">— Bio-char + other products</td><td class="tr" style="color:var(--text3);font-size:11px">${fmtC((R2.revChar+R2.revOil+R2.revPellet)*R2.days)}</td></tr>
+            <tr><td style="color:var(--text3);font-size:11px;padding-left:16px">— Scrap + carbon credits</td><td class="tr" style="color:var(--text3);font-size:11px">${fmtC((R2.revDrums+R2.revCC)*R2.days)}</td></tr>
+            <tr><td style="color:var(--red);font-size:12px">Less: COGS (all materials)</td><td class="tr tc-red">${fmtC(R2.annRM)}</td></tr>
+            <tr><td style="color:var(--red);font-size:12px">Less: Logistics (in + out)</td><td class="tr tc-red">${fmtC(R2.annLand+R2.annOut)}</td></tr>
+            <tr><td style="color:var(--red);font-size:12px">Less: Production Costs</td><td class="tr tc-red">${fmtC(R2.annProd)}</td></tr>
+            <tr><td style="color:var(--red);font-size:12px">Less: Packing</td><td class="tr tc-red">${fmtC(R2.annPack)}</td></tr>
+            <tr class="sub-r"><td>GROSS PROFIT</td><td class="tr">${fmtC(R2.annGP)} · ${fmtPct(R2.annGM)}</td></tr>
+            <tr><td style="color:var(--text3);font-size:11px">Less: Depreciation (${v('d-dep')}%)</td><td class="tr tc-red">${fmtC(R2.annDep)}</td></tr>
+            <tr><td style="color:var(--text3);font-size:11px">Less: Interest (${v('d-ir')}% on debt)</td><td class="tr tc-red">${fmtC(R2.annInt)}</td></tr>
+            <tr><td style="color:var(--text3);font-size:11px">Less: SGA (2% of rev)</td><td class="tr tc-red">${fmtC(R2.annSGA)}</td></tr>
+            <tr><td style="color:var(--text3);font-size:11px">Less: Tax (${v('d-tax')}%)</td><td class="tr tc-red">${fmtC(R2.tax)}</td></tr>
+            <tr class="total-r"><td>NET PROFIT (Post Tax)</td><td class="tr" style="font-size:16px">${fmtC(R2.annNP)} · ${fmtPct(R2.annNM)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="sl-grid-4" style="margin-bottom:16px">
+          ${[
+            ['--amber','Gross Margin',fmtPct(R2.annGM)],
+            ['--green','Net Margin',fmtPct(R2.annNM)],
+            ['--blue','EBITDA',fmtC(R2.annGP)],
+            ['--purple','Net Profit',fmtC(R2.annNP)],
+          ].map(([c,l,v])=>`<div style="background:rgba(255,255,255,0.03);border:1px solid var(--bdr);border-radius:8px;padding:12px;text-align:center;border-top:2px solid var(${c})"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px">${l}</div><div class="mono" style="font-size:20px;font-weight:800;color:var(${c})">${v}</div></div>`).join('')}
+        </div>
+        <div class="sl-card">
+          <div class="sl-card-title">5-Year Projected Net Profit (₹ Crore)</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+            ${[1,2,3,4,5].map(yr=>{
+              const np = R2.annNP*(1+(yr-1)*0.05)/1e7;
+              return `<div class="bar-row"><span class="bar-label">Year ${yr}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,np/5*100)}%;background:var(--green)"></div></div><span class="bar-val" style="color:var(--green)">₹${np.toFixed(2)} Cr</span></div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // SLIDE 9: INVESTMENT
+  document.getElementById('s9').innerHTML = `
+    <div class="sl-tag">INVESTMENT & RETURNS</div>
+    <div class="sl-h2">Capital Required, Funding Structure & Payback</div>
+    <div class="sl-grid-3">
+      <div class="sl-card">
+        <div class="sl-card-title">Investment Structure</div>
+        ${[
+          ['Plant & Machinery',fmtC(R2.invest*0.65)],
+          ['Civil & Infrastructure',fmtC(R2.invest*0.2)],
+          ['Pre-operative Expenses',fmtC(R2.invest*0.08)],
+          ['Contingency (7%)',fmtC(R2.invest*0.07)],
+          ['TOTAL FIXED INVESTMENT',fmtC(R2.invest)],
+          ['Working Capital',fmtC(v('d-wc')*1e7)],
+          ['TOTAL PROJECT COST',fmtC(R2.totalInvest)],
+        ].map(([k,v],i)=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr);font-size:12px${[4,6].includes(i)?';font-weight:700':''}"><span style="color:${[4,6].includes(i)?'var(--amber)':'var(--text2)'}">${k}</span><span class="mono" style="color:${[4,6].includes(i)?'var(--amber)':'var(--text)'}">${v}</span></div>`).join('')}
+      </div>
+      <div class="sl-card">
+        <div class="sl-card-title">Funding Mix</div>
+        <div style="margin:12px 0;text-align:center">
+          <div class="mono" style="font-size:48px;font-weight:800;color:var(--amber)">${v('d-debt')}%</div>
+          <div style="font-size:12px;color:var(--text3)">Debt financing</div>
+          <div class="mono" style="font-size:32px;font-weight:800;color:var(--green);margin-top:8px">${100-v('d-debt')}%</div>
+          <div style="font-size:12px;color:var(--text3)">Equity / Promoter</div>
+        </div>
+        ${[
+          ['Debt Amount',fmtC(R2.totalInvest*v('d-debt')/100)],
+          ['Interest Rate',v('d-ir')+'% p.a.'],
+          ['Annual Interest',fmtC(R2.annInt)],
+          ['Equity Required',fmtC(R2.totalInvest*(1-v('d-debt')/100))],
+        ].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:12px"><span style="color:var(--text2)">${k}</span><span class="mono" style="color:var(--text)">${v}</span></div>`).join('')}
+      </div>
+      <div>
+        <div class="profit-highlight" style="margin-bottom:16px">
+          <div class="ph-label">PAYBACK PERIOD</div>
+          <div class="ph-val">${R2.payback.toFixed(1)} Years</div>
+          <div class="ph-sub">On total investment of ${fmtC(R2.totalInvest)}<br>Net annual profit: ${fmtC(R2.annNP)}</div>
+        </div>
+        <div class="sl-card">
+          <div class="sl-card-title">Key Return Metrics</div>
+          ${[
+            ['ROI (Net Profit / Total Invest)',fmtPct(R2.annNP/R2.totalInvest*100)],
+            ['ROCE (GP / Capital Employed)',fmtPct(R2.annGP/R2.totalInvest*100)],
+            ['Revenue / Investment',fmtPct(R2.annRev/R2.totalInvest*100)],
+            ['Break-Even Utilisation','~60% capacity'],
+          ].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr);font-size:12px"><span style="color:var(--text2)">${k}</span><span class="mono" style="color:var(--amber);font-weight:600">${v}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  // Refresh current slide
+  goSlide(currentSlide, false);
+}
+
+// ═══ SLIDE NAVIGATION ═══
+function goSlide(n, animate=true){
+  const all = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.slide-dot');
+  all.forEach((s,i)=>{
+    s.classList.remove('active','prev');
+    if(i===n) s.classList.add('active');
+    else if(i<n) s.classList.add('prev');
+  });
+  dots.forEach((d,i)=>{ d.classList.toggle('active',i===n); });
+  currentSlide = n;
+  document.getElementById('slide-counter').textContent = (n+1)+' / '+all.length;
+}
+
+function nextSlide(){ goSlide(Math.min(currentSlide+1, SLIDE_DEFS.length-1)); }
+function prevSlide(){ goSlide(Math.max(currentSlide-1, 0)); }
+
+// Keyboard navigation
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('slideView').classList.contains('active')){
+    if(e.key==='ArrowRight'||e.key==='ArrowDown') nextSlide();
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp') prevSlide();
+  }
+});
+
+// ═══ MODE SWITCHING ═══
+function switchMode(mode){
+  document.getElementById('dashView').style.display = mode==='dashboard'?'grid':'none';
+  const sv = document.getElementById('slideView');
+  sv.classList.toggle('active', mode==='slide');
+  document.getElementById('btn-dash').classList.toggle('active',mode==='dashboard');
+  document.getElementById('btn-slide').classList.toggle('active',mode==='slide');
+}
+
+// ═══ INPUT PANEL TOGGLE ═══
+function toggleInputs(){
+  const p = document.getElementById('inputPanel');
+  p.classList.toggle('collapsed');
+}
+
+// ═══ SECTION COLLAPSE ═══
+function toggleSec(head){
+  const body = head.nextElementSibling;
+  body.classList.toggle('hidden');
+  head.querySelector('span:last-child').textContent = body.classList.contains('hidden')?'▸':'▾';
+}
+
+// ═══ INIT ═══
+document.getElementById('d-date').value = new Date().toISOString().slice(0,10);
+buildSlidesHTML();
+recalc();
+</script>
+</body>
+</html>

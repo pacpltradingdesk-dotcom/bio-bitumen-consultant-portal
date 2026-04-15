@@ -21,6 +21,56 @@ def _ensure_dir():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
+def _load_openai_key():
+    """Read OpenAI key directly from config file — avoids circular import issues."""
+    import json
+    config_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "data", "ai_config.json"
+    )
+    try:
+        with open(config_path, encoding="utf-8") as f:
+            return json.load(f).get("openai_key", "")
+    except Exception:
+        return ""
+
+
+def generate_with_dalle(prompt, filename, size="1792x1024"):
+    """Generate image using OpenAI DALL-E 3 (paid, high quality). Returns path or None."""
+    api_key = _load_openai_key()
+    if not api_key:
+        return None
+
+    _ensure_dir()
+    path = os.path.join(OUTPUT_DIR, filename)
+
+    try:
+        resp = requests.post(
+            "https://api.openai.com/v1/images/generations",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={"model": "dall-e-3", "prompt": prompt[:4000], "n": 1,
+                  "size": size, "quality": "hd", "style": "natural"},
+            timeout=120,
+        )
+        data = resp.json()
+        img_url = data.get("data", [{}])[0].get("url")
+        if img_url:
+            img_resp = requests.get(img_url, timeout=60)
+            if img_resp.status_code == 200 and len(img_resp.content) > 5000:
+                with open(path, "wb") as f:
+                    f.write(img_resp.content)
+                return path
+        # Log error for debugging
+        error_msg = data.get("error", {}).get("message", str(data))
+        import sys
+        print(f"[DALL-E ERROR] {error_msg}", file=sys.stderr)
+    except Exception as e:
+        import sys
+        print(f"[DALL-E EXCEPTION] {e}", file=sys.stderr)
+
+    return None
+
+
 def generate_with_pollinations(prompt, filename, width=1344, height=768):
     """Generate image using Pollinations.ai FREE API."""
     _ensure_dir()
@@ -44,6 +94,18 @@ def generate_with_pollinations(prompt, filename, width=1344, height=768):
             continue
 
     return None
+
+
+def generate_image(prompt, filename, width=1344, height=768):
+    """Best-quality image generator: DALL-E 3 first (if key set), Pollinations fallback.
+    Returns (path, provider) tuple."""
+    path = generate_with_dalle(prompt, filename)
+    if path:
+        return path, "dall-e-3"
+    path = generate_with_pollinations(prompt, filename, width, height)
+    if path:
+        return path, "pollinations"
+    return None, "failed"
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -312,11 +374,11 @@ def generate_all_ai_images(tpd, progress_callback=None, cfg=None):
         if progress_callback:
             progress_callback(i + 1, len(prompts), key)
 
-        path = generate_with_pollinations(data["prompt"], data["filename"])
+        path, provider = generate_image(data["prompt"], data["filename"])
         if path:
-            results[key] = {"path": path, "filename": data["filename"], "status": "OK"}
+            results[key] = {"path": path, "filename": data["filename"], "status": "OK", "provider": provider}
         else:
-            results[key] = {"path": None, "filename": data["filename"], "status": "FAILED"}
+            results[key] = {"path": None, "filename": data["filename"], "status": "FAILED", "provider": "failed"}
 
     return results
 

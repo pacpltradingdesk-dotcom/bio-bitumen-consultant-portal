@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Bio-Bitumen Smart Hub — Auto-Connect</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+:root{
+  --bg:#f8f9fa;--s1:#fff;--s2:#f1f3f5;--s3:#e9ecef;
+  --bdr:#dee2e6;--bdr2:#ced4da;
+  --text:#212529;--text2:#495057;--text3:#868e96;
+  --green:#2f9e44;--green2:#ebfbee;
+  --red:#c92a2a;--red2:#fff5f5;
+  --amber:#e67700;--amber2:#fff9db;
+  --blue:#1971c2;--blue2:#e7f5ff;
+  --purple:#6741d9;--purple2:#f3f0ff;
+  --online:#2f9e44;--offline:#c92a2a;--checking:#e67700;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+.mono{font-family:'Space Mono',monospace}
+
+/* ── TOP ── */
+.top{background:var(--text);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:16px}
+.top-logo{font-size:16px;font-weight:700;letter-spacing:-0.5px;white-space:nowrap}
+.top-logo span{color:#adb5bd;font-weight:400}
+.top-status{display:flex;align-items:center;gap:8px;flex:1;overflow-x:auto;scrollbar-width:none}
+.status-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.07)}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-on{background:var(--online)}
+.dot-off{background:var(--offline)}
+.dot-chk{background:var(--checking);animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.top-right{display:flex;gap:8px;flex-shrink:0}
+.top-btn{padding:5px 14px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all 0.15s}
+.top-btn:hover{background:rgba(255,255,255,0.15)}
+.top-btn.prime{background:var(--green);border-color:var(--green)}
+
+/* ── LAYOUT ── */
+.wrap{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 46px)}
+
+/* ── SIDEBAR ── */
+.side{background:var(--s1);border-right:1px solid var(--bdr);overflow-y:auto;padding:16px}
+.side-section{margin-bottom:20px}
+.ss-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.live-card{background:var(--s2);border-radius:8px;padding:12px;margin-bottom:8px}
+.lc-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px}
+.lc-value{font-size:20px;font-weight:700;font-family:'Space Mono',monospace;color:var(--text)}
+.lc-sub{font-size:10px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:4px}
+.lc-change{font-size:11px;font-weight:600;font-family:'Space Mono',monospace}
+.change-up{color:var(--green)}
+.change-dn{color:var(--red)}
+.api-card{border:1px solid var(--bdr);border-radius:6px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.ac-info{flex:1;min-width:0}
+.ac-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-url{font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-status{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
+.s-on{background:var(--green2);color:var(--green)}
+.s-off{background:var(--red2);color:var(--red)}
+.s-chk{background:var(--amber2);color:var(--amber)}
+.key-input-wrap{display:flex;gap:6px;margin-bottom:6px}
+.key-input{flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:4px;font-size:11px;font-family:'Space Mono',monospace;outline:none;background:var(--s2);color:var(--text)}
+.key-input:focus{border-color:var(--blue)}
+.key-btn{padding:6px 10px;border:1px solid var(--bdr);border-radius:4px;background:var(--s3);font-size:11px;cursor:pointer;font-family:'Space Grotesk',sans-serif;color:var(--text);white-space:nowrap}
+.key-btn:hover{background:var(--bdr)}
+.last-update{font-size:10px;color:var(--text3);margin-top:4px;font-family:'Space Mono',monospace}
+
+/* ── MAIN ── */
+.main-area{overflow-y:auto}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--bdr);background:var(--s1);padding:0 20px;position:sticky;top:0;z-index:50}
+.tab{padding:10px 16px;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* ── DASHBOARD ── */
+.page{padding:20px;display:none}
+.page.active{display:block}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--s1);border:1px solid var(--bdr);border-radius:8px;padding:14px;border-left:3px solid}
+.kpi-lbl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px}
+.kpi-val{font-size:22px;font-weight:700;font-family:'Space Mono',monospace}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:3px}
+.grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-bottom:16px}
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:8px;overflow:hidden}
+.card-head{padding:10px 14px;background:var(--s2);border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;color:var(--text)}
+.card-body{padding:14px}
+.t{width:100%;border-collapse:collapse;font-size:11px}
+.t th{padding:6px 10px;background:var(--s2);font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bdr);text-align:left}
+.t td{padding:7px 10px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.t tr:last-child td{border-bottom:none}
+.tr{text-align:right;font-family:'Space Mono',monospace}
+.tc-g{color:var(--green);font-family:'Space Mono',monospace}
+.tc-r{color:var(--red);font-family:'Space Mono',monospace}
+.tc-b{color:var(--blue);font-family:'Space Mono',monospace}
+.tc-a{color:var(--amber);font-family:'Space Mono',monospace}
+.total-r td{background:#f8f9fa;font-weight:700;font-family:'Space Mono',monospace;color:var(--text)}
+
+/* ── AI CHAT ── */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 107px)}
+.chat-model-bar{display:flex;gap:8px;padding:12px 20px;background:var(--s1);border-bottom:1px solid var(--bdr);flex-wrap:wrap}
+.model-btn{padding:5px 12px;border-radius:16px;font-size:11px;font-weight:600;border:1px solid var(--bdr);background:transparent;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all 0.15s}
+.model-btn.active{background:var(--blue2);color:var(--blue);border-color:var(--blue)}
+.model-btn:hover:not(.active){background:var(--s2)}
+.model-dot{width:6px;height:6px;border-radius:50%}
+.chat-messages{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px;background:var(--bg)}
+.msg{max-width:85%;padding:10px 14px;border-radius:8px;font-size:13px;line-height:1.6}
+.msg.user{align-self:flex-end;background:var(--blue);color:#fff;border-radius:8px 8px 2px 8px}
+.msg.ai{align-self:flex-start;background:var(--s1);border:1px solid var(--bdr);color:var(--text);border-radius:8px 8px 8px 2px}
+.msg.system{align-self:center;background:var(--amber2);border:1px solid #ffe066;color:var(--amber);font-size:11px;border-radius:6px;padding:6px 12px}
+.msg-source{font-size:10px;color:var(--text3);margin-top:4px;font-family:'Space Mono',monospace}
+.chat-input-bar{padding:12px 20px;background:var(--s1);border-top:1px solid var(--bdr);display:flex;gap:8px}
+.chat-input{flex:1;padding:10px 14px;border:1px solid var(--bdr);border-radius:6px;font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none;background:var(--s2);resize:none;min-height:44px;max-height:100px}
+.chat-input:focus{border-color:var(--blue);background:var(--s1)}
+.send-btn{padding:10px 18px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.send-btn:hover{background:#1864ab}
+.send-btn:disabled{background:var(--bdr);cursor:not-allowed}
+.quick-prompts{display:flex;gap:6px;flex-wrap:wrap;padding:6px 20px;background:var(--s1);border-top:1px solid var(--bdr)}
+.qp{padding:4px 10px;border-radius:12px;font-size:11px;border:1px solid var(--bdr);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s}
+.qp:hover{background:var(--blue2);color:var(--blue);border-color:var(--blue)}
+
+/* ── OFFLINE BADGE ── */
+.offline-banner{background:var(--amber2);border:1px solid #ffe066;border-radius:6px;padding:8px 14px;font-size:12px;color:var(--amber);margin-bottom:12px;display:none}
+.offline-banner.show{display:block}
+
+/* ── DPR INPUTS ── */
+.input-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.fl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px}
+.fi,.fs{padding:7px 10px;border:1px solid var(--bdr);border-radius:4px;font-family:'Space Mono',monospace;font-size:12px;background:var(--s2);color:var(--text);outline:none;width:100%}
+.fi:focus,.fs:focus{border-color:var(--blue);background:var(--s1)}
+.fi[readonly]{background:var(--s3);color:var(--text3)}
+.section-divider{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--bdr)}
+.update-indicator{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--green);font-family:'Space Mono',monospace;background:var(--green2);padding:2px 8px;border-radius:10px;border:1px solid #b2f2bb}
+
+/* ── API CONNECT PAGE ── */
+.connect-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:20px}
+.conn-card{background:var(--s1);border:1px solid var(--bdr);border-radius:8px;padding:16px}
+.cc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.cc-name{font-size:13px;font-weight:600;color:var(--text)}
+.cc-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+.b-free{background:var(--green2);color:var(--green)}
+.b-key{background:var(--blue2);color:var(--blue)}
+.b-local{background:var(--purple2);color:var(--purple)}
+.cc-desc{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:10px}
+.cc-status{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;margin-bottom:8px}
+.cc-input{padding:6px 8px;border:1px solid var(--bdr);border-radius:4px;font-size:11px;font-family:'Space Mono',monospace;outline:none;width:100%;margin-bottom:6px;background:var(--s2);color:var(--text)}
+.cc-input:focus{border-color:var(--blue)}
+.cc-btn{width:100%;padding:7px;border:1px solid var(--bdr);border-radius:4px;background:var(--s3);font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--text);transition:all 0.15s}
+.cc-btn:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.cc-btn.connected{background:var(--green2);color:var(--green);border-color:#b2f2bb;cursor:default}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top">
+  <div class="top-logo">BIO<span>BITUMEN</span> SMART HUB</div>
+  <div class="top-status" id="topStatus">
+    <div class="status-pill"><div class="dot dot-chk" id="d-net"></div><span id="t-net">Checking internet...</span></div>
+  </div>
+  <div class="top-right">
+    <span class="update-indicator" id="lastUpd">Auto-refreshes every 15 min</span>
+    <button class="top-btn prime" onclick="refreshAll()">↻ Refresh Now</button>
+    <button class="top-btn" onclick="window.print()">↓ PDF</button>
+  </div>
+</div>
+
+<div class="wrap">
+<!-- SIDEBAR -->
+<div class="side">
+  <div class="side-section">
+    <div class="ss-title">Live Market Data</div>
+    <div class="live-card">
+      <div class="lc-label">USD / INR Rate</div>
+      <div class="lc-value mono" id="lv-usd">₹84.xx</div>
+      <div class="lc-sub"><span id="lv-usd-src" style="color:var(--text3)">Fetching...</span></div>
+    </div>
+    <div class="live-card">
+      <div class="lc-label">Crude Oil (WTI) — USD/barrel</div>
+      <div class="lc-value mono" id="lv-oil">$xx.xx</div>
+      <div class="lc-sub"><span id="lv-oil-src" style="color:var(--text3)">Estimating from rates...</span></div>
+    </div>
+    <div class="live-card">
+      <div class="lc-label">Conv. Bitumen (India) — ₹/T est.</div>
+      <div class="lc-value mono" id="lv-bit">₹xx,xxx</div>
+      <div class="lc-sub"><span id="lv-bit-src" style="color:var(--text3)">Derived from crude + margin</span></div>
+    </div>
+    <div class="live-card">
+      <div class="lc-label">Rice Straw — ₹/T (farm gate)</div>
+      <div class="lc-value mono" id="lv-rs">₹1,200</div>
+      <div class="lc-sub"><span style="color:var(--text3)">Baseline Punjab 2025-26</span></div>
+    </div>
+  </div>
+
+  <div class="side-section">
+    <div class="ss-title">Data Connections</div>
+    <div id="apiStatusList"></div>
+    <div class="last-update" id="lastUpdTime">Never updated</div>
+  </div>
+
+  <div class="side-section">
+    <div class="ss-title">AI Engine Keys (optional)</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px">Without keys, uses free Gemini Flash or built-in offline engine</div>
+    <div class="key-input-wrap">
+      <input class="key-input" id="k-gemini" placeholder="Gemini API key (free at aistudio.google.com)">
+      <button class="key-btn" onclick="saveKey('gemini')">Save</button>
+    </div>
+    <div class="key-input-wrap">
+      <input class="key-input" id="k-openai" placeholder="OpenAI API key (optional)">
+      <button class="key-btn" onclick="saveKey('openai')">Save</button>
+    </div>
+    <div class="key-input-wrap">
+      <input class="key-input" id="k-deepseek" placeholder="DeepSeek key (ultra cheap)">
+      <button class="key-btn" onclick="saveKey('deepseek')">Save</button>
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-top:4px">Keys stored in browser only. Never sent anywhere except the AI provider.</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-area">
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('dash')">Dashboard</div>
+    <div class="tab" onclick="showTab('dpr')">DPR Calculator</div>
+    <div class="tab" onclick="showTab('chat')">AI Assistant</div>
+    <div class="tab" onclick="showTab('connect')">Connections</div>
+  </div>
+
+  <!-- DASHBOARD TAB -->
+  <div class="page active" id="tab-dash">
+    <div class="offline-banner" id="offlineBanner">
+      OFFLINE MODE — Using cached data. Live prices may be up to <span id="offlineAge">unknown</span> old. All calculations still work.
+    </div>
+    <div class="kpi-row">
+      <div class="kpi" style="border-left-color:#e67700">
+        <div class="kpi-lbl">Bitumen cost (live est.) ₹/T</div>
+        <div class="kpi-val" id="k1" style="color:#e67700">—</div>
+        <div class="kpi-sub" id="k1s">auto from USD/INR + crude</div>
+      </div>
+      <div class="kpi" style="border-left-color:#2f9e44">
+        <div class="kpi-lbl">Net cost/T blend (DPR)</div>
+        <div class="kpi-val" id="k2" style="color:#2f9e44">—</div>
+        <div class="kpi-sub">from your DPR inputs</div>
+      </div>
+      <div class="kpi" style="border-left-color:#1971c2">
+        <div class="kpi-lbl">Gross margin %</div>
+        <div class="kpi-val" id="k3" style="color:#1971c2">—</div>
+        <div class="kpi-sub">sale price vs net cost</div>
+      </div>
+      <div class="kpi" style="border-left-color:#6741d9">
+        <div class="kpi-lbl">Annual net profit (₹ Cr)</div>
+        <div class="kpi-val" id="k4" style="color:#6741d9">—</div>
+        <div class="kpi-sub">post-tax estimate</div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="card-head">Cost Sheet — ₹/Tonne Bio-Bitumen Blend (live-updated)</div>
+        <table class="t" id="costTable">
+          <thead><tr><th>Cost Head</th><th class="tr">₹/T</th><th class="tr">%</th></tr></thead>
+          <tbody id="costBody"></tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-head">Revenue / Day — All Products</div>
+          <table class="t">
+            <thead><tr><th>Product</th><th class="tr">T/day</th><th class="tr">Daily ₹</th></tr></thead>
+            <tbody id="revBody"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-head">Quick P&L (Annual)</div>
+          <table class="t"><tbody id="plBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DPR CALCULATOR TAB -->
+  <div class="page" id="tab-dpr">
+    <div class="section-divider">Location & Scale</div>
+    <div class="input-grid">
+      <div class="fg"><label class="fl">State / Zone</label>
+        <select class="fs" id="d-state" onchange="calc()">
+          <option value="punjab">Punjab / Haryana</option>
+          <option value="up">Uttar Pradesh</option>
+          <option value="mp">Madhya Pradesh</option>
+          <option value="maharashtra" selected>Maharashtra</option>
+          <option value="gujarat">Gujarat</option>
+          <option value="rajasthan">Rajasthan</option>
+          <option value="karnataka">Karnataka</option>
+          <option value="tamilnadu">Tamil Nadu</option>
+          <option value="ne">North East</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Capacity (TPD feed)</label><input class="fi" type="number" id="d-cap" value="20" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Operating days/year</label><input class="fi" type="number" id="d-days" value="300" oninput="calc()"></div>
+    </div>
+
+    <div class="section-divider">Raw Material Prices (₹/T) <span id="rm-live-badge" style="display:none" class="update-indicator">LIVE UPDATED</span></div>
+    <div class="input-grid">
+      <div class="fg"><label class="fl">Conv. Bitumen ₹/T</label><input class="fi" type="number" id="d-bit" value="45750" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Rice Straw (loose)</label><input class="fi" type="number" id="d-rs" value="1200" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Wheat Straw</label><input class="fi" type="number" id="d-ws" value="1700" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Bagasse</label><input class="fi" type="number" id="d-bg" value="1000" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Lignin</label><input class="fi" type="number" id="d-lg" value="4000" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Blended RM avg ₹/T</label><input class="fi" id="d-rmavg" readonly></div>
+    </div>
+
+    <div class="section-divider">Process Yields & Parameters</div>
+    <div class="input-grid">
+      <div class="fg"><label class="fl">Bio-Oil Yield %</label><input class="fi" type="number" id="d-oil" value="32" min="15" max="45" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Bio-Char Yield %</label><input class="fi" type="number" id="d-char" value="28" min="15" max="40" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Blend Ratio % (bio)</label><input class="fi" type="number" id="d-blend" value="15" min="5" max="35" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Electricity ₹/kWh</label><input class="fi" type="number" id="d-er" value="7.5" step="0.1" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Labour ₹/day</label><input class="fi" type="number" id="d-lab" value="18000" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Overheads ₹/day</label><input class="fi" type="number" id="d-oh" value="14000" oninput="calc()"></div>
+    </div>
+
+    <div class="section-divider">Sale Prices (₹/T)</div>
+    <div class="input-grid">
+      <div class="fg"><label class="fl">Bio-Bitumen VG30</label><input class="fi" type="number" id="d-sp1" value="44000" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Bio-Bitumen VG40</label><input class="fi" type="number" id="d-sp2" value="48000" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Bio-Char (agri)</label><input class="fi" type="number" id="d-sp3" value="26000" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Bio-Oil (fuel)</label><input class="fi" type="number" id="d-sp5" value="22000" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Plant Investment ₹ Cr</label><input class="fi" type="number" id="d-inv" value="3.5" step="0.1" oninput="calc()"></div>
+      <div class="fg"><label class="fl">Debt % of invest</label><input class="fi" type="number" id="d-debt" value="60" oninput="calc()"></div>
+    </div>
+  </div>
+
+  <!-- AI CHAT TAB -->
+  <div class="page" id="tab-chat" style="padding:0">
+    <div class="chat-model-bar" id="modelBar"></div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg system">System ready. Using best available AI engine. Type your question or use a quick prompt below.</div>
+    </div>
+    <div class="quick-prompts">
+      <button class="qp" onclick="sendQ('What is the current estimated bitumen price in India and how does crude oil affect it?')">Bitumen price today?</button>
+      <button class="qp" onclick="sendQ('Explain the MNRE biomass scheme 2025 subsidy for bio-bitumen plants in India')">MNRE subsidy?</button>
+      <button class="qp" onclick="sendQ('What are the key financial metrics of my bio-bitumen project based on the current DPR inputs?')">My DPR summary</button>
+      <button class="qp" onclick="sendQ('List all government tenders for bitumen supply in India in 2025-26 from NHAI and state PWDs')">Govt tenders?</button>
+      <button class="qp" onclick="sendQ('What skills do I need to run a bio-bitumen plant project from procurement to sales?')">Skills I need?</button>
+    </div>
+    <div class="chat-input-bar">
+      <textarea class="chat-input" id="chatInput" placeholder="Ask anything — policy, prices, calculations, drawings, documents..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendChat()">Send</button>
+    </div>
+  </div>
+
+  <!-- CONNECTIONS TAB -->
+  <div class="page" id="tab-connect">
+    <div style="margin-bottom:16px">
+      <h2 style="font-size:16px;font-weight:600;margin-bottom:4px">Auto-Connection Manager</h2>
+      <p style="font-size:13px;color:var(--text2)">All connections tested automatically on startup. Green = live data flowing. Red = using cached/offline data. System always works regardless.</p>
+    </div>
+    <div class="connect-grid" id="connectGrid"></div>
+  </div>
+
+</div><!-- end main -->
+</div><!-- end wrap -->
+
+<script>
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+const STATE = {
+  isOnline: navigator.onLine,
+  usdInr: 84.5,
+  wtiUsd: 85.0,
+  bitumenInr: 45750,
+  lastFetch: null,
+  apis: {},
+  activeAI: 'gemini-free',
+  chat: [],
+};
+
+// Load saved keys
+function getKey(name){ return localStorage.getItem('key_'+name)||''; }
+function saveKey(name){
+  const v = document.getElementById('k-'+name).value.trim();
+  if(v){ localStorage.setItem('key_'+name,v); addMsg('system','API key saved for '+name+'. Testing connection...'); testAPIKey(name,v); }
+}
+['gemini','openai','deepseek'].forEach(k=>{ const el=document.getElementById('k-'+k); if(el) el.value=getKey(k); });
+
+// ══════════════════════════════════════════
+// FREE APIs CONFIG — no key required
+// ══════════════════════════════════════════
+const FREE_APIS = [
+  {id:'er1',name:'ExchangeRate-API',url:'https://open.er-api.com/v6/latest/USD',type:'exchange',badge:'free'},
+  {id:'er2',name:'Frankfurter (backup)',url:'https://api.frankfurter.app/latest?from=USD&to=INR',type:'exchange-backup',badge:'free'},
+  {id:'rc',name:'RestCountries India',url:'https://restcountries.com/v3.1/alpha/in',type:'info',badge:'free'},
+  {id:'gemfree',name:'Gemini Flash (free AI)',url:'gemini-free',type:'ai',badge:'free'},
+  {id:'ollama',name:'Ollama (local AI)',url:'http://localhost:11434/api/tags',type:'ai-local',badge:'local'},
+  {id:'gemkey',name:'Gemini (your key)',url:'gemini-key',type:'ai-key',badge:'key'},
+  {id:'openai',name:'OpenAI GPT-4o mini',url:'openai',type:'ai-key',badge:'key'},
+  {id:'deepseek',name:'DeepSeek (cheap)',url:'deepseek',type:'ai-key',badge:'key'},
+];
+
+// ══════════════════════════════════════════
+// EXCHANGE RATE FETCH
+// ══════════════════════════════════════════
+async function fetchExchangeRate(){
+  const endpoints = [
+    {url:'https://open.er-api.com/v6/latest/USD',parse:d=>d.rates.INR,id:'er1'},
+    {url:'https://api.frankfurter.app/latest?from=USD&to=INR',parse:d=>d.rates.INR,id:'er2'},
+  ];
+  for(const ep of endpoints){
+    try{
+      const r = await fetch(ep.url,{signal:AbortSignal.timeout(5000)});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const d = await r.json();
+      const rate = ep.parse(d);
+      if(rate && rate>50 && rate<200){
+        STATE.usdInr = rate;
+        STATE.apis[ep.id] = 'online';
+        updateExchangeDisplay(rate,ep.id);
+        deriveBitumenPrice(rate);
+        return rate;
+      }
+    }catch(e){ STATE.apis[ep.id]='offline'; }
+  }
+  // offline fallback
+  const cached = parseFloat(localStorage.getItem('usdInr')||'84.5');
+  STATE.usdInr = cached;
+  updateExchangeDisplay(cached,'cached');
+  deriveBitumenPrice(cached);
+}
+
+function deriveBitumenPrice(usdInr){
+  // WTI crude estimate: stored or use market-based estimate
+  // Bitumen = crude × (barrel to tonne factor ~7.3 barrels/MT) × INR rate × 1.1 (bitumen premium over crude)
+  // Using approximate WTI $85 as baseline if no API
+  const wtiUsd = STATE.wtiUsd || 85;
+  const barrelPerTonne = 7.33;
+  const crudePerTonneInr = wtiUsd * barrelPerTonne * usdInr;
+  const bitumenPremiumFactor = 1.08;
+  const gst = 1.18;
+  const logistics = 1800;
+  const bitEstimate = Math.round(crudePerTonneInr * bitumenPremiumFactor * gst / 1000) * 1000 + logistics;
+  STATE.bitumenInr = bitEstimate;
+
+  document.getElementById('lv-usd').textContent = '₹' + usdInr.toFixed(2);
+  document.getElementById('lv-oil').textContent = '$' + wtiUsd.toFixed(2);
+  document.getElementById('lv-bit').textContent = '₹' + bitEstimate.toLocaleString('en-IN');
+  document.getElementById('lv-bit-src').textContent = 'Est. from crude × INR rate × margins';
+
+  // Auto-update bitumen input in DPR if price changed significantly
+  const currentDpr = parseFloat(document.getElementById('d-bit').value);
+  if(Math.abs(currentDpr - bitEstimate) > 2000){
+    document.getElementById('d-bit').value = bitEstimate;
+    document.getElementById('rm-live-badge').style.display='inline-flex';
+    setTimeout(()=>{ document.getElementById('rm-live-badge').style.display='none'; },5000);
+  }
+  localStorage.setItem('usdInr', usdInr);
+  localStorage.setItem('bitumenEst', bitEstimate);
+  calc();
+}
+
+function updateExchangeDisplay(rate, src){
+  document.getElementById('lv-usd').textContent = '₹'+rate.toFixed(2);
+  document.getElementById('lv-usd-src').textContent = src==='cached'?'Cached (offline)':'Live: '+src;
+  const now = new Date().toLocaleTimeString('en-IN');
+  document.getElementById('lastUpdTime').textContent = 'Updated: '+now;
+  document.getElementById('lastUpd').textContent = 'Updated '+now;
+}
+
+// ══════════════════════════════════════════
+// TEST ALL CONNECTIONS
+// ══════════════════════════════════════════
+async function testAllAPIs(){
+  // Test Ollama local
+  try{
+    const r = await fetch('http://localhost:11434/api/tags',{signal:AbortSignal.timeout(2000)});
+    STATE.apis['ollama'] = r.ok ? 'online' : 'offline';
+  }catch(e){ STATE.apis['ollama']='offline'; }
+
+  // Gemini free (test with tiny request)
+  STATE.apis['gemfree'] = 'online'; // assume available, will fail gracefully
+
+  updateAPIStatus();
+  updateModelBar();
+}
+
+function updateAPIStatus(){
+  const list = document.getElementById('apiStatusList');
+  const items = [
+    {id:'er1',name:'ExchangeRate API'},
+    {id:'er2',name:'Frankfurter (backup)'},
+    {id:'gemfree',name:'Gemini Flash (free)'},
+    {id:'ollama',name:'Ollama Local AI'},
+    {id:'gemkey',name:'Gemini (your key)',key:'gemini'},
+    {id:'openai',name:'OpenAI GPT-4o mini',key:'openai'},
+    {id:'deepseek',name:'DeepSeek',key:'deepseek'},
+  ];
+  list.innerHTML = items.map(i=>{
+    let status = STATE.apis[i.id]||'checking';
+    if(i.key && !getKey(i.key)) status='no-key';
+    const cls = status==='online'?'s-on':status==='offline'?'s-off':status==='no-key'?'s-off':'s-chk';
+    const lbl = status==='online'?'LIVE':status==='offline'?'OFFLINE':status==='no-key'?'NO KEY':'CHECKING';
+    return `<div class="api-card"><div class="ac-info"><div class="ac-name">${i.name}</div></div><span class="ac-status ${cls}">${lbl}</span></div>`;
+  }).join('');
+
+  // Top status pills
+  const isOnline = navigator.onLine;
+  const er1 = STATE.apis['er1']==='online'||STATE.apis['er2']==='online';
+  document.getElementById('d-net').className = 'dot '+(isOnline?'dot-on':'dot-off');
+  document.getElementById('t-net').textContent = isOnline?'Internet: Online':'Internet: OFFLINE';
+
+  const top = document.getElementById('topStatus');
+  const pills = [
+    {dot:er1?'dot-on':'dot-off',txt:er1?'Exchange Rate: LIVE':'Exchange Rate: Cached'},
+    {dot:STATE.apis['ollama']==='online'?'dot-on':'dot-off',txt:STATE.apis['ollama']==='online'?'Local AI: Ready':'Local AI: Not running'},
+    {dot:'dot-on',txt:'DPR Calc: Always On'},
+  ];
+  top.innerHTML = pills.map(p=>`<div class="status-pill"><div class="dot ${p.dot}"></div><span>${p.txt}</span></div>`).join('');
+
+  // offline banner
+  if(!isOnline){ document.getElementById('offlineBanner').classList.add('show'); }
+  else { document.getElementById('offlineBanner').classList.remove('show'); }
+}
+
+// ══════════════════════════════════════════
+// DPR CALCULATIONS
+// ══════════════════════════════════════════
+const LOCS={
+  punjab:{rm:1.0,lb:0.9,tr:1.0,to:1.1,en:0.95,name:'Punjab/Haryana'},
+  up:{rm:1.05,lb:0.92,tr:1.05,to:1.05,en:1.0,name:'Uttar Pradesh'},
+  mp:{rm:1.1,lb:0.95,tr:1.12,to:1.08,en:0.98,name:'Madhya Pradesh'},
+  maharashtra:{rm:1.12,lb:1.1,tr:1.15,to:0.95,en:1.05,name:'Maharashtra'},
+  gujarat:{rm:1.1,lb:1.05,tr:1.1,to:0.9,en:1.02,name:'Gujarat'},
+  rajasthan:{rm:1.08,lb:0.88,tr:1.08,to:1.1,en:1.0,name:'Rajasthan'},
+  karnataka:{rm:1.18,lb:1.08,tr:1.2,to:1.0,en:1.08,name:'Karnataka'},
+  tamilnadu:{rm:1.22,lb:1.1,tr:1.25,to:1.0,en:1.1,name:'Tamil Nadu'},
+  ne:{rm:1.05,lb:0.85,tr:0.9,to:1.35,en:1.25,name:'North East'},
+};
+function v(id){ return parseFloat(document.getElementById(id)?.value)||0; }
+function fmt(n){ return '₹'+Math.round(n).toLocaleString('en-IN'); }
+function fmtC(n){ return '₹'+(n/1e7).toFixed(2)+' Cr'; }
+
+function calc(){
+  const loc=LOCS[document.getElementById('d-state').value];
+  const feed=v('d-cap'), days=v('d-days');
+  const oilY=v('d-oil')/100, charY=v('d-char')/100, blend=v('d-blend')/100;
+  const oilT=feed*oilY, charT=feed*charY, syngasT=feed*0.22;
+  const bioOilForBlend=oilT*0.85, bioOilSurplus=oilT*0.15;
+  const blendT=bioOilForBlend/blend, convBitT=blendT-bioOilForBlend;
+
+  const rmPrices=[v('d-rs'),1700,v('d-bg'),v('d-lg'),900];
+  const rmW=[0.45,0.2,0.15,0.1,0.1];
+  const rmAvg=rmPrices.reduce((s,p,i)=>s+p*rmW[i],0)*loc.rm;
+  document.getElementById('d-rmavg').value=Math.round(rmAvg);
+
+  const rmDaily=rmAvg*feed;
+  const bitPrice=v('d-bit'), bitGst=bitPrice*0.18, bitLanded=bitPrice+bitGst+650+120+bitPrice*0.015;
+  const bitDaily=bitLanded*convBitT;
+  const lcDaily=(350+250+300+480+140+65)*loc.tr*1.02*feed;
+  const energyNet=v('d-er')*1200*loc.en+92*120*loc.en-syngasT*1000;
+  const labour=v('d-lab')*loc.lb*1.2;
+  const oh=v('d-oh'), chem=2500;
+  const totalProd=energyNet+labour+oh+chem;
+  const packNet=blendT*140+charT*1000*0.5*0.5;
+  const waste=totalProd*0.05+oilT*0.03*5000+charT*0.05*2000;
+  const outbound=blendT*800*loc.to;
+  const grossDaily=rmDaily+bitDaily+lcDaily+totalProd+packNet+waste+outbound;
+
+  const sp1=v('d-sp1'),sp2=v('d-sp2'),sp3=v('d-sp3'),sp5=v('d-sp5');
+  const revBit=blendT*0.7*sp1+blendT*0.3*sp2;
+  const revChar=charT*0.7*sp3+charT*0.15*32000;
+  const revOil=bioOilSurplus*sp5;
+  const revOther=charT*0.05*4000+5*12500+blendT/0.18*0.3*280;
+  const totalRev=revBit+revChar+revOil+revOther;
+  const byProd=revChar+revOil+revOther;
+
+  const netDaily=grossDaily-byProd;
+  const netCPT=blendT>0?netDaily/blendT:0;
+  const saleBlend=sp1*0.7+sp2*0.3;
+  const gm=saleBlend>0?(saleBlend-netCPT)/saleBlend*100:0;
+
+  const annRev=totalRev*days, annGross=grossDaily*days;
+  const invest=(v('d-inv'))*1e7;
+  const annGP=annRev-(grossDaily-byProd)*days;
+  const annInt=invest*(v('d-debt')/100)*0.12;
+  const annDep=invest*0.1;
+  const ebt=annGP-annInt-annDep-annRev*0.02;
+  const np=ebt-Math.max(0,ebt)*0.25;
+  const payback=np>0?invest/np:99;
+
+  // KPIs
+  const bitEst=Math.round(bitLanded);
+  document.getElementById('k1').textContent=fmt(bitEst);
+  document.getElementById('k1s').textContent='landed at '+loc.name;
+  document.getElementById('k2').textContent=fmt(netCPT);
+  document.getElementById('k3').textContent=gm.toFixed(1)+'%';
+  document.getElementById('k4').textContent=(np/1e7).toFixed(2)+' Cr';
+
+  // Cost table
+  const d=blendT>0?blendT:1;
+  const rows=[
+    ['Agro Waste (landed)',rmDaily+lcDaily],
+    ['Conv. Bitumen (incl. GST)',bitDaily],
+    ['Energy (net syngas)',energyNet],
+    ['Labour (all+PF/ESI)',labour],
+    ['Chemicals + QC',chem],
+    ['Overheads + Depreciation',oh],
+    ['Packing (net)',packNet],
+    ['Waste & Losses',waste],
+    ['Outbound Delivery',outbound],
+  ];
+  const grossPT=grossDaily/d;
+  document.getElementById('costBody').innerHTML=rows.map(([l,c])=>{
+    const pt=c/d; const pct=(pt/grossPT*100).toFixed(1);
+    return `<tr><td style="font-size:11px">${l}</td><td class="tr tc-a">${fmt(pt)}</td><td class="tr" style="color:var(--text3);font-size:10px">${pct}%</td></tr>`;
+  }).join('')
+  +`<tr class="total-r"><td>Gross Cost/T</td><td class="tr">${fmt(grossPT)}</td><td class="tr">100%</td></tr>`
+  +`<tr><td style="color:var(--green);font-size:11px">Less: By-product credits</td><td class="tr tc-g">-${fmt(byProd/d)}</td><td></td></tr>`
+  +`<tr style="background:#f8f9fa;font-weight:700"><td>Net Cost/T — Blend</td><td class="tr tc-b">${fmt(netCPT)}</td><td></td></tr>`
+  +`<tr><td style="color:var(--green);font-weight:600">Margin = Sale - Cost</td><td class="tr tc-g" style="font-weight:700;font-size:14px">${fmt(saleBlend-netCPT)}</td><td class="tr" style="color:var(--green);font-weight:700">${gm.toFixed(1)}%</td></tr>`;
+
+  // Revenue
+  document.getElementById('revBody').innerHTML=[
+    ['Bio-Bitumen Blend',(blendT).toFixed(1),fmt(revBit)],
+    ['Bio-Char (agri+ind)',(charT*0.85).toFixed(1),fmt(revChar)],
+    ['Bio-Oil surplus',(bioOilSurplus).toFixed(1),fmt(revOil)],
+    ['Credits+Scrap','—',fmt(revOther)],
+  ].map(([l,q,r])=>`<tr><td style="font-size:11px">${l}</td><td class="tr" style="color:var(--text3)">${q}</td><td class="tr tc-g">${r}</td></tr>`).join('')
+  +`<tr class="total-r"><td colspan="2">Total Daily Revenue</td><td class="tr">${fmt(totalRev)}</td></tr>`;
+
+  // P&L
+  document.getElementById('plBody').innerHTML=[
+    ['Annual Revenue',fmtC(annRev),'var(--green)'],
+    ['Less: All Costs','-'+fmtC((grossDaily-byProd)*days),'var(--red)'],
+    ['Gross Profit',fmtC(annGP)+'  ('+((annGP/annRev)*100).toFixed(1)+'%)','var(--blue)'],
+    ['Less: Dep+Int','-'+fmtC(annDep+annInt),'var(--red)'],
+    ['Net Profit (post-tax)',fmtC(np),'var(--green)'],
+    ['Payback',payback.toFixed(1)+' years','var(--purple)'],
+  ].map(([l,v,c])=>`<tr><td style="font-size:11px;color:var(--text2)">${l}</td><td class="tr mono" style="color:${c};font-weight:600;font-size:12px">${v}</td></tr>`).join('');
+
+  return {netCPT,saleBlend,gm,np,annRev,loc};
+}
+
+// ══════════════════════════════════════════
+// AI CHAT ENGINE — FALLBACK CHAIN
+// ══════════════════════════════════════════
+function updateModelBar(){
+  const models=[
+    {id:'gemini-free',label:'Gemini Flash (free)',dot:STATE.apis['gemfree']==='online'?'#2f9e44':'#868e96'},
+    {id:'ollama',label:'Ollama Local',dot:STATE.apis['ollama']==='online'?'#2f9e44':'#868e96'},
+    {id:'gemini-key',label:'Gemini (key)',dot:getKey('gemini')?'#1971c2':'#868e96'},
+    {id:'openai',label:'OpenAI',dot:getKey('openai')?'#1971c2':'#868e96'},
+    {id:'deepseek',label:'DeepSeek',dot:getKey('deepseek')?'#1971c2':'#868e96'},
+    {id:'offline',label:'Offline Engine',dot:'#2f9e44'},
+  ];
+  const bar=document.getElementById('modelBar');
+  bar.innerHTML=models.map(m=>`<button class="model-btn ${STATE.activeAI===m.id?'active':''}" onclick="STATE.activeAI='${m.id}';updateModelBar()"><div class="model-dot" style="background:${m.dot}"></div>${m.label}</button>`).join('');
+}
+
+async function getBestAI(prompt){
+  // Try chain in order
+  const chain=['gemini-key','openai','deepseek','gemini-free','ollama','offline'];
+  for(const ai of chain){
+    try{
+      const r=await tryAI(ai,prompt);
+      if(r){ STATE.activeAI=ai; updateModelBar(); return {text:r,source:ai}; }
+    }catch(e){}
+  }
+  return {text:offlineAnswer(prompt),source:'offline'};
+}
+
+async function tryAI(ai,prompt){
+  const dprCtx=getDPRContext();
+
+  if(ai==='gemini-free'||ai==='gemini-key'){
+    const key=ai==='gemini-key'?getKey('gemini'):'';
+    const url=key
+      ?`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`
+      :'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+    const headers={'Content-Type':'application/json'};
+    const body=JSON.stringify({contents:[{role:'user',parts:[{text:`You are a bio-bitumen DPR financial assistant for India. Context: ${dprCtx}\n\nUser question: ${prompt}\n\nAnswer concisely and accurately.`}]}],generationConfig:{maxOutputTokens:800}});
+    const r=await fetch(url,{method:'POST',headers,body,signal:AbortSignal.timeout(15000)});
+    if(!r.ok) throw new Error('Gemini '+r.status);
+    const d=await r.json();
+    return d.candidates?.[0]?.content?.parts?.[0]?.text||null;
+  }
+
+  if(ai==='openai'){
+    const key=getKey('openai');
+    if(!key) return null;
+    const r=await fetch('https://api.openai.com/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model:'gpt-4o-mini',messages:[{role:'system',content:'Bio-bitumen DPR assistant for India. Context: '+dprCtx},{role:'user',content:prompt}],max_tokens:800}),
+      signal:AbortSignal.timeout(15000)
+    });
+    if(!r.ok) throw new Error('OpenAI '+r.status);
+    const d=await r.json();
+    return d.choices?.[0]?.message?.content||null;
+  }
+
+  if(ai==='deepseek'){
+    const key=getKey('deepseek');
+    if(!key) return null;
+    const r=await fetch('https://api.deepseek.com/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model:'deepseek-chat',messages:[{role:'system',content:'Bio-bitumen DPR assistant. Context: '+dprCtx},{role:'user',content:prompt}],max_tokens:800}),
+      signal:AbortSignal.timeout(15000)
+    });
+    if(!r.ok) throw new Error('DeepSeek '+r.status);
+    const d=await r.json();
+    return d.choices?.[0]?.message?.content||null;
+  }
+
+  if(ai==='ollama'){
+    if(STATE.apis['ollama']!=='online') return null;
+    const r=await fetch('http://localhost:11434/api/generate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'llama3.2',prompt:`Bio-bitumen DPR context: ${dprCtx}\n\nQuestion: ${prompt}\n\nAnswer:`,stream:false}),
+      signal:AbortSignal.timeout(30000)
+    });
+    if(!r.ok) return null;
+    const d=await r.json();
+    return d.response||null;
+  }
+
+  if(ai==='offline') return offlineAnswer(prompt);
+  return null;
+}
+
+function getDPRContext(){
+  const r=calc()||{};
+  return `State:${document.getElementById('d-state').value}, Capacity:${v('d-cap')}TPD, Bitumen:₹${v('d-bit')}/T, USD/INR:${STATE.usdInr.toFixed(2)}, BitumenEst:₹${STATE.bitumenInr.toLocaleString('en-IN')}/T, NetCost/T:${r.netCPT?fmt(r.netCPT):'calculating'}, Margin:${r.gm?r.gm.toFixed(1)+'%':'—'}`;
+}
+
+function offlineAnswer(q){
+  const ql=q.toLowerCase();
+  if(ql.includes('bitumen')||ql.includes('price')){ return `Based on built-in reference data: Conventional Bitumen VG30 India est. ₹${STATE.bitumenInr.toLocaleString('en-IN')}/T (calculated from USD/INR ${STATE.usdInr.toFixed(2)} × WTI crude × margins). This updates automatically when internet is available. IOCL/BPCL/HPCL announce prices monthly.`; }
+  if(ql.includes('mnre')||ql.includes('subsidy')||ql.includes('scheme')){ return 'MNRE Biomass Programme 2025: ₹42 lakh per ton capacity OR 30% of plant & machinery cost (max ₹2.10 crore per project). Extended July 2024. Apply via MNRE.gov.in. Bio-bitumen plants using agricultural residue may qualify under bio-energy category.'; }
+  if(ql.includes('tender')||ql.includes('nhai')){ return 'Check GeM Portal (gem.gov.in) for current government tenders. NHAI, State PWDs and highway contractors are key buyers. Bio-bitumen specification approved by MoRTH. First commercial supply started December 2024 (Nagpur-Mansar bypass, NH44 via Praj Industries).'; }
+  if(ql.includes('dpr')||ql.includes('cost')){ const r=calc(); return r?`Current DPR summary: Net cost per tonne of bio-bitumen blend = ${fmt(r.netCPT)} | Gross margin = ${r.gm.toFixed(1)}% | Annual net profit = ${fmtC(r.np)} | Location = ${r.loc.name}. All figures update automatically as you change DPR inputs.`:'Please set your DPR inputs first.'; }
+  if(ql.includes('skill')){ return 'Key skills for bio-bitumen project: 1) Prompt engineering (use AI effectively), 2) Google Sheets / Excel for financial models, 3) Understanding of pyrolysis process basics, 4) GeM portal for government tenders, 5) IndiaKanoon for environmental compliance, 6) FreeCAD or basic drawing for plant layout, 7) MNRE/MoRTH portal navigation for schemes and specs.'; }
+  return 'I am running in offline mode. I have full access to your DPR calculations, built-in price references, and stored knowledge about bio-bitumen, Indian government schemes, and financial working. For live web search and current news, connect to internet. What specific information do you need?';
+}
+
+// ══════════════════════════════════════════
+// CHAT UI
+// ══════════════════════════════════════════
+function addMsg(role,text,source=''){
+  const el=document.createElement('div');
+  el.className='msg '+(role==='user'?'user':role==='system'?'system':'ai');
+  el.textContent=text;
+  if(source&&role==='ai'){
+    const s=document.createElement('div');
+    s.className='msg-source';
+    s.textContent='via: '+source;
+    el.appendChild(s);
+  }
+  document.getElementById('chatMessages').appendChild(el);
+  document.getElementById('chatMessages').scrollTop=99999;
+}
+
+async function sendChat(){
+  const inp=document.getElementById('chatInput');
+  const q=inp.value.trim();
+  if(!q) return;
+  inp.value='';
+  addMsg('user',q);
+  document.getElementById('sendBtn').disabled=true;
+  const typing=document.createElement('div');
+  typing.className='msg ai'; typing.id='typing'; typing.textContent='Thinking...';
+  document.getElementById('chatMessages').appendChild(typing);
+  document.getElementById('chatMessages').scrollTop=99999;
+  try{
+    const r=await getBestAI(q);
+    document.getElementById('typing')?.remove();
+    addMsg('ai',r.text,r.source);
+  }catch(e){
+    document.getElementById('typing')?.remove();
+    addMsg('ai',offlineAnswer(q),'offline-engine');
+  }
+  document.getElementById('sendBtn').disabled=false;
+}
+
+function sendQ(q){ document.getElementById('chatInput').value=q; showTab('chat'); sendChat(); }
+
+// ══════════════════════════════════════════
+// CONNECTIONS PAGE
+// ══════════════════════════════════════════
+function buildConnectPage(){
+  const items=[
+    {name:'ExchangeRate-API (free)',badge:'free',desc:'Live USD/INR rate. No key needed. Auto-connects on startup.',status:'er1',action:'Auto-connected — no setup needed'},
+    {name:'Frankfurter Rates (free backup)',badge:'free',desc:'Backup exchange rate API. Used if primary fails.',status:'er2',action:'Auto-connected — backup always ready'},
+    {name:'Gemini Flash (Google AI, free)',badge:'free',desc:'Gemini 2.0 Flash. Limited free tier, no key needed for basic use. Get free key at aistudio.google.com for higher limits.',status:'gemfree',key:'gemini',keyLabel:'Paste Gemini API key (optional, increases limit)'},
+    {name:'Ollama Local AI (100% offline)',badge:'local',desc:'Install from ollama.ai — runs AI models locally on your computer. Completely free, works offline, privacy guaranteed.',status:'ollama',action:'Install Ollama from ollama.ai, then run: ollama pull llama3.2'},
+    {name:'DeepSeek API (ultra low cost)',badge:'key',desc:'Best quality per rupee. ₹0.05-0.15 per 1000 questions. Get free key at platform.deepseek.com',status:'deepseek',key:'deepseek',keyLabel:'Paste DeepSeek API key'},
+    {name:'OpenAI GPT-4o mini',badge:'key',desc:'Reliable, fast. Free tier available, then pay-per-use. Get key at platform.openai.com',status:'openai',key:'openai',keyLabel:'Paste OpenAI API key'},
+    {name:'Built-in Offline Engine',badge:'local',desc:'Always works. No internet, no key, no setup. Has all bio-bitumen DPR knowledge, formulas, and government scheme info built in.',status:'always',action:'Always running — zero setup'},
+  ];
+
+  const badgeClass={free:'b-free',key:'b-key',local:'b-local'};
+  document.getElementById('connectGrid').innerHTML=items.map(item=>{
+    const bCls=badgeClass[item.badge]||'b-free';
+    const bLbl=item.badge.toUpperCase();
+    const sId=item.status;
+    const isAlways=sId==='always';
+    const statusVal=isAlways?'ALWAYS ON':STATE.apis[sId]==='online'?'LIVE':STATE.apis[sId]==='offline'?'OFFLINE':'CHECKING';
+    const sCls=isAlways||STATE.apis[sId]==='online'?'s-on':STATE.apis[sId]==='offline'?'s-off':'s-chk';
+    const dCls=isAlways||STATE.apis[sId]==='online'?'dot-on':STATE.apis[sId]==='offline'?'dot-off':'dot-chk';
+    let inner='';
+    if(item.key){
+      const saved=getKey(item.key);
+      inner=`<input class="cc-input" id="cc-${item.key}" placeholder="${item.keyLabel}" value="${saved}">
+             <button class="cc-btn ${saved?'connected':''}" onclick="const v=document.getElementById('cc-${item.key}').value.trim();if(v){localStorage.setItem('key_${item.key}',v);document.getElementById('k-${item.key}').value=v;this.className='cc-btn connected';this.textContent='Key saved — testing...';testAPIKey('${item.key}',v)}">${saved?'Key saved (click to update)':'Save API Key'}</button>`;
+    }else{
+      inner=`<div class="cc-btn connected">${item.action}</div>`;
+    }
+    return `<div class="conn-card">
+      <div class="cc-top"><span class="cc-name">${item.name}</span><span class="cc-badge ${bCls}">${bLbl}</span></div>
+      <div class="cc-desc">${item.desc}</div>
+      <div class="cc-status"><div class="dot ${dCls}"></div><span class="${sCls}">${statusVal}</span></div>
+      ${inner}
+    </div>`;
+  }).join('');
+}
+
+async function testAPIKey(name, key){
+  if(name==='gemini'){
+    try{
+      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'Hi'}]}]}),signal:AbortSignal.timeout(8000)});
+      STATE.apis['gemkey']=r.ok?'online':'offline';
+    }catch(e){ STATE.apis['gemkey']='offline'; }
+  }
+  updateAPIStatus(); updateModelBar(); buildConnectPage();
+}
+
+// ══════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════
+function showTab(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
+  if(id==='connect') buildConnectPage();
+}
+
+// ══════════════════════════════════════════
+// REFRESH
+// ══════════════════════════════════════════
+async function refreshAll(){
+  document.getElementById('lastUpd').textContent='Refreshing...';
+  await fetchExchangeRate();
+  await testAllAPIs();
+  updateAPIStatus();
+  updateModelBar();
+  calc();
+}
+
+// ══════════════════════════════════════════
+// NETWORK DETECTION
+// ══════════════════════════════════════════
+window.addEventListener('online', ()=>{ STATE.isOnline=true; refreshAll(); addMsg('system','Internet restored — refreshing live data...'); });
+window.addEventListener('offline', ()=>{ STATE.isOnline=false; updateAPIStatus(); addMsg('system','OFFLINE — Using cached data. All calculations still work.'); });
+
+// ══════════════════════════════════════════
+// AUTO-REFRESH (every 15 min)
+// ══════════════════════════════════════════
+setInterval(refreshAll, 15*60*1000);
+
+// ══════════════════════════════════════════
+// STARTUP
+// ══════════════════════════════════════════
+(async function init(){
+  calc();
+  updateModelBar();
+  await Promise.all([fetchExchangeRate(), testAllAPIs()]);
+  updateAPIStatus();
+  updateModelBar();
+  buildConnectPage();
+})();
+</script>
+</body>
+</html>

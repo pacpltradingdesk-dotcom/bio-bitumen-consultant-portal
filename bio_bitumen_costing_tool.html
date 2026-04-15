@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bio-Bitumen | Complete Financial Workings</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #21262d;
+  --border: #30363d;
+  --border2: #444c56;
+  --accent: #58a6ff;
+  --accent2: #3fb950;
+  --accent3: #f0883e;
+  --accent4: #ff7b72;
+  --accent5: #bc8cff;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #6e7681;
+  --gold: #d4a017;
+  --green: #3fb950;
+  --red: #f85149;
+  --orange: #f0883e;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+}
+
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 18px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-left h1 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+.header-left p {
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.header-right {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.badge-green { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+.badge-blue { background: rgba(88,166,255,0.12); color: var(--accent); border: 1px solid rgba(88,166,255,0.25); }
+.badge-orange { background: rgba(240,136,62,0.12); color: var(--orange); border: 1px solid rgba(240,136,62,0.25); }
+
+.main { display: flex; height: calc(100vh - 61px); overflow: hidden; }
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 12px 0;
+}
+
+.nav-section {
+  padding: 8px 16px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.15s;
+  font-size: 13px;
+  color: var(--text2);
+  border-left: 2px solid transparent;
+}
+
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: rgba(88,166,255,0.08); color: var(--accent); border-left-color: var(--accent); }
+
+.nav-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 28px;
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.page-sub {
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 24px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 12px 18px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.card-body { padding: 18px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+.form-group { margin-bottom: 14px; }
+.form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text2);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-input, .form-select {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border 0.15s;
+}
+
+.form-input:focus, .form-select:focus { border-color: var(--accent); }
+.form-input[readonly] { background: var(--surface2); color: var(--text2); cursor: not-allowed; }
+
+.form-select option { background: var(--surface2); }
+
+.rupee-input {
+  position: relative;
+}
+.rupee-input::before {
+  content: '₹';
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text3);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  pointer-events: none;
+}
+.rupee-input .form-input { padding-left: 22px; }
+
+.tonne-label {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 3px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+
+.stat-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+.stat-value { font-size: 22px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
+.stat-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+.sv-green { color: var(--green); }
+.sv-red { color: var(--red); }
+.sv-blue { color: var(--accent); }
+.sv-orange { color: var(--orange); }
+.sv-gold { color: var(--gold); }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th {
+  background: var(--surface2);
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+
+td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+td.mono { font-family: 'IBM Plex Mono', monospace; }
+td.right { text-align: right; font-family: 'IBM Plex Mono', monospace; }
+td.green { color: var(--green); font-family: 'IBM Plex Mono', monospace; }
+td.red { color: var(--red); font-family: 'IBM Plex Mono', monospace; }
+td.orange { color: var(--orange); font-family: 'IBM Plex Mono', monospace; }
+td.gold { color: var(--gold); font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+
+.total-row td { background: rgba(88,166,255,0.06); font-weight: 600; color: var(--accent); font-family: 'IBM Plex Mono', monospace; }
+.subtotal-row td { background: rgba(63,185,80,0.06); font-weight: 600; color: var(--green); }
+.profit-row td { background: rgba(63,185,80,0.10); font-weight: 700; font-size: 14px; }
+.warning-row td { background: rgba(240,136,62,0.06); }
+
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 16px;
+}
+.section-divider span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.section-divider::before, .section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.btn {
+  padding: 8px 18px;
+  border-radius: 5px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 0.15s;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #0d1117;
+  border-color: var(--accent);
+}
+.btn-primary:hover { background: #79baff; }
+
+.btn-success {
+  background: var(--green);
+  color: #0d1117;
+  border-color: var(--green);
+}
+.btn-success:hover { background: #56d364; }
+
+.btn-outline {
+  background: transparent;
+  color: var(--text2);
+  border-color: var(--border);
+}
+.btn-outline:hover { background: var(--surface2); color: var(--text); }
+
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+
+.info-box {
+  background: rgba(88,166,255,0.07);
+  border: 1px solid rgba(88,166,255,0.2);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+.warn-box {
+  background: rgba(240,136,62,0.07);
+  border: 1px solid rgba(240,136,62,0.2);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+.profit-summary {
+  background: linear-gradient(135deg, rgba(63,185,80,0.08) 0%, rgba(88,166,255,0.05) 100%);
+  border: 1px solid rgba(63,185,80,0.25);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.ps-title { font-size: 13px; color: var(--text2); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.8px; }
+
+.ps-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.ps-row:last-child { border-bottom: none; }
+.ps-row.big { padding-top: 14px; }
+.ps-label { font-size: 13px; color: var(--text2); }
+.ps-val { font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; }
+
+.range-wrap { display: flex; align-items: center; gap: 10px; }
+.range-wrap input[type=range] {
+  flex: 1;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.range-val {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--accent);
+  min-width: 50px;
+  text-align: right;
+}
+
+.location-flag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(188,140,255,0.12);
+  color: var(--accent5);
+  border: 1px solid rgba(188,140,255,0.25);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.print-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--accent);
+  color: #0d1117;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 22px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(88,166,255,0.35);
+  z-index: 200;
+}
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+.small-note {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+@media print {
+  .sidebar, .print-btn, .header-right { display: none; }
+  .main { display: block; height: auto; overflow: visible; }
+  .content { overflow: visible; }
+  .tab-panel { display: block !important; page-break-before: always; }
+  .tab-panel:first-child { page-break-before: avoid; }
+  * { color-adjust: exact; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: white; color: #000; }
+  .card { background: white; border: 1px solid #ccc; break-inside: avoid; }
+  .card-header { background: #f0f0f0; }
+  td, th { color: #000 !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>🏗️ Bio-Bitumen from Agro Waste — Complete Financial Workings</h1>
+    <p>Pyrolysis-based production · Pan India Costing · Real Market Prices 2025-26</p>
+  </div>
+  <div class="header-right">
+    <span class="badge badge-green">CSIR-CRRI Approved Tech</span>
+    <span class="badge badge-blue">VG10 / VG30 / VG40 Blend</span>
+    <span class="badge badge-orange">Live Rates Embedded</span>
+  </div>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="nav-section">Setup</div>
+    <div class="nav-item active" onclick="show('config')">
+      <div class="nav-dot" style="background:#58a6ff"></div> Location & Scale
+    </div>
+
+    <div class="nav-section">Purchase</div>
+    <div class="nav-item" onclick="show('rawmat')">
+      <div class="nav-dot" style="background:#f0883e"></div> Raw Material Costs
+    </div>
+    <div class="nav-item" onclick="show('landing')">
+      <div class="nav-dot" style="background:#f0883e"></div> Landing Cost
+    </div>
+
+    <div class="nav-section">Production</div>
+    <div class="nav-item" onclick="show('prodcost')">
+      <div class="nav-dot" style="background:#bc8cff"></div> Production Cost
+    </div>
+    <div class="nav-item" onclick="show('packing')">
+      <div class="nav-dot" style="background:#bc8cff"></div> Packing Cost
+    </div>
+    <div class="nav-item" onclick="show('waste')">
+      <div class="nav-dot" style="background:#f85149"></div> Waste & Rejection
+    </div>
+
+    <div class="nav-section">Revenue</div>
+    <div class="nav-item" onclick="show('finished')">
+      <div class="nav-dot" style="background:#3fb950"></div> Finished Goods
+    </div>
+    <div class="nav-item" onclick="show('scrap')">
+      <div class="nav-dot" style="background:#d4a017"></div> Scrap & By-products
+    </div>
+
+    <div class="nav-section">Summary</div>
+    <div class="nav-item" onclick="show('costing')">
+      <div class="nav-dot" style="background:#d4a017"></div> Full Cost Sheet
+    </div>
+    <div class="nav-item" onclick="show('pnl')">
+      <div class="nav-dot" style="background:#3fb950"></div> P&amp;L Summary
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- TAB: CONFIG -->
+    <div class="tab-panel active" id="tab-config">
+      <div class="page-title">📍 Production Location & Scale Setup</div>
+      <p class="page-sub">Location drives transport costs, labour rates, and raw material availability. All costs auto-update based on your selection.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Plant Location</span></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">State / Zone</label>
+              <select class="form-select" id="sel-state" onchange="recalc()">
+                <option value="punjab">Punjab / Haryana (Raw mat abundant, low straw cost)</option>
+                <option value="up">Uttar Pradesh (Major rice-wheat belt)</option>
+                <option value="mp">Madhya Pradesh (Central India)</option>
+                <option value="maharashtra" selected>Maharashtra (Industrial hub)</option>
+                <option value="gujarat">Gujarat (Port access, logistics strong)</option>
+                <option value="rajasthan">Rajasthan (Low labour, high transport)</option>
+                <option value="karnataka">Karnataka (South India)</option>
+                <option value="tamilnadu">Tamil Nadu (South, good infra)</option>
+                <option value="ne">North East (Meghalaya / Assam – trial region)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Production Capacity (TPD – Tonnes Per Day)</label>
+              <select class="form-select" id="sel-cap" onchange="recalc()">
+                <option value="5">5 TPD – Pilot / Small Scale</option>
+                <option value="20" selected>20 TPD – Medium Scale</option>
+                <option value="50">50 TPD – Large Scale</option>
+                <option value="100">100 TPD – Industrial Scale</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Operating Days / Year</label>
+              <input class="form-input" type="number" id="op-days" value="300" onchange="recalc()">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">Location Cost Multipliers</span></div>
+          <div class="card-body">
+            <table>
+              <tr><th>Cost Head</th><th>Multiplier</th><th>Reason</th></tr>
+              <tr><td>Raw Material</td><td class="mono" id="rm-mult">1.12×</td><td style="color:var(--text3);font-size:12px" id="rm-reason">Transport from Punjab</td></tr>
+              <tr><td>Labour</td><td class="mono" id="lb-mult">1.10×</td><td style="color:var(--text3);font-size:12px" id="lb-reason">Industrial zone premium</td></tr>
+              <tr><td>Transport (inbound)</td><td class="mono" id="tr-mult">1.15×</td><td style="color:var(--text3);font-size:12px" id="tr-reason">Distance from agro belt</td></tr>
+              <tr><td>Transport (outbound)</td><td class="mono" id="to-mult">0.95×</td><td style="color:var(--text3);font-size:12px" id="to-reason">Good road infra</td></tr>
+              <tr><td>Energy (electricity)</td><td class="mono" id="en-mult">1.05×</td><td style="color:var(--text3);font-size:12px" id="en-reason">State tariff ~₹7.5/kWh</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Key Production Parameters (Bio-Bitumen via Pyrolysis)</span></div>
+        <div class="card-body">
+          <div class="grid-3">
+            <div>
+              <div class="form-group">
+                <label class="form-label">Biomass Feed Rate (tonnes/day)</label>
+                <input class="form-input" type="number" id="p-feedrate" value="20" onchange="recalc()">
+                <div class="small-note">Input: agro waste / day</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Bio-Oil Yield (% of feed)</label>
+                <div class="range-wrap">
+                  <input type="range" min="20" max="40" value="32" id="p-oil-yield" oninput="syncRange('p-oil-yield','disp-oil-yield','%');recalc()">
+                  <span class="range-val" id="disp-oil-yield">32%</span>
+                </div>
+                <div class="small-note">Pyrolysis: typically 30–35% bio-oil yield</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Bio-Char Yield (% of feed)</label>
+                <div class="range-wrap">
+                  <input type="range" min="20" max="40" value="28" id="p-char-yield" oninput="syncRange('p-char-yield','disp-char-yield','%');recalc()">
+                  <span class="range-val" id="disp-char-yield">28%</span>
+                </div>
+                <div class="small-note">Biochar: 25–30% typical</div>
+              </div>
+            </div>
+            <div>
+              <div class="form-group">
+                <label class="form-label">Syngas Yield (% of feed)</label>
+                <div class="range-wrap">
+                  <input type="range" min="15" max="35" value="22" id="p-gas-yield" oninput="syncRange('p-gas-yield','disp-gas-yield','%');recalc()">
+                  <span class="range-val" id="disp-gas-yield">22%</span>
+                </div>
+                <div class="small-note">Syngas: used as internal fuel</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Blending Ratio – Bio-Bitumen in Final Product</label>
+                <div class="range-wrap">
+                  <input type="range" min="10" max="35" value="15" id="p-blend" oninput="syncRange('p-blend','disp-blend','%');recalc()">
+                  <span class="range-val" id="disp-blend">15%</span>
+                </div>
+                <div class="small-note">CSIR approved: up to 15-35% bio blend</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Losses / Moisture Evaporation (%)</label>
+                <div class="range-wrap">
+                  <input type="range" min="5" max="25" value="18" id="p-loss" oninput="syncRange('p-loss','disp-loss','%');recalc()">
+                  <span class="range-val" id="disp-loss">18%</span>
+                </div>
+                <div class="small-note">Moisture, fines, flue gas losses</div>
+              </div>
+            </div>
+            <div>
+              <div class="card" style="background:var(--surface2);border-color:var(--border)">
+                <div class="card-header" style="background:rgba(88,166,255,0.06)"><span class="card-title">Daily Output Summary</span></div>
+                <div class="card-body" style="padding:12px">
+                  <table>
+                    <tr><td>Bio-Oil produced</td><td class="right" id="calc-oil">6.4 T</td></tr>
+                    <tr><td>Bio-Char produced</td><td class="right" id="calc-char">5.6 T</td></tr>
+                    <tr><td>Syngas (internal use)</td><td class="right" id="calc-gas">4.4 T</td></tr>
+                    <tr><td>Loss / Evap</td><td class="right red" id="calc-loss">3.6 T</td></tr>
+                    <tr><td>Conventional bitumen needed</td><td class="right orange" id="calc-conv">36.1 T</td></tr>
+                    <tr><td><strong>Final Blended Bitumen</strong></td><td class="right green" id="calc-final"><strong>42.5 T</strong></td></tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: RAW MATERIAL -->
+    <div class="tab-panel" id="tab-rawmat">
+      <div class="page-title">🌾 Raw Material Purchase Costs</div>
+      <p class="page-sub">All agro waste feedstock options with current Pan India farm-gate prices (2025-26 sourced from CERC, MNRE, FAO & market data)</p>
+
+      <div class="info-box">
+        <strong style="color:var(--accent)">Primary Feedstocks:</strong> Rice straw (Punjab/Haryana), wheat straw (UP/MP), sugarcane bagasse (Maharashtra/UP/TN), lignin (paper mills), corn cobs (MP/Maharashtra), groundnut shells (Gujarat/AP), mustard straw (Rajasthan/Haryana). Adjust qty based on availability in your production zone.
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Feedstock Purchase Price Matrix — Pan India (₹/Tonne)</span>
+          <span class="badge badge-blue">Edit prices to match your location</span>
+        </div>
+        <div class="card-body" style="padding:0">
+          <table>
+            <thead>
+              <tr>
+                <th>Raw Material</th>
+                <th>Form / Grade</th>
+                <th>Origin Zone</th>
+                <th>Base Price ₹/T</th>
+                <th>Your Price ₹/T</th>
+                <th>Qty (T/day)</th>
+                <th>Daily Cost ₹</th>
+              </tr>
+            </thead>
+            <tbody id="rm-table">
+              <tr>
+                <td><strong>Rice Straw</strong></td>
+                <td style="color:var(--text3)">Loose / Farm gate</td>
+                <td><span class="location-flag">Punjab/Haryana</span></td>
+                <td class="mono">1,200</td>
+                <td><input class="form-input" style="width:90px" type="number" value="1200" id="rm1-p" onchange="recalc()"></td>
+                <td><input class="form-input" style="width:70px" type="number" value="10" id="rm1-q" onchange="recalc()"></td>
+                <td class="orange" id="rm1-total">₹12,000</td>
+              </tr>
+              <tr>
+                <td><strong>Rice Straw</strong></td>
+                <td style="color:var(--text3)">Baled (dense)</td>
+                <td><span class="location-flag">Punjab/UP</span></td>
+                <td class="mono">2,700</td>
+                <td><input class="form-input" style="width:90px" type="number" value="2700" id="rm2-p" onchange="recalc()"></td>
+                <td><input class="form-input" style="width:70px" type="number" value="4" id="rm2-q" onchange="recalc()"></td>
+                <td class="orange" id="rm2-total">₹10,800</td>
+              </tr>
+              <tr>
+                <td><strong>Wheat Straw</strong></td>
+                <td style="color:var(--text3)">Loose bales</td>
+                <td><span class="location-flag">UP/MP/Haryana</span></td>
+                <td class="mono">1,700</td>
+                <td><input class="form-input" style="width:90px" type="number" value="1700" id="rm3-p" onchange="recalc()"></td>
+                <td><input class="form-input" style="width:70px" type="number" value="2" id="rm3-q" onchange="recalc()"></td>
+                <td class="orange" id="rm3-total">₹3,400</td>
+              </tr>
+              <tr>
+                <td><strong>Sugarcane Bagasse</strong></td>
+                <td style="color:var(--text3)">Ex-sugar mill, dry</td>
+                <td><span class="location-flag">Maharashtra/UP/TN</span></td>
+                <td class="mono">1,000</td>
+                <td><input class="form-input" style="width:90px" type="number" value="1000" id="rm4-p" onchange="recalc()"></td>
+                <td><input class="form-input" style="width:70px" type="number" value="2" id="rm4-q" onchange="recalc()"></td>
+                <td class="orange" id="rm4-total">₹2,000</td>
+              </tr>
+              <tr>
+                <td><strong>Lignin (wood/pulp)</strong></td>
+                <td style="color:var(--text3)">Kraft lignin</td>
+                <td><span class="location-flag">All paper mill states</span></td>
+                <td class="mono">4,000</td>
+                <td><input class="form-input" style="width:90px" type="number" value="4000" id="rm5-p" onchange="recalc()"></td>
+                <td><input class="form-input" style="width:70px" type="number" value="1" id="rm5-q" onchange="recalc()"></td>
+                <td class="orange" id="rm5-total">₹4,000</td>
+              </tr>
+              <tr>
+                <td><strong>Groundnut Shells</strong></td>
+                <td style="color:var(--text3)">Loose, dry</td>
+                <td><span class="location-flag">Gujarat/AP/Raj</span></td>
+                <td class="mono">900</td>
+                <td><input class="form-input" style="width:90px" type="number" value="900" id="rm6-p" onchange="recalc()"></td>
+                <td><input class="form-input" style="width:70px" type="number" value="0.5" id="rm6-q" onchange="recalc()"></td>
+                <td class="orange" id="rm6-total">₹450</td>
+              </tr>
+              <tr>
+                <td><strong>Mustard Straw</strong></td>
+                <td style="color:var(--text3)">Seasonal</td>
+                <td><span class="location-flag">Rajasthan/Haryana</span></td>
+                <td class="mono">800</td>
+                <td><input class="form-input" style="width:90px" type="number" value="800" id="rm7-p" onchange="recalc()"></td>
+                <td><input class="form-input" style="width:70px" type="number" value="0.5" id="rm7-q" onchange="recalc()"></td>
+                <td class="orange" id="rm7-total">₹400</td>
+              </tr>
+              <tr class="subtotal-row">
+                <td colspan="5"><strong>Total Agro Waste / Day</strong></td>
+                <td id="rm-total-qty"><strong>20 T</strong></td>
+                <td id="rm-total-cost">₹33,050</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Conventional Bitumen Purchase (for Blending)</span></div>
+        <div class="card-body">
+          <div class="grid-3">
+            <div class="form-group">
+              <label class="form-label">Bitumen Grade</label>
+              <select class="form-select" id="bit-grade" onchange="recalc()">
+                <option value="vg30">VG30 (Bulk) – Most common road grade</option>
+                <option value="vg40">VG40 (Bulk) – Heavy traffic</option>
+                <option value="vg10">VG10 (Bulk) – Light traffic</option>
+                <option value="vg30pack">VG30 (Packed drums)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Base Price ₹/tonne (IOCL/BPCL/HPCL)</label>
+              <div class="rupee-input">
+                <input class="form-input" type="number" id="bit-price" value="45750" onchange="recalc()">
+              </div>
+              <div class="small-note">IOCL VG30 Chennai bulk: ₹45,750/T (Jan 2025)</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Required Qty (T/day for blending)</label>
+              <input class="form-input" type="number" id="bit-qty" value="36" onchange="recalc()" readonly>
+              <div class="small-note">Auto-calculated from blend ratio</div>
+            </div>
+          </div>
+          <div class="warn-box">
+            <strong style="color:var(--orange)">⚠ Blending Note:</strong> At 15% bio-bitumen blend, for every 100T of final product, you need ~85T of conventional bitumen + ~17.6T of bio-oil/feedstock to produce 15T of bio-bitumen. Daily conventional bitumen requirement is auto-calculated from the blend ratio set on the Config tab.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: LANDING COST -->
+    <div class="tab-panel" id="tab-landing">
+      <div class="page-title">🚛 Landing Cost — All Raw Material</div>
+      <p class="page-sub">Complete cost from supplier farm gate to your plant gate. Every component that adds to the cost before production begins.</p>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Agro Waste Landing Cost Bifurcation (per tonne of feedstock)</span></div>
+        <div class="card-body" style="padding:0">
+          <table>
+            <thead>
+              <tr><th>Cost Component</th><th>Basis</th><th>₹/Tonne Feed</th><th>Editable</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Farm Gate / Ex-Works Price</td><td>Avg blended</td><td class="orange" id="lc-raw">1,754</td><td>—</td><td style="color:var(--text3)">Auto from raw mat tab</td></tr>
+              <tr>
+                <td>Primary Collection & Baling</td><td>Per tonne</td><td class="mono">350</td>
+                <td><input class="form-input" style="width:80px" type="number" value="350" id="lc-baling" onchange="recalc()"></td>
+                <td style="color:var(--text3)">Labour + baler machine cost</td>
+              </tr>
+              <tr>
+                <td>Loading at Source</td><td>Per tonne</td><td class="mono">80</td>
+                <td><input class="form-input" style="width:80px" type="number" value="80" id="lc-load" onchange="recalc()"></td>
+                <td style="color:var(--text3)">Loader hire / manual</td>
+              </tr>
+              <tr>
+                <td>Primary Transport (Farm to Collection Centre)</td><td>Per tonne</td><td class="mono">250</td>
+                <td><input class="form-input" style="width:80px" type="number" value="250" id="lc-tr1" onchange="recalc()"></td>
+                <td style="color:var(--text3)">Tractor trolley ~50 km avg</td>
+              </tr>
+              <tr>
+                <td>Collection Centre / Aggregation Point</td><td>Per tonne</td><td class="mono">120</td>
+                <td><input class="form-input" style="width:80px" type="number" value="120" id="lc-depot" onchange="recalc()"></td>
+                <td style="color:var(--text3)">Lease + ops of depot</td>
+              </tr>
+              <tr>
+                <td>Storage at Depot</td><td>Per tonne</td><td class="mono">300</td>
+                <td><input class="form-input" style="width:80px" type="number" value="300" id="lc-stor" onchange="recalc()"></td>
+                <td style="color:var(--text3)">Semi-open/shed storage INR 250-400/T (CEEW 2025)</td>
+              </tr>
+              <tr>
+                <td>Long Haul Transport (Depot to Plant)</td><td>Per tonne</td><td class="mono" id="lc-tr2-show">480</td>
+                <td><input class="form-input" style="width:80px" type="number" value="480" id="lc-tr2" onchange="recalc()"></td>
+                <td style="color:var(--text3)">Truck 300-500 km @ ₹8-12/T-km</td>
+              </tr>
+              <tr>
+                <td>Unloading at Plant</td><td>Per tonne</td><td class="mono">60</td>
+                <td><input class="form-input" style="width:80px" type="number" value="60" id="lc-unload" onchange="recalc()"></td>
+                <td style="color:var(--text3)">Manual + conveyor</td>
+              </tr>
+              <tr>
+                <td>Weighbridge & Quality Testing</td><td>Per tonne</td><td class="mono">40</td>
+                <td><input class="form-input" style="width:80px" type="number" value="40" id="lc-test" onchange="recalc()"></td>
+                <td style="color:var(--text3)">Moisture, ash content test</td>
+              </tr>
+              <tr>
+                <td>Insurance in Transit</td><td>0.2% of material value</td><td class="mono" id="lc-ins-show">35</td>
+                <td>—</td>
+                <td style="color:var(--text3)">Auto calculated</td>
+              </tr>
+              <tr>
+                <td>Fumigation / Pest Control</td><td>Per tonne stored</td><td class="mono">25</td>
+                <td><input class="form-input" style="width:80px" type="number" value="25" id="lc-pest" onchange="recalc()"></td>
+                <td style="color:var(--text3)">Required for long storage</td>
+              </tr>
+              <tr>
+                <td>Octroi / State Entry Tax (if applicable)</td><td>Per state</td><td class="mono" id="lc-octroi-show">0</td>
+                <td><input class="form-input" style="width:80px" type="number" value="0" id="lc-octroi" onchange="recalc()"></td>
+                <td style="color:var(--text3)">Enter 0 if GST-covered</td>
+              </tr>
+              <tr>
+                <td>Misc. Handling & Contingency (2%)</td><td>% of above</td><td class="mono" id="lc-misc-show">73</td>
+                <td>—</td>
+                <td style="color:var(--text3)">Auto calculated</td>
+              </tr>
+              <tr class="total-row">
+                <td colspan="2"><strong>TOTAL LANDING COST (Agro Waste)</strong></td>
+                <td id="lc-agro-total">₹3,557</td>
+                <td colspan="2" style="color:var(--text2);font-size:11px">per tonne of agro waste at plant gate</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Conventional Bitumen Landing Cost (per tonne)</span></div>
+        <div class="card-body" style="padding:0">
+          <table>
+            <thead><tr><th>Component</th><th>₹/Tonne</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td>Ex-Refinery / Depot Price (IOCL/BPCL/HPCL)</td><td class="orange" id="bit-ex">₹45,750</td><td style="color:var(--text3)">VG30 bulk Jan 2025</td></tr>
+              <tr><td>Railway Freight / Road Transport</td><td><input class="form-input" style="width:90px" type="number" value="650" id="bit-tr" onchange="recalc()"></td><td style="color:var(--text3)">Varies ₹400-900/T by distance</td></tr>
+              <tr><td>Tank Hire / Bitumen Tanker</td><td><input class="form-input" style="width:90px" type="number" value="180" id="bit-tank" onchange="recalc()"></td><td style="color:var(--text3)">Insulated tanker per load</td></tr>
+              <tr><td>GST (18%) on bitumen</td><td class="mono" id="bit-gst-show">₹8,235</td><td style="color:var(--text3)">Auto calculated @18%</td></tr>
+              <tr><td>Unloading at Plant</td><td><input class="form-input" style="width:90px" type="number" value="120" id="bit-ul" onchange="recalc()"></td><td style="color:var(--text3)">Pump + labour</td></tr>
+              <tr><td>Storage Loss (1.5%)</td><td class="mono" id="bit-storloss">₹687</td><td style="color:var(--text3)">Drip, contamination loss</td></tr>
+              <tr class="total-row">
+                <td><strong>TOTAL Bitumen Landing Cost</strong></td>
+                <td id="bit-landing-total">₹55,622</td>
+                <td style="color:var(--text2);font-size:11px">per tonne at plant</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: PRODUCTION COST -->
+    <div class="tab-panel" id="tab-prodcost">
+      <div class="page-title">⚙️ Production Cost Bifurcation</div>
+      <p class="page-sub">Complete cost of converting agro waste into bio-bitumen via pyrolysis. All items adjustable per your plant specs.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Energy Costs</span></div>
+          <div class="card-body" style="padding:0">
+            <table>
+              <thead><tr><th>Item</th><th>Rate</th><th>Consumption/day</th><th>Daily Cost ₹</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>Electricity – Pyrolysis reactor</td>
+                  <td><input class="form-input" style="width:70px" type="number" value="7.5" id="pc-erate" onchange="recalc()"> ₹/kWh</td>
+                  <td><input class="form-input" style="width:70px" type="number" value="1200" id="pc-ekwh" onchange="recalc()"> kWh</td>
+                  <td class="orange" id="pc-elec">₹9,000</td>
+                </tr>
+                <tr>
+                  <td>Diesel – Generators / Vehicles</td>
+                  <td><input class="form-input" style="width:70px" type="number" value="92" id="pc-drate" onchange="recalc()"> ₹/L</td>
+                  <td><input class="form-input" style="width:70px" type="number" value="120" id="pc-dltrs" onchange="recalc()"> L</td>
+                  <td class="orange" id="pc-diesel">₹11,040</td>
+                </tr>
+                <tr>
+                  <td>Syngas (internal recovery credit)</td>
+                  <td>—</td>
+                  <td style="color:var(--text3);font-size:12px">Offsets 30-40% of energy</td>
+                  <td class="green" id="pc-syngas">-₹4,500</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">Labour Costs</span></div>
+          <div class="card-body" style="padding:0">
+            <table>
+              <thead><tr><th>Category</th><th>Count</th><th>₹/month</th><th>Daily Cost ₹</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>Skilled (Pyrolysis ops)</td>
+                  <td><input class="form-input" style="width:50px" type="number" value="6" id="la1-n" onchange="recalc()"></td>
+                  <td><input class="form-input" style="width:80px" type="number" value="28000" id="la1-r" onchange="recalc()"></td>
+                  <td class="mono" id="la1-d">₹5,600</td>
+                </tr>
+                <tr>
+                  <td>Semi-skilled (loading/handling)</td>
+                  <td><input class="form-input" style="width:50px" type="number" value="8" id="la2-n" onchange="recalc()"></td>
+                  <td><input class="form-input" style="width:80px" type="number" value="18000" id="la2-r" onchange="recalc()"></td>
+                  <td class="mono" id="la2-d">₹4,800</td>
+                </tr>
+                <tr>
+                  <td>Unskilled (collection/cleaning)</td>
+                  <td><input class="form-input" style="width:50px" type="number" value="6" id="la3-n" onchange="recalc()"></td>
+                  <td><input class="form-input" style="width:80px" type="number" value="12000" id="la3-r" onchange="recalc()"></td>
+                  <td class="mono" id="la3-d">₹2,400</td>
+                </tr>
+                <tr>
+                  <td>Supervisory / QC</td>
+                  <td><input class="form-input" style="width:50px" type="number" value="2" id="la4-n" onchange="recalc()"></td>
+                  <td><input class="form-input" style="width:80px" type="number" value="45000" id="la4-r" onchange="recalc()"></td>
+                  <td class="mono" id="la4-d">₹3,000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Plant Operations & Overheads (Daily)</span></div>
+        <div class="card-body" style="padding:0">
+          <table>
+            <thead><tr><th>Cost Item</th><th>Daily ₹</th><th>Editable</th><th>Basis / Notes</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Plant Depreciation (Pyrolysis reactor + equipment)</td>
+                <td class="mono" id="pc-dep-show">3,333</td>
+                <td><input class="form-input" style="width:100px" type="number" value="3333" id="pc-dep" onchange="recalc()"></td>
+                <td style="color:var(--text3)">₹3Cr plant, 10yr life = ₹3,333/day</td>
+              </tr>
+              <tr>
+                <td>Maintenance & Repairs</td>
+                <td class="mono">1,500</td>
+                <td><input class="form-input" style="width:100px" type="number" value="1500" id="pc-maint" onchange="recalc()"></td>
+                <td style="color:var(--text3)">3% p.a. of plant value / 300 days</td>
+              </tr>
+              <tr>
+                <td>Water Charges</td>
+                <td class="mono">400</td>
+                <td><input class="form-input" style="width:100px" type="number" value="400" id="pc-water" onchange="recalc()"></td>
+                <td style="color:var(--text3)">Process water + cooling</td>
+              </tr>
+              <tr>
+                <td>Chemicals & Catalysts (upgrading bio-oil)</td>
+                <td class="mono">2,500</td>
+                <td><input class="form-input" style="width:100px" type="number" value="2500" id="pc-chem" onchange="recalc()"></td>
+                <td style="color:var(--text3)">Hydrotreatment catalysts, solvents</td>
+              </tr>
+              <tr>
+                <td>Quality Control & Lab Testing</td>
+                <td class="mono">800</td>
+                <td><input class="form-input" style="width:100px" type="number" value="800" id="pc-qc" onchange="recalc()"></td>
+                <td style="color:var(--text3)">Penetration test, viscosity, flash pt</td>
+              </tr>
+              <tr>
+                <td>ETP / Effluent Treatment (condensate)</td>
+                <td class="mono">600</td>
+                <td><input class="form-input" style="width:100px" type="number" value="600" id="pc-etp" onchange="recalc()"></td>
+                <td style="color:var(--text3)">Pyrolytic condensate treatment</td>
+              </tr>
+              <tr>
+                <td>Factory Overheads (admin, security, insurance)</td>
+                <td class="mono">2,000</td>
+                <td><input class="form-input" style="width:100px" type="number" value="2000" id="pc-oh" onchange="recalc()"></td>
+                <td style="color:var(--text3)">Admin staff, security, factory insurance</td>
+              </tr>
+              <tr>
+                <td>Interest on Working Capital</td>
+                <td class="mono" id="pc-iwc-show">1,200</td>
+                <td><input class="form-input" style="width:100px" type="number" value="1200" id="pc-iwc" onchange="recalc()"></td>
+                <td style="color:var(--text3)">~12% p.a. on 30-day stock</td>
+              </tr>
+              <tr class="total-row">
+                <td colspan="2"><strong>Total Production Overhead / Day</strong></td>
+                <td id="pc-oh-total">₹12,333</td>
+                <td style="color:var(--text2);font-size:11px">excl. raw mat, packing, bitumen blend</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: PACKING COST -->
+    <div class="tab-panel" id="tab-packing">
+      <div class="page-title">📦 Packing Cost for Finished Goods</div>
+      <p class="page-sub">Packaging varies by product — bio-bitumen in bulk tankers vs. drums vs. bags for biochar</p>
+
+      <div class="warn-box">
+        <strong style="color:var(--orange)">Packing Material Scrap Value:</strong> Empty drums have significant resale value (₹200-350 each). HDPE bags have scrap value of ₹12-18/kg. Jute bags: ₹5-8/kg. All packing scrap income is captured in the Scrap & By-products tab automatically.
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Finished Goods Packing Cost Matrix</span></div>
+        <div class="card-body" style="padding:0">
+          <table>
+            <thead>
+              <tr><th>Product</th><th>Pack Type</th><th>Pack Qty</th><th>Pack Cost ₹/unit</th><th>Scrap Value ₹/unit</th><th>Net Pack ₹/unit</th><th>Units/day</th><th>Daily Pack Cost ₹</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Bio-Bitumen Blend</strong></td>
+                <td style="color:var(--text3)">Bulk Tanker (primary)</td>
+                <td>10-20 MT/tanker</td>
+                <td>₹0</td><td>₹0</td>
+                <td class="mono">0</td>
+                <td style="color:var(--text3)">Bulk supply</td>
+                <td class="green">₹0</td>
+              </tr>
+              <tr>
+                <td><strong>Bio-Bitumen Blend</strong></td>
+                <td style="color:var(--text3)">MS Drum 180±2.5 kg</td>
+                <td>180 kg</td>
+                <td><input class="form-input" style="width:70px" type="number" value="420" id="pk1-c" onchange="recalc()"> ₹</td>
+                <td><input class="form-input" style="width:70px" type="number" value="280" id="pk1-s" onchange="recalc()"> ₹</td>
+                <td class="mono" id="pk1-net">140</td>
+                <td><input class="form-input" style="width:60px" type="number" value="40" id="pk1-qty" onchange="recalc()"></td>
+                <td class="orange" id="pk1-daily">₹5,600</td>
+              </tr>
+              <tr>
+                <td><strong>Bio-Char</strong></td>
+                <td style="color:var(--text3)">HDPE Bag 50 kg</td>
+                <td>50 kg</td>
+                <td><input class="form-input" style="width:70px" type="number" value="28" id="pk2-c" onchange="recalc()"> ₹</td>
+                <td><input class="form-input" style="width:70px" type="number" value="6" id="pk2-s" onchange="recalc()"> ₹</td>
+                <td class="mono" id="pk2-net">22</td>
+                <td><input class="form-input" style="width:60px" type="number" value="100" id="pk2-qty" onchange="recalc()"></td>
+                <td class="orange" id="pk2-daily">₹2,200</td>
+              </tr>
+              <tr>
+                <td><strong>Bio-Oil (raw)</strong></td>
+                <td style="color:var(--text3)">IBC Tank 1000L or bulk</td>
+                <td>1000 L</td>
+                <td><input class="form-input" style="width:70px" type="number" value="850" id="pk3-c" onchange="recalc()"> ₹</td>
+                <td><input class="form-input" style="width:70px" type="number" value="400" id="pk3-s" onchange="recalc()"> ₹</td>
+                <td class="mono" id="pk3-net">450</td>
+                <td><input class="form-input" style="width:60px" type="number" value="6" id="pk3-qty" onchange="recalc()"></td>
+                <td class="orange" id="pk3-daily">₹2,700</td>
+              </tr>
+              <tr>
+                <td><strong>Bio-Char Premium Grade</strong></td>
+                <td style="color:var(--text3)">Woven PP Bag 25 kg</td>
+                <td>25 kg</td>
+                <td><input class="form-input" style="width:70px" type="number" value="18" id="pk4-c" onchange="recalc()"> ₹</td>
+                <td><input class="form-input" style="width:70px" type="number" value="3" id="pk4-s" onchange="recalc()"> ₹</td>
+                <td class="mono" id="pk4-net">15</td>
+                <td><input class="form-input" style="width:60px" type="number" value="60" id="pk4-qty" onchange="recalc()"></td>
+                <td class="orange" id="pk4-daily">₹900</td>
+              </tr>
+              <tr class="total-row">
+                <td colspan="7"><strong>Total Daily Packing Cost (net of scrap)</strong></td>
+                <td id="pk-total">₹11,400</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: WASTE -->
+    <div class="tab-panel" id="tab-waste">
+      <div class="page-title">♻️ Waste, Rejection & Loss Cost Impact</div>
+      <p class="page-sub">All losses must be factored into cost of goods sold. Rejects and off-spec material must be either re-processed or disposed of.</p>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Process Loss & Rejection Factors</span></div>
+        <div class="card-body" style="padding:0">
+          <table>
+            <thead>
+              <tr><th>Loss Type</th><th>Stage</th><th>% of Input</th><th>T/day</th><th>₹ Cost Impact/day</th><th>Disposal / Recovery</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Moisture evaporation</td><td style="color:var(--text3)">Drying stage</td>
+                <td><input class="form-input" style="width:60px" type="number" value="12" id="wl1-pct" onchange="recalc()">%</td>
+                <td class="mono" id="wl1-t">2.4</td>
+                <td class="red" id="wl1-cost">₹2,100</td>
+                <td style="color:var(--text3)">Pure loss — energy & material</td>
+              </tr>
+              <tr>
+                <td>Flue gas / CO₂ release</td><td style="color:var(--text3)">Pyrolysis reactor</td>
+                <td><input class="form-input" style="width:60px" type="number" value="4" id="wl2-pct" onchange="recalc()">%</td>
+                <td class="mono" id="wl2-t">0.8</td>
+                <td class="red" id="wl2-cost">₹700</td>
+                <td style="color:var(--text3)">Vent / ETP scrubber cost</td>
+              </tr>
+              <tr>
+                <td>Off-spec bio-oil (wrong viscosity)</td><td style="color:var(--text3)">Refining / upgrading</td>
+                <td><input class="form-input" style="width:60px" type="number" value="3" id="wl3-pct" onchange="recalc()">%</td>
+                <td class="mono" id="wl3-t">0.2</td>
+                <td class="orange" id="wl3-cost">₹6,000</td>
+                <td style="color:var(--text3)">Re-blend or sell as fuel oil</td>
+              </tr>
+              <tr>
+                <td>Char fines (too fine for sale)</td><td style="color:var(--text3)">Screening</td>
+                <td><input class="form-input" style="width:60px" type="number" value="5" id="wl4-pct" onchange="recalc()">%</td>
+                <td class="mono" id="wl4-t">0.28</td>
+                <td class="orange" id="wl4-cost">₹2,800</td>
+                <td style="color:var(--text3)">Pelletize or use as fuel internally</td>
+              </tr>
+              <tr>
+                <td>Ash & slag from reactor</td><td style="color:var(--text3)">Post-pyrolysis</td>
+                <td><input class="form-input" style="width:60px" type="number" value="2" id="wl5-pct" onchange="recalc()">%</td>
+                <td class="mono" id="wl5-t">0.4</td>
+                <td class="mono">₹800</td>
+                <td style="color:var(--text3)">Disposal cost ₹2,000/T</td>
+              </tr>
+              <tr>
+                <td>Contamination / foreign material in feed</td><td style="color:var(--text3)">Pre-processing</td>
+                <td><input class="form-input" style="width:60px" type="number" value="2" id="wl6-pct" onchange="recalc()">%</td>
+                <td class="mono" id="wl6-t">0.4</td>
+                <td class="mono">₹700</td>
+                <td style="color:var(--text3)">Separation & disposal cost</td>
+              </tr>
+              <tr>
+                <td>Condensate / pyrolytic water</td><td style="color:var(--text3)">Condensation</td>
+                <td><input class="form-input" style="width:60px" type="number" value="6" id="wl7-pct" onchange="recalc()">%</td>
+                <td class="mono" id="wl7-t">1.2</td>
+                <td class="mono" id="wl7-cost">₹1,200</td>
+                <td style="color:var(--text3)">ETP treatment ₹1,000/T condensate</td>
+              </tr>
+              <tr class="total-row">
+                <td colspan="4"><strong>Total Waste & Loss Cost / Day</strong></td>
+                <td id="wl-total">₹14,300</td>
+                <td style="color:var(--text2);font-size:11px">must be absorbed in product cost</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: FINISHED GOODS -->
+    <div class="tab-panel" id="tab-finished">
+      <div class="page-title">🏭 Finished Goods — List, Qty, Grades & Pan India Market Prices</div>
+      <p class="page-sub">All saleable products from the pyrolysis process with current Indian market prices. Buyers ready to purchase pan India.</p>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Product Portfolio — Bio-Bitumen Plant (at 20 TPD Feed)</span></div>
+        <div class="card-body" style="padding:0">
+          <table>
+            <thead>
+              <tr><th>Product</th><th>Grade / Spec</th><th>Qty/day (T)</th><th>Market Price Range ₹/T</th><th>Your Sale Price ₹/T</th><th>Daily Revenue ₹</th><th>Buyers Pan India</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong style="color:var(--accent)">Bio-Bitumen Blend (VG30)</strong></td>
+                <td style="color:var(--text3)">15% bio + 85% conventional, paving grade</td>
+                <td class="mono" id="fg1-qty">8.5</td>
+                <td class="mono">42,000 – 48,000</td>
+                <td><input class="form-input" style="width:90px" type="number" value="44,000" id="fg1-price" onchange="recalc()"></td>
+                <td class="green" id="fg1-rev">₹3,74,000</td>
+                <td style="color:var(--text3);font-size:11px">NHAI, State PWDs, Road contractors</td>
+              </tr>
+              <tr>
+                <td><strong style="color:var(--accent)">Bio-Bitumen Blend (VG40)</strong></td>
+                <td style="color:var(--text3)">Heavy traffic highways, airports</td>
+                <td class="mono" id="fg2-qty">3.5</td>
+                <td class="mono">46,000 – 52,000</td>
+                <td><input class="form-input" style="width:90px" type="number" value="48000" id="fg2-price" onchange="recalc()"></td>
+                <td class="green" id="fg2-rev">₹1,68,000</td>
+                <td style="color:var(--text3);font-size:11px">Airport Authority, NH contractors</td>
+              </tr>
+              <tr>
+                <td><strong style="color:var(--green)">Bio-Char (Agriculture Grade)</strong></td>
+                <td style="color:var(--text3)">Soil amendment, 80%+ carbon, ASTM D1762</td>
+                <td class="mono" id="fg3-qty">5.6</td>
+                <td class="mono">22,000 – 35,000</td>
+                <td><input class="form-input" style="width:90px" type="number" value="26000" id="fg3-price" onchange="recalc()"></td>
+                <td class="green" id="fg3-rev">₹1,45,600</td>
+                <td style="color:var(--text3);font-size:11px">Fertilizer cos, organic farms, IFFCO, Coromandel</td>
+              </tr>
+              <tr>
+                <td><strong style="color:var(--green)">Bio-Char (Industrial Grade)</strong></td>
+                <td style="color:var(--text3)">Water filtration, carbon sequestration</td>
+                <td class="mono" id="fg4-qty">1.2</td>
+                <td class="mono">28,000 – 40,000</td>
+                <td><input class="form-input" style="width:90px" type="number" value="32000" id="fg4-price" onchange="recalc()"></td>
+                <td class="green" id="fg4-rev">₹38,400</td>
+                <td style="color:var(--text3);font-size:11px">Water treatment, Carbon credit buyers</td>
+              </tr>
+              <tr>
+                <td><strong style="color:var(--orange)">Bio-Oil (Upgraded / Fuel Grade)</strong></td>
+                <td style="color:var(--text3)">Pyrolysis oil, calorific value 8,000+ kcal/kg</td>
+                <td class="mono" id="fg5-qty">2.8</td>
+                <td class="mono">18,000 – 28,000</td>
+                <td><input class="form-input" style="width:90px" type="number" value="22000" id="fg5-price" onchange="recalc()"></td>
+                <td class="green" id="fg5-rev">₹61,600</td>
+                <td style="color:var(--text3);font-size:11px">Industrial boiler fuel, brick kilns, cement plants</td>
+              </tr>
+              <tr>
+                <td><strong style="color:var(--accent5)">Biomass Pellets (pre-processed feed)</strong></td>
+                <td style="color:var(--text3)">6-8mm, &lt;12% moisture, 3400+ kcal/kg</td>
+                <td class="mono">1.0</td>
+                <td class="mono">7,000 – 14,000</td>
+                <td><input class="form-input" style="width:90px" type="number" value="9000" id="fg6-price" onchange="recalc()"></td>
+                <td class="green" id="fg6-rev">₹9,000</td>
+                <td style="color:var(--text3);font-size:11px">NTPC, power plants, co-firing buyers</td>
+              </tr>
+              <tr class="total-row">
+                <td colspan="5"><strong>TOTAL DAILY REVENUE (All Products)</strong></td>
+                <td id="fg-total-rev">₹7,96,600</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: SCRAP -->
+    <div class="tab-panel" id="tab-scrap">
+      <div class="page-title">🔩 Scrap Sale & By-product Credits</div>
+      <p class="page-sub">Every scrap stream, empty pack return, and by-product income. These credits reduce effective cost of production.</p>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Scrap & By-product Revenue (Daily)</span></div>
+        <div class="card-body" style="padding:0">
+          <table>
+            <thead><tr><th>Item</th><th>Qty/day</th><th>Sale Price</th><th>Daily Income ₹</th><th>Pan India Buyer</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Empty MS Drums (returned from bitumen supply)</strong></td>
+                <td><input class="form-input" style="width:70px" type="number" value="40" id="sc1-q" onchange="recalc()"> pcs</td>
+                <td><input class="form-input" style="width:80px" type="number" value="280" id="sc1-p" onchange="recalc()"> ₹/drum</td>
+                <td class="gold" id="sc1-rev">₹11,200</td>
+                <td style="color:var(--text3);font-size:11px">Drum re-conditioners, scrap dealers</td>
+              </tr>
+              <tr>
+                <td><strong>Empty HDPE Bags (biochar bags)</strong></td>
+                <td><input class="form-input" style="width:70px" type="number" value="150" id="sc2-q" onchange="recalc()"> pcs</td>
+                <td><input class="form-input" style="width:80px" type="number" value="4" id="sc2-p" onchange="recalc()"> ₹/bag</td>
+                <td class="gold" id="sc2-rev">₹600</td>
+                <td style="color:var(--text3);font-size:11px">Recyclers, Kabadiwala</td>
+              </tr>
+              <tr>
+                <td><strong>Off-spec Bio-Oil (fuel grade regrade)</strong></td>
+                <td><input class="form-input" style="width:70px" type="number" value="0.2" id="sc3-q" onchange="recalc()"> T</td>
+                <td><input class="form-input" style="width:80px" type="number" value="14000" id="sc3-p" onchange="recalc()"> ₹/T</td>
+                <td class="gold" id="sc3-rev">₹2,800</td>
+                <td style="color:var(--text3);font-size:11px">Brick kilns, industrial boilers</td>
+              </tr>
+              <tr>
+                <td><strong>Char Fines (boiler fuel use)</strong></td>
+                <td><input class="form-input" style="width:70px" type="number" value="0.28" id="sc4-q" onchange="recalc()"> T</td>
+                <td><input class="form-input" style="width:80px" type="number" value="4000" id="sc4-p" onchange="recalc()"> ₹/T</td>
+                <td class="gold" id="sc4-rev">₹1,120</td>
+                <td style="color:var(--text3);font-size:11px">Ceramic units, boiler fuel users</td>
+              </tr>
+              <tr>
+                <td><strong>Syngas (internal fuel credit, not cash)</strong></td>
+                <td class="mono" id="sc5-q">4.4 T equiv.</td>
+                <td style="color:var(--text3);font-size:12px">Replaces diesel/LPG</td>
+                <td class="gold" id="sc5-rev">₹4,500</td>
+                <td style="color:var(--text3);font-size:11px">Internal energy offset</td>
+              </tr>
+              <tr>
+                <td><strong>Carbon Credits (Bio-Char sequestration)</strong></td>
+                <td><input class="form-input" style="width:70px" type="number" value="5" id="sc6-q" onchange="recalc()"> credits</td>
+                <td><input class="form-input" style="width:80px" type="number" value="12500" id="sc6-p" onchange="recalc()"> ₹/credit</td>
+                <td class="gold" id="sc6-rev">₹62,500</td>
+                <td style="color:var(--text3);font-size:11px">Voluntary carbon market, Gold Standard</td>
+              </tr>
+              <tr>
+                <td><strong>Metal Scrap from maintenance</strong></td>
+                <td><input class="form-input" style="width:70px" type="number" value="15" id="sc7-q" onchange="recalc()"> kg</td>
+                <td><input class="form-input" style="width:80px" type="number" value="45" id="sc7-p" onchange="recalc()"> ₹/kg</td>
+                <td class="gold" id="sc7-rev">₹675</td>
+                <td style="color:var(--text3);font-size:11px">Local scrap dealers</td>
+              </tr>
+              <tr class="total-row">
+                <td colspan="3"><strong>TOTAL SCRAP / BY-PRODUCT INCOME / Day</strong></td>
+                <td id="sc-total">₹83,395</td>
+                <td style="color:var(--text2);font-size:11px">reduces effective production cost</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: FULL COST SHEET -->
+    <div class="tab-panel" id="tab-costing">
+      <div class="page-title">📋 Complete Cost Sheet — Bifurcation</div>
+      <p class="page-sub">Full cost per tonne of finished bio-bitumen blend at your selected location. Print this for buyer negotiations.</p>
+
+      <div id="location-banner" class="info-box">
+        <strong style="color:var(--accent)">📍 Production Location: <span id="loc-name">Maharashtra</span></strong> &nbsp;|&nbsp;
+        Capacity: <span id="loc-cap">20 TPD</span> &nbsp;|&nbsp;
+        Annual output: <span id="loc-ann">6,000 T/yr</span> &nbsp;|&nbsp;
+        Operating days: <span id="loc-days">300</span>/yr
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-label">Total Cost / Tonne (Blend)</div>
+          <div class="stat-value sv-orange" id="sum-cpt">₹38,420</div>
+          <div class="stat-sub">All-in cost per tonne</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Market Price / Tonne</div>
+          <div class="stat-value sv-green" id="sum-spt">₹44,000</div>
+          <div class="stat-sub">VG30 bio-blend</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Gross Margin / Tonne</div>
+          <div class="stat-value sv-blue" id="sum-margin">₹5,580</div>
+          <div class="stat-sub">Before tax, finance</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Margin %</div>
+          <div class="stat-value sv-gold" id="sum-pct">12.7%</div>
+          <div class="stat-sub">On all products blended</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Cost per Tonne of Bio-Bitumen Blend — Complete Bifurcation</span></div>
+        <div class="card-body" style="padding:0">
+          <table>
+            <thead><tr><th>#</th><th>Cost Head</th><th>Daily Total ₹</th><th>Output Tonnes</th><th>₹ per Tonne (Blend)</th><th>% of Total Cost</th></tr></thead>
+            <tbody id="cpt-table">
+              <tr class="warning-row"><td colspan="6" style="padding:8px 12px;font-size:11px;color:var(--text3)">A. RAW MATERIAL COSTS</td></tr>
+              <tr><td>1</td><td>Agro Waste (all feedstock) — at farm gate</td><td class="mono" id="cs1a">₹33,050</td><td class="mono" id="cs1b">10.8</td><td class="orange" id="cs1c">₹3,060</td><td class="mono" id="cs1d">8.0%</td></tr>
+              <tr><td>2</td><td>Conventional Bitumen (for blending)</td><td class="mono" id="cs2a">₹16,47,000</td><td class="mono" id="cs2b">36.1</td><td class="orange" id="cs2c">₹24,985</td><td class="mono" id="cs2d">65.1%</td></tr>
+
+              <tr class="warning-row"><td colspan="6" style="padding:8px 12px;font-size:11px;color:var(--text3)">B. LANDING / INBOUND LOGISTICS</td></tr>
+              <tr><td>3</td><td>Agro Waste Landing Cost (incl. transport, storage)</td><td class="mono" id="cs3a">₹71,140</td><td class="mono" id="cs3b">—</td><td class="orange" id="cs3c">₹6,588</td><td class="mono" id="cs3d">1.8%</td></tr>
+              <tr><td>4</td><td>Bitumen Landing Surcharge (freight + GST difference)</td><td class="mono" id="cs4a">₹35,172</td><td class="mono" id="cs4b">—</td><td class="orange" id="cs4c">₹3,257</td><td class="mono" id="cs4d">0.9%</td></tr>
+
+              <tr class="warning-row"><td colspan="6" style="padding:8px 12px;font-size:11px;color:var(--text3)">C. PRODUCTION COSTS</td></tr>
+              <tr><td>5</td><td>Energy (electricity + diesel — net of syngas recovery)</td><td class="mono" id="cs5a">₹15,540</td><td class="mono" id="cs5b">—</td><td class="orange" id="cs5c">₹1,439</td><td class="mono" id="cs5d">3.8%</td></tr>
+              <tr><td>6</td><td>Labour (all categories, incl. PF/ESI)</td><td class="mono" id="cs6a">₹15,800</td><td class="mono" id="cs6b">—</td><td class="orange" id="cs6c">₹1,463</td><td class="mono" id="cs6d">3.8%</td></tr>
+              <tr><td>7</td><td>Plant Depreciation & Maintenance</td><td class="mono" id="cs7a">₹4,833</td><td class="mono" id="cs7b">—</td><td class="orange" id="cs7c">₹448</td><td class="mono" id="cs7d">1.2%</td></tr>
+              <tr><td>8</td><td>Chemicals, Catalysts, Water, QC</td><td class="mono" id="cs8a">₹3,700</td><td class="mono" id="cs8b">—</td><td class="orange" id="cs8c">₹343</td><td class="mono" id="cs8d">0.9%</td></tr>
+              <tr><td>9</td><td>ETP, Overheads, WC Interest</td><td class="mono" id="cs9a">₹3,800</td><td class="mono" id="cs9b">—</td><td class="orange" id="cs9c">₹352</td><td class="mono" id="cs9d">0.9%</td></tr>
+
+              <tr class="warning-row"><td colspan="6" style="padding:8px 12px;font-size:11px;color:var(--text3)">D. PACKING & OUTBOUND</td></tr>
+              <tr><td>10</td><td>Packing Material (net of empty pack scrap recovery)</td><td class="mono" id="cs10a">₹11,400</td><td class="mono" id="cs10b">—</td><td class="orange" id="cs10c">₹1,056</td><td class="mono" id="cs10d">2.7%</td></tr>
+              <tr><td>11</td><td>Outbound Logistics / Delivery to buyer</td><td class="mono" id="cs11a">₹8,500</td><td class="mono" id="cs11b">—</td><td class="orange" id="cs11c">₹787</td><td class="mono" id="cs11d">2.1%</td></tr>
+
+              <tr class="warning-row"><td colspan="6" style="padding:8px 12px;font-size:11px;color:var(--text3)">E. WASTE & REJECTION</td></tr>
+              <tr><td>12</td><td>Waste, Loss & Rejection Costs</td><td class="mono" id="cs12a">₹14,300</td><td class="mono" id="cs12b">—</td><td class="orange" id="cs12c">₹1,324</td><td class="mono" id="cs12d">3.4%</td></tr>
+
+              <tr class="subtotal-row"><td colspan="2"><strong>GROSS COST (before by-product credits)</strong></td><td id="cs-gross-d">—</td><td>—</td><td id="cs-gross-t" style="font-family:monospace;font-weight:600">₹44,100</td><td>100%</td></tr>
+
+              <tr class="warning-row"><td colspan="6" style="padding:8px 12px;font-size:11px;color:var(--text3)">F. CREDITS (REDUCE COST)</td></tr>
+              <tr><td>13</td><td>By-Product Revenue Credits (biochar, bio-oil, fines sold)</td><td class="mono" id="cs13a">-₹2,64,700</td><td class="mono" id="cs13b">—</td><td class="green" id="cs13c">-₹24,509</td><td class="mono">—</td></tr>
+              <tr><td>14</td><td>Scrap Income (drums, bags, metals)</td><td class="mono" id="cs14a">-₹83,395</td><td class="mono" id="cs14b">—</td><td class="green" id="cs14c">-₹7,722</td><td class="mono">—</td></tr>
+
+              <tr class="total-row"><td colspan="2"><strong>NET COST OF PRODUCTION / Tonne of Blend</strong></td><td id="cs-net-d">—</td><td>—</td><td id="cs-net-t">₹11,869</td><td id="cs-net-pct">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: P&L -->
+    <div class="tab-panel" id="tab-pnl">
+      <div class="page-title">📊 P&amp;L Summary — Annual Financial Working</div>
+      <p class="page-sub">Full profit & loss view. Adjust assumptions and watch the numbers change live.</p>
+
+      <div class="profit-summary">
+        <div class="ps-title">Annual P&amp;L Snapshot — <span id="pnl-loc">Maharashtra</span>, <span id="pnl-cap">20 TPD</span></div>
+        <div class="ps-row"><span class="ps-label">Total Revenue (all products)</span><span class="ps-val sv-green" id="pnl-rev">—</span></div>
+        <div class="ps-row"><span class="ps-label">Less: Raw Material Cost</span><span class="ps-val sv-red" id="pnl-rm">—</span></div>
+        <div class="ps-row"><span class="ps-label">Less: Landing & Logistics</span><span class="ps-val sv-red" id="pnl-land">—</span></div>
+        <div class="ps-row"><span class="ps-label">Less: Production Cost</span><span class="ps-val sv-red" id="pnl-prod">—</span></div>
+        <div class="ps-row"><span class="ps-label">Less: Packing Cost</span><span class="ps-val sv-red" id="pnl-pack">—</span></div>
+        <div class="ps-row"><span class="ps-label">Less: Waste & Rejection</span><span class="ps-val sv-red" id="pnl-waste">—</span></div>
+        <div class="ps-row"><span class="ps-label">Add: Scrap & By-product Income</span><span class="ps-val sv-gold" id="pnl-scrap">—</span></div>
+        <div class="ps-row big"><span class="ps-label" style="font-size:16px;font-weight:600;color:var(--text)">GROSS PROFIT</span><span class="ps-val" style="font-size:20px;" id="pnl-gp">—</span></div>
+        <div class="ps-row"><span class="ps-label">Gross Margin %</span><span class="ps-val sv-blue" id="pnl-gm">—</span></div>
+        <div class="ps-row"><span class="ps-label">Less: SGA / Admin (est. 3%)</span><span class="ps-val sv-red" id="pnl-sga">—</span></div>
+        <div class="ps-row"><span class="ps-label">Less: Finance Cost (term loan, est. 2%)</span><span class="ps-val sv-red" id="pnl-fin">—</span></div>
+        <div class="ps-row big"><span class="ps-label" style="font-size:16px;font-weight:600;color:var(--text)">NET PROFIT (before tax)</span><span class="ps-val" style="font-size:20px;" id="pnl-np">—</span></div>
+        <div class="ps-row"><span class="ps-label">Net Margin %</span><span class="ps-val sv-gold" id="pnl-nm">—</span></div>
+        <div class="ps-row"><span class="ps-label">Payback Period (est. ₹3 Cr plant, 20 TPD)</span><span class="ps-val sv-blue" id="pnl-pay">—</span></div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Cost Structure (% breakdown)</span></div>
+          <div class="card-body" style="padding:0">
+            <table>
+              <tr><td>Conventional Bitumen (blending)</td><td class="right" id="cs-pct-bit">65.1%</td></tr>
+              <tr><td>Agro Waste (all feedstock landed)</td><td class="right" id="cs-pct-rm">9.8%</td></tr>
+              <tr><td>Energy (net)</td><td class="right">3.8%</td></tr>
+              <tr><td>Labour</td><td class="right">3.8%</td></tr>
+              <tr><td>Packing</td><td class="right">2.7%</td></tr>
+              <tr><td>Waste & Losses</td><td class="right">3.4%</td></tr>
+              <tr><td>Overheads & Depreciation</td><td class="right">2.1%</td></tr>
+              <tr><td>Outbound Logistics</td><td class="right">2.1%</td></tr>
+              <tr><td>Other</td><td class="right">7.2%</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Pan India Buyer Summary (2025-26)</span></div>
+          <div class="card-body" style="padding:0">
+            <table>
+              <tr><th>Product</th><th>Key Buyers</th><th>Price Trend</th></tr>
+              <tr><td style="font-size:12px">Bio-Bitumen Blend</td><td style="color:var(--text3);font-size:11px">NHAI, PWD, L&T, KNR, Dilip Buildcon</td><td class="green" style="font-size:11px">↑ Growing</td></tr>
+              <tr><td style="font-size:12px">Bio-Char (agri)</td><td style="color:var(--text3);font-size:11px">IFFCO, Coromandel, organic farms</td><td class="green" style="font-size:11px">↑ Strong</td></tr>
+              <tr><td style="font-size:12px">Bio-Char (ind.)</td><td style="color:var(--text3);font-size:11px">WTP firms, carbon credit cos</td><td class="orange" style="font-size:11px">→ Stable</td></tr>
+              <tr><td style="font-size:12px">Bio-Oil (fuel)</td><td style="color:var(--text3);font-size:11px">Brick kilns, ceramic, cement</td><td class="orange" style="font-size:11px">→ Stable</td></tr>
+              <tr><td style="font-size:12px">Biomass Pellets</td><td style="color:var(--text3);font-size:11px">NTPC, TPWODL, MAHAGENCO</td><td class="green" style="font-size:11px">↑ 7% mandate</td></tr>
+              <tr><td style="font-size:12px">Carbon Credits</td><td style="color:var(--text3);font-size:11px">Microsoft, Gold Standard, VERRA</td><td class="orange" style="font-size:11px">→ Variable</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</div><!-- end main -->
+
+<button class="print-btn" onclick="window.print()">⬇ Download / Print PDF</button>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+function syncRange(id, dispId, suffix) {
+  document.getElementById(dispId).textContent = document.getElementById(id).value + suffix;
+}
+
+function fmt(n) {
+  if (n < 0) return '-₹' + Math.abs(Math.round(n)).toLocaleString('en-IN');
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+function fmtC(n) { return '₹' + Math.round(n).toLocaleString('en-IN') + ' Cr'; }
+
+const LOCS = {
+  punjab:      { rmM:1.0,  lbM:0.9,  trM:1.0,  toM:1.1,  enM:0.95, rmR:'Local zone, abundant straw', lbR:'Lower wages', trR:'Origin point, minimal haul', toR:'Good NH connectivity', enR:'₹6.8/kWh' },
+  up:          { rmM:1.05, lbM:0.92, trM:1.05, toM:1.05, enM:1.0,  rmR:'Transport from East Punjab', lbR:'Lower wages', trR:'150-250 km haul', toR:'Moderate NH', enR:'₹7.0/kWh' },
+  mp:          { rmM:1.1,  lbM:0.95, trM:1.12, toM:1.08, enM:0.98, rmR:'Mixed straw sources', lbR:'Moderate wages', trR:'300-400 km', toR:'Average infra', enR:'₹7.2/kWh' },
+  maharashtra: { rmM:1.12, lbM:1.1,  trM:1.15, toM:0.95, enM:1.05, rmR:'Transport from Punjab', lbR:'Industrial zone premium', trR:'Distance from agro belt', toR:'Good road infra', enR:'₹7.5/kWh' },
+  gujarat:     { rmM:1.1,  lbM:1.05, trM:1.1,  toM:0.9,  enM:1.02, rmR:'Moderate haul', lbR:'Port zone premium', trR:'Good logistics', toR:'Excellent port/road', enR:'₹7.0/kWh' },
+  rajasthan:   { rmM:1.08, lbM:0.88, trM:1.08, toM:1.1,  enM:1.0,  rmR:'Mustard/wheat local', lbR:'Low wages', trR:'Moderate distances', toR:'Longer delivery routes', enR:'₹7.0/kWh' },
+  karnataka:   { rmM:1.18, lbM:1.08, trM:1.2,  toM:1.0,  enM:1.08, rmR:'Long haul from North', lbR:'Tech zone rates', trR:'600-700 km haul', toR:'Good roads', enR:'₹7.8/kWh' },
+  tamilnadu:   { rmM:1.22, lbM:1.1,  trM:1.25, toM:1.0,  enM:1.1,  rmR:'Maximum haul distance', lbR:'Industrial rates', trR:'800+ km', toR:'Port delivery option', enR:'₹8.0/kWh' },
+  ne:          { rmM:1.05, lbM:0.85, trM:0.9,  toM:1.35, enM:1.25, rmR:'Local paddy straw (Assam/WB)', lbR:'Lower wages', trR:'Local abundant source', toR:'Poor road, long haul out', enR:'₹9.0/kWh' }
+};
+
+const LOC_NAMES = {
+  punjab:'Punjab / Haryana', up:'Uttar Pradesh', mp:'Madhya Pradesh',
+  maharashtra:'Maharashtra', gujarat:'Gujarat', rajasthan:'Rajasthan',
+  karnataka:'Karnataka', tamilnadu:'Tamil Nadu', ne:'North East'
+};
+
+function v(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+function recalc() {
+  const loc = document.getElementById('sel-state').value;
+  const lm = LOCS[loc];
+
+  // Update location multiplier display
+  document.getElementById('rm-mult').textContent = lm.rmM.toFixed(2) + '×';
+  document.getElementById('lb-mult').textContent = lm.lbM.toFixed(2) + '×';
+  document.getElementById('tr-mult').textContent = lm.trM.toFixed(2) + '×';
+  document.getElementById('to-mult').textContent = lm.toM.toFixed(2) + '×';
+  document.getElementById('en-mult').textContent = lm.enM.toFixed(2) + '×';
+  document.getElementById('rm-reason').textContent = lm.rmR;
+  document.getElementById('lb-reason').textContent = lm.lbR;
+  document.getElementById('tr-reason').textContent = lm.trR;
+  document.getElementById('to-reason').textContent = lm.toR;
+  document.getElementById('en-reason').textContent = lm.enR;
+
+  const cap = parseInt(document.getElementById('sel-cap').value);
+  const opDays = v('op-days');
+  const feed = v('p-feedrate');
+  const oilY = v('p-oil-yield') / 100;
+  const charY = v('p-char-yield') / 100;
+  const gasY = v('p-gas-yield') / 100;
+  const lossY = v('p-loss') / 100;
+  const blend = v('p-blend') / 100;
+
+  const oilT = feed * oilY;
+  const charT = feed * charY;
+  const gasT = feed * gasY;
+  const lossT = feed * lossY;
+  const bioOilUsedForBitumen = oilT * 0.85;
+  const bioOilSurplus = oilT * 0.15;
+  const blendFinalT = bioOilUsedForBitumen / blend;
+  const convBitT = blendFinalT - bioOilUsedForBitumen;
+
+  document.getElementById('calc-oil').textContent = oilT.toFixed(1) + ' T';
+  document.getElementById('calc-char').textContent = charT.toFixed(1) + ' T';
+  document.getElementById('calc-gas').textContent = gasT.toFixed(1) + ' T';
+  document.getElementById('calc-loss').textContent = lossT.toFixed(1) + ' T';
+  document.getElementById('calc-conv').textContent = convBitT.toFixed(1) + ' T';
+  document.getElementById('calc-final').innerHTML = '<strong>' + blendFinalT.toFixed(1) + ' T</strong>';
+
+  // Update bitumen qty
+  document.getElementById('bit-qty').value = convBitT.toFixed(1);
+
+  // RAW MAT
+  const rmRows = [
+    { p:'rm1-p', q:'rm1-q', t:'rm1-total' },
+    { p:'rm2-p', q:'rm2-q', t:'rm2-total' },
+    { p:'rm3-p', q:'rm3-q', t:'rm3-total' },
+    { p:'rm4-p', q:'rm4-q', t:'rm4-total' },
+    { p:'rm5-p', q:'rm5-q', t:'rm5-total' },
+    { p:'rm6-p', q:'rm6-q', t:'rm6-total' },
+    { p:'rm7-p', q:'rm7-q', t:'rm7-total' },
+  ];
+  let rmDailyCost = 0, rmTotalQty = 0;
+  rmRows.forEach(r => {
+    const cost = v(r.p) * v(r.q) * lm.rmM;
+    rmDailyCost += cost;
+    rmTotalQty += v(r.q);
+    document.getElementById(r.t).textContent = fmt(cost);
+  });
+  document.getElementById('rm-total-qty').innerHTML = '<strong>' + rmTotalQty.toFixed(1) + ' T</strong>';
+  document.getElementById('rm-total-cost').textContent = fmt(rmDailyCost);
+
+  // Bitumen cost
+  const bitPrice = v('bit-price');
+  const bitGST = bitPrice * 0.18;
+  document.getElementById('bit-gst-show').textContent = fmt(bitGST);
+  document.getElementById('bit-storloss').textContent = fmt(bitPrice * 0.015);
+  const bitLandingPT = bitPrice + bitGST + v('bit-tr') + v('bit-tank') + v('bit-ul') + bitPrice * 0.015;
+  document.getElementById('bit-landing-total').textContent = fmt(bitLandingPT);
+  document.getElementById('bit-ex').textContent = fmt(bitPrice);
+  const bitDailyCost = bitLandingPT * convBitT;
+
+  // Landing cost per tonne agro waste
+  const avgRmPricePerT = rmTotalQty > 0 ? rmDailyCost / rmTotalQty : 0;
+  document.getElementById('lc-raw').textContent = Math.round(avgRmPricePerT);
+  const lcBaling = v('lc-baling') * lm.trM;
+  const lcLoad = v('lc-load');
+  const lcTr1 = v('lc-tr1') * lm.trM;
+  const lcDepot = v('lc-depot');
+  const lcStor = v('lc-stor');
+  const lcTr2 = v('lc-tr2') * lm.trM;
+  const lcUnload = v('lc-unload');
+  const lcTest = v('lc-test');
+  const lcIns = avgRmPricePerT * 0.002;
+  const lcPest = v('lc-pest');
+  const lcOctroi = v('lc-octroi');
+  const lcSubBefore = lcBaling + lcLoad + lcTr1 + lcDepot + lcStor + lcTr2 + lcUnload + lcTest + lcIns + lcPest + lcOctroi;
+  const lcMisc = lcSubBefore * 0.02;
+  const lcAgroTotal = avgRmPricePerT + lcSubBefore + lcMisc;
+  document.getElementById('lc-ins-show').textContent = Math.round(lcIns);
+  document.getElementById('lc-misc-show').textContent = Math.round(lcMisc);
+  document.getElementById('lc-agro-total').textContent = fmt(lcAgroTotal);
+  const lcAgroDailyTotal = lcAgroTotal * rmTotalQty - avgRmPricePerT * rmTotalQty; // just the surcharge portion
+  const lcBitSurcharge = (v('bit-tr') + v('bit-tank') + v('bit-ul') + bitPrice * 0.015) * convBitT;
+
+  // Production costs
+  const elecCost = v('pc-erate') * v('pc-ekwh') * lm.enM;
+  const dieselCost = v('pc-drate') * v('pc-dltrs') * lm.enM;
+  const syngasCredit = gasT * 1023; // fuel credit
+  document.getElementById('pc-elec').textContent = fmt(elecCost);
+  document.getElementById('pc-diesel').textContent = fmt(dieselCost);
+  document.getElementById('pc-syngas').textContent = '-' + fmt(syngasCredit);
+  const energyNet = elecCost + dieselCost - syngasCredit;
+
+  const la1d = v('la1-n') * v('la1-r') * lm.lbM / 25;
+  const la2d = v('la2-n') * v('la2-r') * lm.lbM / 25;
+  const la3d = v('la3-n') * v('la3-r') * lm.lbM / 25;
+  const la4d = v('la4-n') * v('la4-r') * lm.lbM / 25;
+  document.getElementById('la1-d').textContent = fmt(la1d);
+  document.getElementById('la2-d').textContent = fmt(la2d);
+  document.getElementById('la3-d').textContent = fmt(la3d);
+  document.getElementById('la4-d').textContent = fmt(la4d);
+  const totalLabour = (la1d + la2d + la3d + la4d) * 1.2; // 20% PF/ESI
+
+  const pcOhTotal = v('pc-dep') + v('pc-maint') + v('pc-water') + v('pc-chem') + v('pc-qc') + v('pc-etp') + v('pc-oh') + v('pc-iwc');
+  document.getElementById('pc-oh-total').textContent = fmt(pcOhTotal);
+
+  // Packing
+  const pk1Net = v('pk1-c') - v('pk1-s');
+  const pk2Net = v('pk2-c') - v('pk2-s');
+  const pk3Net = v('pk3-c') - v('pk3-s');
+  const pk4Net = v('pk4-c') - v('pk4-s');
+  document.getElementById('pk1-net').textContent = Math.round(pk1Net);
+  document.getElementById('pk2-net').textContent = Math.round(pk2Net);
+  document.getElementById('pk3-net').textContent = Math.round(pk3Net);
+  document.getElementById('pk4-net').textContent = Math.round(pk4Net);
+  const pk1d = pk1Net * v('pk1-qty');
+  const pk2d = pk2Net * v('pk2-qty');
+  const pk3d = pk3Net * v('pk3-qty');
+  const pk4d = pk4Net * v('pk4-qty');
+  document.getElementById('pk1-daily').textContent = fmt(pk1d);
+  document.getElementById('pk2-daily').textContent = fmt(pk2d);
+  document.getElementById('pk3-daily').textContent = fmt(pk3d);
+  document.getElementById('pk4-daily').textContent = fmt(pk4d);
+  const pkTotal = pk1d + pk2d + pk3d + pk4d;
+  document.getElementById('pk-total').textContent = fmt(pkTotal);
+
+  // Waste
+  const wl1T = feed * v('wl1-pct') / 100;
+  const wl2T = feed * v('wl2-pct') / 100;
+  const wl3T = oilT * v('wl3-pct') / 100;
+  const wl4T = charT * v('wl4-pct') / 100;
+  const wl5T = feed * v('wl5-pct') / 100;
+  const wl6T = feed * v('wl6-pct') / 100;
+  const wl7T = feed * v('wl7-pct') / 100;
+  document.getElementById('wl1-t').textContent = wl1T.toFixed(2);
+  document.getElementById('wl2-t').textContent = wl2T.toFixed(2);
+  document.getElementById('wl3-t').textContent = wl3T.toFixed(2);
+  document.getElementById('wl4-t').textContent = wl4T.toFixed(2);
+  document.getElementById('wl5-t').textContent = wl5T.toFixed(2);
+  document.getElementById('wl6-t').textContent = wl6T.toFixed(2);
+  document.getElementById('wl7-t').textContent = wl7T.toFixed(2);
+  const wl1Cost = wl1T * avgRmPricePerT * 1.5;
+  const wl2Cost = wl2T * avgRmPricePerT;
+  const wl3Cost = wl3T * 30000;
+  const wl4Cost = wl4T * 10000;
+  const wl7Cost = wl7T * 1000;
+  document.getElementById('wl1-cost').textContent = fmt(wl1Cost);
+  document.getElementById('wl2-cost').textContent = fmt(wl2Cost);
+  document.getElementById('wl3-cost').textContent = fmt(wl3Cost);
+  document.getElementById('wl4-cost').textContent = fmt(wl4Cost);
+  document.getElementById('wl7-cost').textContent = fmt(wl7Cost);
+  const wlTotal = wl1Cost + wl2Cost + wl3Cost + wl4Cost + 800 + 700 + wl7Cost;
+  document.getElementById('wl-total').textContent = fmt(wlTotal);
+
+  // Finished goods
+  const fgBlendVG30 = blendFinalT * 0.7;
+  const fgBlendVG40 = blendFinalT * 0.3;
+  document.getElementById('fg1-qty').textContent = fgBlendVG30.toFixed(1);
+  document.getElementById('fg2-qty').textContent = fgBlendVG40.toFixed(1);
+  document.getElementById('fg3-qty').textContent = (charT * 0.7).toFixed(1);
+  document.getElementById('fg4-qty').textContent = (charT * 0.15).toFixed(1);
+  document.getElementById('fg5-qty').textContent = bioOilSurplus.toFixed(1);
+
+  const fg1Rev = fgBlendVG30 * v('fg1-price');
+  const fg2Rev = fgBlendVG40 * v('fg2-price');
+  const fg3Rev = charT * 0.7 * v('fg3-price');
+  const fg4Rev = charT * 0.15 * v('fg4-price');
+  const fg5Rev = bioOilSurplus * v('fg5-price');
+  const fg6Rev = 1.0 * v('fg6-price');
+  document.getElementById('fg1-rev').textContent = fmt(fg1Rev);
+  document.getElementById('fg2-rev').textContent = fmt(fg2Rev);
+  document.getElementById('fg3-rev').textContent = fmt(fg3Rev);
+  document.getElementById('fg4-rev').textContent = fmt(fg4Rev);
+  document.getElementById('fg5-rev').textContent = fmt(fg5Rev);
+  document.getElementById('fg6-rev').textContent = fmt(fg6Rev);
+  const fgTotalRev = fg1Rev + fg2Rev + fg3Rev + fg4Rev + fg5Rev + fg6Rev;
+  document.getElementById('fg-total-rev').textContent = fmt(fgTotalRev);
+
+  // Scrap
+  const sc1Rev = v('sc1-q') * v('sc1-p');
+  const sc2Rev = v('sc2-q') * v('sc2-p');
+  const sc3Rev = v('sc3-q') * v('sc3-p');
+  const sc4Rev = v('sc4-q') * v('sc4-p');
+  const sc5Rev = syngasCredit;
+  const sc6Rev = v('sc6-q') * v('sc6-p');
+  const sc7Rev = v('sc7-q') * v('sc7-p');
+  document.getElementById('sc1-rev').textContent = fmt(sc1Rev);
+  document.getElementById('sc2-rev').textContent = fmt(sc2Rev);
+  document.getElementById('sc3-rev').textContent = fmt(sc3Rev);
+  document.getElementById('sc4-rev').textContent = fmt(sc4Rev);
+  document.getElementById('sc5-rev').textContent = fmt(sc5Rev);
+  document.getElementById('sc6-rev').textContent = fmt(sc6Rev);
+  document.getElementById('sc7-rev').textContent = fmt(sc7Rev);
+  const scTotal = sc1Rev + sc2Rev + sc3Rev + sc4Rev + sc5Rev + sc6Rev + sc7Rev;
+  document.getElementById('sc-total').textContent = fmt(scTotal);
+
+  // Cost sheet
+  const outboundLog = blendFinalT * 800 * lm.toM;
+  const byProductCredit = fg3Rev + fg4Rev + fg5Rev + fg6Rev;
+
+  const grossCostDaily = rmDailyCost + bitDailyCost + lcAgroDailyTotal + lcBitSurcharge + energyNet + totalLabour + pcOhTotal + pkTotal + outboundLog + wlTotal;
+  const netCostDaily = grossCostDaily - byProductCredit - scTotal;
+  const netCostPT = blendFinalT > 0 ? netCostDaily / blendFinalT : 0;
+  const blendSalePrice = (v('fg1-price') * 0.7 + v('fg2-price') * 0.3);
+  const grossMarginPT = blendSalePrice - netCostPT;
+  const marginPct = blendSalePrice > 0 ? (grossMarginPT / blendSalePrice * 100) : 0;
+
+  document.getElementById('sum-cpt').textContent = fmt(netCostPT);
+  document.getElementById('sum-spt').textContent = fmt(blendSalePrice);
+  document.getElementById('sum-margin').textContent = fmt(grossMarginPT);
+  document.getElementById('sum-pct').textContent = marginPct.toFixed(1) + '%';
+
+  // Update cost sheet table
+  const csDenom = blendFinalT > 0 ? blendFinalT : 1;
+  document.getElementById('cs1a').textContent = fmt(rmDailyCost);
+  document.getElementById('cs1c').textContent = fmt(rmDailyCost / csDenom);
+  document.getElementById('cs2a').textContent = fmt(bitDailyCost);
+  document.getElementById('cs2c').textContent = fmt(bitDailyCost / csDenom);
+  document.getElementById('cs3a').textContent = fmt(lcAgroDailyTotal);
+  document.getElementById('cs3c').textContent = fmt(lcAgroDailyTotal / csDenom);
+  document.getElementById('cs4a').textContent = fmt(lcBitSurcharge);
+  document.getElementById('cs4c').textContent = fmt(lcBitSurcharge / csDenom);
+  document.getElementById('cs5a').textContent = fmt(energyNet);
+  document.getElementById('cs5c').textContent = fmt(energyNet / csDenom);
+  document.getElementById('cs6a').textContent = fmt(totalLabour);
+  document.getElementById('cs6c').textContent = fmt(totalLabour / csDenom);
+  document.getElementById('cs7a').textContent = fmt(v('pc-dep') + v('pc-maint'));
+  document.getElementById('cs7c').textContent = fmt((v('pc-dep') + v('pc-maint')) / csDenom);
+  document.getElementById('cs8a').textContent = fmt(v('pc-chem') + v('pc-qc') + v('pc-water'));
+  document.getElementById('cs8c').textContent = fmt((v('pc-chem') + v('pc-qc') + v('pc-water')) / csDenom);
+  document.getElementById('cs9a').textContent = fmt(v('pc-etp') + v('pc-oh') + v('pc-iwc'));
+  document.getElementById('cs9c').textContent = fmt((v('pc-etp') + v('pc-oh') + v('pc-iwc')) / csDenom);
+  document.getElementById('cs10a').textContent = fmt(pkTotal);
+  document.getElementById('cs10c').textContent = fmt(pkTotal / csDenom);
+  document.getElementById('cs11a').textContent = fmt(outboundLog);
+  document.getElementById('cs11c').textContent = fmt(outboundLog / csDenom);
+  document.getElementById('cs12a').textContent = fmt(wlTotal);
+  document.getElementById('cs12c').textContent = fmt(wlTotal / csDenom);
+  document.getElementById('cs-gross-d').textContent = fmt(grossCostDaily);
+  document.getElementById('cs-gross-t').textContent = fmt(grossCostDaily / csDenom);
+  document.getElementById('cs13a').textContent = fmt(-byProductCredit);
+  document.getElementById('cs13c').textContent = fmt(-byProductCredit / csDenom);
+  document.getElementById('cs14a').textContent = fmt(-scTotal);
+  document.getElementById('cs14c').textContent = fmt(-scTotal / csDenom);
+  document.getElementById('cs-net-d').textContent = fmt(netCostDaily);
+  document.getElementById('cs-net-t').textContent = fmt(netCostPT);
+
+  // P&L
+  const locName = LOC_NAMES[loc] || loc;
+  document.getElementById('loc-name').textContent = locName;
+  document.getElementById('loc-cap').textContent = cap + ' TPD';
+  document.getElementById('loc-days').textContent = opDays;
+  document.getElementById('loc-ann').textContent = Math.round(blendFinalT * opDays).toLocaleString('en-IN') + ' T/yr';
+  document.getElementById('pnl-loc').textContent = locName;
+  document.getElementById('pnl-cap').textContent = cap + ' TPD';
+
+  const annRev = fgTotalRev * opDays;
+  const annRM = rmDailyCost * opDays;
+  const annLand = (lcAgroDailyTotal + lcBitSurcharge + bitDailyCost) * opDays;
+  const annProd = (energyNet + totalLabour + pcOhTotal) * opDays;
+  const annPack = pkTotal * opDays;
+  const annWaste = wlTotal * opDays;
+  const annScrap = scTotal * opDays;
+
+  const annGP = annRev - annRM - annLand - annProd - annPack - annWaste + annScrap;
+  const annGM = annRev > 0 ? (annGP / annRev * 100) : 0;
+  const sga = annRev * 0.03;
+  const fin = annRev * 0.02;
+  const annNP = annGP - sga - fin;
+  const annNM = annRev > 0 ? (annNP / annRev * 100) : 0;
+  const plantCost = cap * 1500000; // 15L per TPD
+  const payback = annNP > 0 ? (plantCost / annNP) : 99;
+
+  document.getElementById('pnl-rev').textContent = fmtC(annRev / 1e7);
+  document.getElementById('pnl-rm').textContent = '-' + fmtC(annRM / 1e7);
+  document.getElementById('pnl-land').textContent = '-' + fmtC(annLand / 1e7);
+  document.getElementById('pnl-prod').textContent = '-' + fmtC(annProd / 1e7);
+  document.getElementById('pnl-pack').textContent = '-' + fmtC(annPack / 1e7);
+  document.getElementById('pnl-waste').textContent = '-' + fmtC(annWaste / 1e7);
+  document.getElementById('pnl-scrap').textContent = '+' + fmtC(annScrap / 1e7);
+  document.getElementById('pnl-gp').innerHTML = '<span class="' + (annGP > 0 ? 'sv-green' : 'sv-red') + '">' + (annGP > 0 ? '' : '-') + fmtC(Math.abs(annGP) / 1e7) + '</span>';
+  document.getElementById('pnl-gm').textContent = annGM.toFixed(1) + '%';
+  document.getElementById('pnl-sga').textContent = '-' + fmtC(sga / 1e7);
+  document.getElementById('pnl-fin').textContent = '-' + fmtC(fin / 1e7);
+  document.getElementById('pnl-np').innerHTML = '<span class="' + (annNP > 0 ? 'sv-green' : 'sv-red') + '">' + (annNP > 0 ? '' : '-') + fmtC(Math.abs(annNP) / 1e7) + '</span>';
+  document.getElementById('pnl-nm').textContent = annNM.toFixed(1) + '%';
+  document.getElementById('pnl-pay').textContent = payback.toFixed(1) + ' years';
+}
+
+recalc();
+</script>
+</body>
+</html>

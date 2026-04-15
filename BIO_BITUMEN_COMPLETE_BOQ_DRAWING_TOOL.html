@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Bio-Bitumen Plant — Complete BOQ & Drawing Spec Tool</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#fafafa;--s1:#fff;--s2:#f5f5f5;--s3:#efefef;
+  --bdr:#e0e0e0;--bdr2:#cacaca;
+  --text:#1a1a1a;--text2:#555;--text3:#999;
+  --blue:#1565c0;--blue2:#e3f0ff;
+  --green:#2e7d32;--green2:#e8f5e9;
+  --amber:#e65100;--amber2:#fff3e0;
+  --red:#c62828;--red2:#ffebee;
+  --purple:#4527a0;--purple2:#ede7f6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px}
+.mono{font-family:'DM Mono',monospace}
+
+/* HEADER */
+.hdr{background:var(--blue);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+.hdr h1{font-size:17px;font-weight:600;letter-spacing:-0.3px}
+.hdr p{font-size:11px;opacity:0.75;margin-top:2px}
+.hdr-right{display:flex;gap:8px}
+.hbtn{padding:6px 14px;border-radius:4px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.hbtn:hover{background:rgba(255,255,255,0.2)}
+.hbtn.prim{background:#fff;color:var(--blue)}
+
+/* CONTROLS */
+.ctrl-bar{background:var(--s1);border-bottom:1px solid var(--bdr);padding:12px 24px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.ctrl-group{display:flex;align-items:center;gap:8px}
+.ctrl-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
+.ctrl-input{padding:5px 10px;border:1px solid var(--bdr);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--s2);color:var(--text);outline:none;width:100px}
+.ctrl-input:focus{border-color:var(--blue);background:#fff}
+.ctrl-select{padding:5px 10px;border:1px solid var(--bdr);border-radius:4px;font-size:12px;background:var(--s2);color:var(--text);outline:none}
+.ctrl-select:focus{border-color:var(--blue)}
+.updated{font-size:11px;color:var(--green);font-weight:600;opacity:0}
+.updated.show{opacity:1;transition:opacity 0.3s}
+
+/* SUMMARY STRIP */
+.summary{display:grid;grid-template-columns:repeat(6,1fr);gap:0;border-bottom:2px solid var(--bdr)}
+.sum-box{padding:12px 16px;border-right:1px solid var(--bdr)}
+.sum-box:last-child{border-right:none}
+.sum-label{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px}
+.sum-val{font-size:18px;font-weight:600;font-family:'DM Mono',monospace;color:var(--blue)}
+.sum-sub{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* MAIN LAYOUT */
+.main{display:flex;height:calc(100vh - 164px)}
+.sidebar{width:220px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--bdr);overflow-y:auto}
+.zone-btn{width:100%;text-align:left;padding:9px 14px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;gap:8px;border-bottom:0.5px solid var(--bdr);font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text2);transition:all 0.12s}
+.zone-btn:hover{background:var(--s2);color:var(--text)}
+.zone-btn.active{background:var(--blue2);color:var(--blue);font-weight:600}
+.zone-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.zone-cost{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);margin-left:auto}
+.zone-btn.active .zone-cost{color:var(--blue)}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto}
+
+/* ZONE PAGE */
+.zone-page{padding:20px 24px;display:none}
+.zone-page.active{display:block}
+.zone-title{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.zt-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+.zt-text{font-size:18px;font-weight:600;color:var(--text)}
+.zone-sub{font-size:12px;color:var(--text2);margin-bottom:16px}
+
+/* 3-COLUMN LAYOUT */
+.zone-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:8px;overflow:hidden}
+.card-head{padding:8px 12px;background:var(--s2);border-bottom:1px solid var(--bdr);font-size:11px;font-weight:600;color:var(--text2);display:flex;justify-content:space-between;align-items:center;text-transform:uppercase;letter-spacing:0.5px}
+.card-body{padding:12px}
+
+/* EQUIPMENT TABLE */
+.eq-table{width:100%;border-collapse:collapse;font-size:11px}
+.eq-table th{padding:5px 8px;background:var(--s3);font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--bdr);text-align:left}
+.eq-table td{padding:6px 8px;border-bottom:0.5px solid var(--bdr);vertical-align:top}
+.eq-table tr:last-child td{border-bottom:none}
+.eq-table tr:hover td{background:var(--s2)}
+.eq-tag{font-family:'DM Mono',monospace;font-size:10px;background:var(--blue2);color:var(--blue);padding:1px 6px;border-radius:3px;white-space:nowrap}
+.eq-tag.new{background:#e8f5e9;color:#2e7d32}
+.eq-qty{font-family:'DM Mono',monospace;text-align:center}
+.eq-cost{font-family:'DM Mono',monospace;text-align:right;color:var(--amber)}
+.total-row td{background:var(--amber2);font-weight:600;font-family:'DM Mono',monospace;color:var(--amber)}
+
+/* DIMS TABLE */
+.dim-card{background:var(--s1);border:1px solid var(--bdr);border-radius:8px;margin-bottom:16px;overflow:hidden}
+.dim-row{display:flex;border-bottom:0.5px solid var(--bdr);font-size:12px}
+.dim-row:last-child{border-bottom:none}
+.dim-label{padding:8px 12px;color:var(--text2);flex:1;border-right:0.5px solid var(--bdr)}
+.dim-val{padding:8px 12px;font-family:'DM Mono',monospace;color:var(--text);font-weight:500;white-space:nowrap}
+.dim-note{padding:8px 12px;color:var(--text3);font-size:11px;flex:1}
+
+/* DRAWING SPEC BOX */
+.draw-spec{background:var(--purple2);border:1px solid #b39ddb;border-radius:8px;padding:14px;margin-top:8px;font-size:11px}
+.ds-title{font-size:11px;font-weight:600;color:var(--purple);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.ds-list{list-style:none;display:flex;flex-direction:column;gap:4px}
+.ds-list li{color:var(--text2);padding-left:12px;position:relative;line-height:1.5}
+.ds-list li::before{content:'›';position:absolute;left:0;color:var(--purple)}
+
+/* MANAGEMENT TABLE */
+.mgmt-table{width:100%;border-collapse:collapse;font-size:11px}
+.mgmt-table th{padding:5px 8px;background:var(--s3);font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;border-bottom:1px solid var(--bdr);text-align:left}
+.mgmt-table td{padding:6px 8px;border-bottom:0.5px solid var(--bdr);vertical-align:top}
+.badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600}
+.b-must{background:var(--red2);color:var(--red)}
+.b-good{background:var(--amber2);color:var(--amber)}
+.b-opt{background:var(--green2);color:var(--green)}
+
+/* PROMPT BOX */
+.prompt-box{background:#1a1a2e;border-radius:8px;padding:16px;margin-top:16px;position:relative}
+.pb-title{font-size:10px;font-weight:600;color:#7c8aab;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.pb-text{font-family:'DM Mono',monospace;font-size:11px;color:#c8d8ff;line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto}
+.pb-copy{position:absolute;top:12px;right:12px;padding:4px 10px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);border-radius:4px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.pb-copy:hover{background:rgba(255,255,255,0.15)}
+
+/* GLOBAL BOQ */
+.boq-table{width:100%;border-collapse:collapse;font-size:12px}
+.boq-table th{padding:7px 12px;background:var(--s3);font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--bdr);text-align:left}
+.boq-table td{padding:7px 12px;border-bottom:0.5px solid var(--bdr);vertical-align:middle}
+.boq-zone-row td{background:var(--blue2);font-weight:600;color:var(--blue);font-size:12px}
+.boq-total td{background:var(--amber2);font-weight:700;font-family:'DM Mono',monospace;color:var(--amber);font-size:14px}
+.boq-civil td{background:var(--green2);font-weight:600;color:var(--green);font-family:'DM Mono',monospace}
+
+/* PRINT */
+@media print{
+  .hdr-right,.ctrl-bar,.sidebar{display:none}
+  .main{display:block;height:auto}
+  .content{overflow:visible}
+  .zone-page{display:block;page-break-before:always}
+  .zone-page:first-child{page-break-before:avoid}
+  .prompt-box{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <h1>Bio-Bitumen Plant — Complete BOQ, Dimensions & Drawing Specifications</h1>
+    <p>All 15 Zones (A–O) + Additional Items · Sizes · Equipment Costs · Drawing Prompts · Management Chart</p>
+  </div>
+  <div class="hdr-right">
+    <button class="hbtn" onclick="showZone('boq')">Full BOQ Summary</button>
+    <button class="hbtn" onclick="showZone('mgmt')">Management Chart</button>
+    <button class="hbtn prim" onclick="window.print()">↓ Print / PDF</button>
+  </div>
+</div>
+
+<div class="ctrl-bar">
+  <div class="ctrl-group"><span class="ctrl-label">Capacity (TPD)</span>
+    <input class="ctrl-input" type="number" id="cap" value="20" min="5" max="200" oninput="recalc()">
+  </div>
+  <div class="ctrl-group"><span class="ctrl-label">Plot (m L×W)</span>
+    <input class="ctrl-input" type="number" id="plotL" value="120" oninput="recalc()">
+    <span style="color:var(--text3)">×</span>
+    <input class="ctrl-input" type="number" id="plotW" value="80" oninput="recalc()">
+  </div>
+  <div class="ctrl-group"><span class="ctrl-label">State</span>
+    <select class="ctrl-select" id="state" onchange="recalc()">
+      <option value="mh" selected>Maharashtra</option>
+      <option value="gj">Gujarat</option>
+      <option value="pb">Punjab/Haryana</option>
+      <option value="up">Uttar Pradesh</option>
+      <option value="mp">Madhya Pradesh</option>
+      <option value="rj">Rajasthan</option>
+      <option value="ka">Karnataka</option>
+      <option value="tn">Tamil Nadu</option>
+    </select>
+  </div>
+  <div class="ctrl-group"><span class="ctrl-label">Build Type</span>
+    <select class="ctrl-select" id="btype" onchange="recalc()">
+      <option value="peb">PEB Sheds + RCC Critical</option>
+      <option value="rcc">Full RCC</option>
+    </select>
+  </div>
+  <div class="ctrl-group"><span class="ctrl-label">Contingency %</span>
+    <input class="ctrl-input" type="number" id="conting" value="10" min="5" max="20" oninput="recalc()">
+  </div>
+  <span class="updated" id="upd">All values updated</span>
+</div>
+
+<div class="summary">
+  <div class="sum-box"><div class="sum-label">Total Civil</div><div class="sum-val" id="s-civil">—</div><div class="sum-sub">₹ Crore</div></div>
+  <div class="sum-box"><div class="sum-label">Equipment</div><div class="sum-val" id="s-equip">—</div><div class="sum-sub">₹ Crore</div></div>
+  <div class="sum-box"><div class="sum-label">Electrical</div><div class="sum-val" id="s-elec">—</div><div class="sum-sub">₹ Crore</div></div>
+  <div class="sum-box"><div class="sum-label">Total Built-up</div><div class="sum-val" id="s-area">—</div><div class="sum-sub">sqm covered</div></div>
+  <div class="sum-box"><div class="sum-label">Contingency</div><div class="sum-val" id="s-conting">—</div><div class="sum-sub">₹ Crore</div></div>
+  <div class="sum-box" style="background:var(--blue)"><div class="sum-label" style="color:rgba(255,255,255,0.7)">Grand Total</div><div class="sum-val" style="color:#fff" id="s-total">—</div><div class="sum-sub" style="color:rgba(255,255,255,0.6)">₹ Crore (excl. land)</div></div>
+</div>
+
+<div class="main">
+<div class="sidebar" id="sidebar"></div>
+<div class="content" id="content"></div>
+</div>
+
+<script>
+const ZONES = [
+  {id:'A',name:'Gate & Security',color:'#1565c0',eq:6,add:3},
+  {id:'B',name:'RM Receiving',color:'#2e7d32',eq:5,add:4},
+  {id:'C',name:'Pre-Processing',color:'#6a1b9a',eq:5,add:4},
+  {id:'D',name:'Reactor Zone',color:'#bf360c',eq:5,add:5},
+  {id:'E',name:'Oil Recovery',color:'#0277bd',eq:4,add:4},
+  {id:'F',name:'Blending',color:'#558b2f',eq:4,add:4},
+  {id:'G',name:'Storage',color:'#4527a0',eq:4,add:4},
+  {id:'H',name:'Packing & Dispatch',color:'#e65100',eq:6,add:4},
+  {id:'I',name:'Electrical',color:'#00695c',eq:5,add:3},
+  {id:'J',name:'Utilities',color:'#5d4037',eq:5,add:4},
+  {id:'K',name:'Laboratory',color:'#c62828',eq:8,add:5},
+  {id:'L',name:'Safety & Environment',color:'#283593',eq:7,add:5},
+  {id:'M',name:'Civil Works',color:'#37474f',eq:10,add:4},
+  {id:'N',name:'Office & Admin',color:'#6d4c41',eq:5,add:3},
+  {id:'O',name:'Maintenance',color:'#1b5e20',eq:3,add:5},
+];
+
+function v(id){return parseFloat(document.getElementById(id)?.value)||0;}
+function fmt(n){return '₹'+(n/1e7).toFixed(2)+' Cr';}
+function fmtL(n){return '₹'+(n/1e5).toFixed(2)+' L';}
+function fmtPln(n){return Math.round(n).toLocaleString('en-IN');}
+
+// State cost multipliers
+const STATE_MULT = {mh:1.15,gj:1.05,pb:1.0,up:0.92,mp:0.90,rj:0.93,ka:1.10,tn:1.12};
+
+function buildCostPerSqm(btype,state){
+  const sm = STATE_MULT[state]||1.0;
+  const base = btype==='rcc' ? 18000 : 11000; // ₹/sqm
+  return base * sm;
+}
+function eqCostFactor(cap){ return cap/20; }
+
+// ── ZONE DATA ──
+function getZoneData(cap,btype,state){
+  const cf = eqCostFactor(cap);
+  const cs = buildCostPerSqm(btype,state);
+  const sm = STATE_MULT[state]||1.0;
+
+  return [
+  // A - Gate & Security
+  {
+    id:'A', name:'Gate & Security', color:'#1565c0',
+    dims:{L:18,W:12,H:5,area:216,type:'RCC framed',note:'Security at main entry'},
+    extra_dims:[
+      {l:'Weighbridge platform',v:'18m L × 4m W × 0.6m ht'},
+      {l:'Guard booth',v:'3m × 3m RCC, 3.2m ht'},
+      {l:'Boom barrier opening',v:'6m clear width'},
+      {l:'CCTV pole heights',v:'6m and 9m MS tubular'},
+      {l:'Road approach taper',v:'12m flared from 7m to 12m'},
+      {l:'Visitor parking',v:'5 cars = 12.5m × 2.5m each'},
+    ],
+    equip:[
+      {tag:'SC-01',name:'Main Gate (motorized sliding)',qty:1,cost:180000,spec:'6m opening, MS fabricated, motorized, RAL 5012'},
+      {tag:'SC-02',name:'Weighbridge (40T capacity)',qty:1,cost:1200000,spec:'18m × 3m, digital, printer, IS 9281'},
+      {tag:'SC-03',name:'Guard Booth',qty:1,cost:95000,spec:'3×3m prefab, AC, intercom'},
+      {tag:'SC-04',name:'Boom Barrier',qty:2,cost:85000,spec:'Motorized, 6m arm, ANPR camera'},
+      {tag:'SC-05',name:'CCTV System (IP cameras)',qty:8,cost:320000,spec:'2MP PTZ, NVR 16ch, 30 days storage'},
+      {tag:'SC-06',name:'Weighbridge Cabin & Software',qty:1,cost:250000,spec:'4×3m, PC, printer, data link'},
+      {tag:'SC-07',name:'Visitor Management System',qty:1,cost:85000,spec:'Biometric, RFID, barrier interlock',isNew:true},
+      {tag:'SC-08',name:'Emergency Vehicle Access Gate',qty:1,cost:120000,spec:'4m wide, manual + remote, Fire brigade',isNew:true},
+      {tag:'SC-09',name:'Perimeter lighting',qty:1,cost:350000,spec:'LED 100W, 9m poles, IS 1944',isNew:true},
+    ],
+    civil_area:216,
+    management:[
+      {role:'Security Supervisor',count:1,shift:'General',type:'must'},
+      {role:'Security Guards',count:3,shift:'3 shifts × 1',type:'must'},
+      {role:'Weighbridge Operator',count:2,shift:'2 shifts',type:'must'},
+    ],
+    drawing_prompt_extra:'Show: weighbridge approach road 18m, guard booth with window facing road, boom barrier positions, CCTV pole positions and heights, turning radius 12m for trucks, visitor parking marked, emergency gate separate from main gate.',
+    add_items:['Fire tender parking bay near gate','Truck queue lane 40m × 5m outside gate','Information signboard with plant name, emergency numbers','PPE dispenser cabinet at entry to process zone'],
+  },
+
+  // B - RM Receiving
+  {
+    id:'B', name:'Raw Material Receiving', color:'#2e7d32',
+    dims:{L:Math.round(40+cap*0.5),W:Math.round(20+cap*0.3),H:8,area:0,type:'PEB Shed open sides',note:'Open shed, agro waste storage'},
+    extra_dims:[
+      {l:'Unloading ramp (tipping)',v:'6m W × 12m L, slope 1:8, 1.2m ht'},
+      {l:'Covered storage shed',v:`${Math.round(40+cap*0.5)}m × ${Math.round(20+cap*0.3)}m × 8m eave`},
+      {l:'Open storage yard',v:`${Math.round(cap*4)}m × ${Math.round(cap*2.5)}m, 7 day stock`},
+      {l:'Belt conveyor trench',v:'0.6m W × 0.5m D'},
+      {l:'Front-end loader movement aisle',v:'6m min clearance'},
+      {l:'Fire break distance',v:'Min 6m from boundary'},
+    ],
+    equip:[
+      {tag:'RM-01',name:'Unloading Ramp (tipping/hopper)',qty:1,cost:Math.round(450000*cf),spec:'6m wide, RCC, 40T load, 1.2m ht, hopper 15m3'},
+      {tag:'RM-02',name:'Covered Storage Shed (PEB)',qty:1,cost:Math.round(1800000*cf*sm),spec:`${Math.round(40+cap*0.5)}×${Math.round(20+cap*0.3)}m PEB, corrugated roof`},
+      {tag:'RM-03',name:'Belt Conveyor (inclined)',qty:1,cost:Math.round(550000*cf),spec:`${Math.round(30+cap)}m, ${Math.round(400+cap*20)}mm belt, 75kW`},
+      {tag:'RM-04',name:'Front-End Loader / Bobcat',qty:1,cost:Math.round(1800000*cf),spec:'1.5m3 bucket, diesel, IS 4701'},
+      {tag:'RM-05',name:'Dust Suppression System',qty:1,cost:Math.round(180000),spec:'Mist nozzles, pump, 2000L tank'},
+      {tag:'RM-06',name:'Moisture Analyser (online)',qty:1,cost:85000,spec:'NIR type, ±0.5% accuracy, display',isNew:true},
+      {tag:'RM-07',name:'Biomass Quality Tester',qty:1,cost:45000,spec:'Sampling, ash test, calorific kit',isNew:true},
+      {tag:'RM-08',name:'Magnetic Separator (pre-belt)',qty:1,cost:220000,spec:'Suspended magnet, cross-belt, remove metals',isNew:true},
+      {tag:'RM-09',name:'Truck Positioning Guides',qty:4,cost:25000,spec:'Concrete kerbs, wheel stoppers',isNew:true},
+    ],
+    civil_area:0,
+    management:[
+      {role:'RM Incharge',count:1,shift:'General',type:'must'},
+      {role:'Store Keeper',count:1,shift:'General',type:'must'},
+      {role:'Loader Operator',count:2,shift:'2 shifts',type:'must'},
+      {role:'Sampling/QC Technician',count:1,shift:'General',type:'good'},
+    ],
+    drawing_prompt_extra:'Show: truck reversing approach, ramp dimensions with slope annotation, conveyor route plan and elevation, front-end loader movement arc, 7-day stock pile area, moisture content test point, dust suppression nozzle positions, fire break clearance from shed to boundary.',
+    add_items:['Vendor unloading verification station','RFID truck tracking at gate','Daily stock register (digital)','Pest control spray arrangement for long storage'],
+  },
+
+  // C - Pre-Processing
+  {
+    id:'C', name:'Pre-Processing', color:'#6a1b9a',
+    dims:{L:Math.round(30+cap*0.4),W:18,H:9,area:0,type:'RCC framed building',note:'Noise + dust enclosed'},
+    extra_dims:[
+      {l:'Pre-processing building',v:`${Math.round(30+cap*0.4)}m × 18m × 9m`},
+      {l:'Shredder foundations (anti-vib)',v:'4m × 3m × 0.8m deep RCC pad'},
+      {l:'Rotary dryer support structure',v:`${Math.round(4+cap*0.15)}m dia, ${Math.round(20+cap*0.5)}m long`},
+      {l:'Pelletizer platform',v:'6m × 4m × 1.2m ht mezzanine'},
+      {l:'Screw conveyor trough',v:'300-400mm dia, varies per route'},
+      {l:'Acoustic enclosure clearance',v:'1.5m all sides of shredder'},
+    ],
+    equip:[
+      {tag:'PP-01',name:'Primary Shredder (Hammer Mill)',qty:1,cost:Math.round(850000*cf),spec:`${Math.round(800+cap*25)} kg/hr, 75kW, 50mm output`},
+      {tag:'PP-02',name:'Rotary Drum Dryer',qty:1,cost:Math.round(2200000*cf),spec:`${(cap/16).toFixed(1)}m dia × ${(cap*0.5+18).toFixed(1)}m, 37kW, to <12% moisture`},
+      {tag:'PP-03',name:'Secondary Hammer Mill (Fine)',qty:1,cost:Math.round(650000*cf),spec:`${Math.round(600+cap*20)} kg/hr, 45kW, 3mm output`},
+      {tag:'PP-04',name:'Pelletizer (ring die)',qty:1,cost:Math.round(1200000*cf),spec:`${Math.round(500+cap*15)} kg/hr, 6mm die, 55kW`},
+      {tag:'PP-05',name:'Magnetic Separator',qty:1,cost:180000,spec:'Cross-belt suspended, 200mm belt, IS 4801'},
+      {tag:'PP-06',name:'Screw Conveyors (set)',qty:4,cost:Math.round(380000*cf),spec:'250-400mm dia, variable length, SS304 contact'},
+      {tag:'PP-07',name:'Cyclone Dust Separator',qty:1,cost:220000,spec:'Multi-cyclone, 95% efficiency, emission control',isNew:true},
+      {tag:'PP-08',name:'Vibrating Screen / Sieve',qty:1,cost:320000,spec:'2-deck, 6mm/3mm mesh, 50kN force',isNew:true},
+      {tag:'PP-09',name:'Surge Hopper (feed buffer)',qty:2,cost:Math.round(280000*cf),spec:`${Math.round(3+cap*0.15)}m3 each, load cells, level indicator`,isNew:true},
+    ],
+    civil_area:0,
+    management:[
+      {role:'Pre-Processing Operator',count:3,shift:'3 shifts',type:'must'},
+      {role:'Maintenance Fitter',count:1,shift:'General',type:'must'},
+      {role:'Process Supervisor',count:1,shift:'2 shifts',type:'must'},
+    ],
+    drawing_prompt_extra:'Show: equipment on foundations with anti-vibration detail, dryer inclination 3°, acoustic enclosure around shredder, screw conveyor routes in plan and section, dust collection ducts to cyclone, material flow direction arrows, emergency exits both sides, conveyor guarding hatched.',
+    add_items:['Pellet quality sampler installed on conveyor','Online ash analyser post-dryer','Dryer exhaust duct to emission control','VFD on all conveyor drives for variable speed'],
+  },
+
+  // D - Reactor Zone
+  {
+    id:'D', name:'Reactor Zone', color:'#bf360c',
+    dims:{L:Math.round(35+cap*0.6),W:Math.round(25+cap*0.3),H:0,area:0,type:'Open process area',note:'HAZARDOUS — Zone 1. No buildings inside 15m of reactor'},
+    extra_dims:[
+      {l:'Reactor vessel (per unit)',v:`${(1+cap*0.04).toFixed(1)}m dia × ${(3+cap*0.12).toFixed(1)}m ht on 1.5m skirt`},
+      {l:'Reactor skirt foundation',v:`${(1+cap*0.04+1.5).toFixed(1)}m dia RCC mat, 600mm thick M25`},
+      {l:'Feed hopper platform ht',v:'4.5m above GL, steel structure'},
+      {l:'Char discharge conveyor',v:'Screw 250mm dia, 6m long, water-jacketed'},
+      {l:'PLC room (blast-resistant)',v:'6m × 5m, 250mm walls, 30m from reactor'},
+      {l:'Reactor-to-reactor clearance',v:`${Math.max(5,cap*0.25).toFixed(1)}m (IS 14489)`},
+      {l:'Min clearance to boundary',v:'15m (petroleum class B)'},
+    ],
+    equip:[
+      {tag:'RZ-01',name:'Pyrolysis Reactor (indirectly heated)',qty:cap<=30?1:2,cost:Math.round(8500000*cf),spec:`${(1+cap*0.04).toFixed(1)}m dia × ${(3+cap*0.12).toFixed(1)}m, SS310 inner, 500°C, IS 2825`},
+      {tag:'RZ-02',name:'Feed Hopper + Rotary Valve',qty:cap<=30?1:2,cost:Math.round(480000*cf),spec:`${(3+cap*0.15).toFixed(1)}m3, load cell, rotary airlock`},
+      {tag:'RZ-03',name:'Char Discharge Screw (water-jacketed)',qty:cap<=30?1:2,cost:Math.round(380000*cf),spec:'250mm dia, 8m, SS316, outlet < 60°C'},
+      {tag:'RZ-04',name:'Syngas Burner + Combustion Chamber',qty:1,cost:Math.round(950000*cf),spec:`${Math.round(cap*1500)} MJ/hr, automatic, IS 7876`},
+      {tag:'RZ-05',name:'PLC/HMI Control System (SCADA)',qty:1,cost:Math.round(2800000*cf),spec:'Siemens S7-1500, 15" HMI, SCADA, IS 13732'},
+      {tag:'RZ-06',name:'N2 Inert Gas Purge System',qty:1,cost:Math.round(450000),spec:'Cylinder manifold, regulator, auto-purge on alarm',isNew:true},
+      {tag:'RZ-07',name:'Temperature & Pressure Transmitters',qty:12,cost:Math.round(480000),spec:'Thermocouple TT + PT, IS 3624, 4-20mA',isNew:true},
+      {tag:'RZ-08',name:'Safety Relief Valves (PSV)',qty:cap<=30?2:4,cost:Math.round(180000),spec:'Set 0.3 barg, spring, IS 3290',isNew:true},
+      {tag:'RZ-09',name:'Reactor Heating System (electric/gas)',qty:cap<=30?1:2,cost:Math.round(1200000*cf),spec:`${Math.round(cap*120)} kW electric elements or gas burner`,isNew:true},
+      {tag:'RZ-10',name:'Gas Analyser (CO/CH4/H2S)',qty:2,cost:Math.round(350000),spec:'Fixed + portable, IS 15809, 4-20mA, alarm',isNew:true},
+    ],
+    civil_area:0,
+    management:[
+      {role:'Reactor Operator (Senior)',count:3,shift:'3 shifts',type:'must'},
+      {role:'Reactor Operator (Junior)',count:3,shift:'3 shifts',type:'must'},
+      {role:'Process Chemist',count:1,shift:'General',type:'must'},
+      {role:'Safety Officer',count:1,shift:'General',type:'must'},
+      {role:'Instrument Technician',count:1,shift:'2 shifts',type:'must'},
+    ],
+    drawing_prompt_extra:'Show: reactor vessel in elevation and plan, skirt dimension, nozzle positions all labelled, 15m exclusion zone from boundary as chain-dotted circle, Zone 1 and Zone 2 hatched areas per IS 5572, N2 purge line, PSV discharge stack, blast wall direction, wind sock position, eyewash within 10m.',
+    add_items:['Reactor area deluge system','Wind sock at reactor area entry','Restricted entry sign at 15m perimeter','CCTV camera on reactor (thermal imaging)'],
+  },
+
+  // E - Oil Recovery
+  {
+    id:'E', name:'Oil Recovery', color:'#0277bd',
+    dims:{L:Math.round(25+cap*0.4),W:18,H:7,area:0,type:'RCC framed + dyke bund',note:'Flammable liquid area, bund mandatory'},
+    extra_dims:[
+      {l:'Condenser (shell & tube)',v:`${(0.8+cap*0.02).toFixed(1)}m dia × ${(3+cap*0.08).toFixed(1)}m L`},
+      {l:'Cooling tower footprint',v:`${Math.round(4+cap*0.1)}m × ${Math.round(4+cap*0.1)}m`},
+      {l:'Oil-water separator tank',v:`${(2+cap*0.08).toFixed(1)}m dia × ${(2+cap*0.05).toFixed(1)}m ht`},
+      {l:'Collection tank (bio-oil)',v:`${(cap*0.32*3/1).toFixed(1)} m3 × 2 tanks`},
+      {l:'Dyke bund height',v:'1.0m, width 0.3m RCC, area = 110% max tank vol'},
+      {l:'Pump plinth',v:'0.3m ht, anti-vibration, 1.5m clearance'},
+    ],
+    equip:[
+      {tag:'OR-01',name:'Shell & Tube Condenser',qty:1,cost:Math.round(950000*cf),spec:`${(0.8+cap*0.02).toFixed(1)}m dia, SS316 tubes, TEMA class C, IS 4503`},
+      {tag:'OR-02',name:'Cooling Tower (induced draft)',qty:1,cost:Math.round(650000*cf),spec:`${Math.round(cap*1.5)} m3/hr, FRP, 3kW fan`},
+      {tag:'OR-03',name:'Oil-Water Separator',qty:1,cost:Math.round(480000*cf),spec:`${(2+cap*0.08).toFixed(1)}m dia, SS304, plate pack type`},
+      {tag:'OR-04',name:'Bio-Oil Collection Tank',qty:2,cost:Math.round(680000*cf),spec:`${(cap*0.32*3/1).toFixed(1)}m3 each, MS, IS 803, fixed roof`},
+      {tag:'OR-05',name:'Bio-Oil Transfer Pumps',qty:2,cost:Math.round(185000*cf),spec:'Gear pump, SS316 wetted, flanged, IS 5120'},
+      {tag:'OR-06',name:'Condensate Collection Sump',qty:1,cost:Math.round(120000),spec:'RCC, 2m × 2m × 1.5m deep, epoxy lined',isNew:true},
+      {tag:'OR-07',name:'Flame Arrestor (vapour line)',qty:2,cost:95000,spec:'IS 6183, deflagration type, SS316, 200mm',isNew:true},
+      {tag:'OR-08',name:'Dyke Bund (RCC)',qty:1,cost:Math.round(280000*cf),spec:'RCC M20, 1m ht, 0.3m wide, IS 15663',isNew:true},
+    ],
+    civil_area:0,
+    management:[
+      {role:'Oil Recovery Operator',count:3,shift:'3 shifts',type:'must'},
+      {role:'Lab Technician (quality check)',count:1,shift:'General',type:'must'},
+    ],
+    drawing_prompt_extra:'Show: dyke bund in plan with dimensions, tank positions inside dyke, drain sump with valve, pump locations, condenser elevation with cooling water inlet/outlet, flame arrestor positions on vapour lines, all nozzles on tanks, overfill prevention level switch.',
+    add_items:['Oil level alarm on collection tanks','Sample point after oil-water separator','Vapour recovery unit (optional for GHG credits)'],
+  },
+
+  // F - Blending
+  {
+    id:'F', name:'Blending', color:'#558b2f',
+    dims:{L:Math.round(22+cap*0.3),W:15,H:7,area:0,type:'RCC framed, insulated walls',note:'Heated process area, min 2 exits'},
+    extra_dims:[
+      {l:'Bitumen heating tank',v:`${(cap*0.45*2/1.02).toFixed(1)}m3, ${(cap*0.27).toFixed(1)}m dia × ${(cap*0.22).toFixed(1)}m ht, insulated`},
+      {l:'Blend tank (agitated)',v:`${(cap*0.1*2).toFixed(1)}m3, ${(cap*0.12+0.5).toFixed(1)}m dia`},
+      {l:'High shear mixer clearance',v:'2m all sides, 1.5m above'},
+      {l:'Colloid mill platform',v:'1.0m ht pedestal, 2m × 1.5m'},
+      {l:'Pump plinth',v:'0.3m ht, antivib pad'},
+      {l:'Hot surface guard clearance',v:'0.5m min, railing at 1.1m'},
+    ],
+    equip:[
+      {tag:'BL-01',name:'Bitumen Heating Tank (insulated)',qty:2,cost:Math.round(780000*cf),spec:`${(cap*0.45*2/1.02).toFixed(1)}m3, 160°C, trace heated, IS 1553`},
+      {tag:'BL-02',name:'High Shear Mixer',qty:1,cost:Math.round(850000*cf),spec:`${Math.round(cap*150)} L, 15kW, rotor-stator type`},
+      {tag:'BL-03',name:'Colloid Mill (fine blend)',qty:1,cost:Math.round(650000*cf),spec:`${Math.round(cap*100)} L/hr, 22kW, SS316`},
+      {tag:'BL-04',name:'Transfer Pumps (bitumen)',qty:2,cost:Math.round(280000*cf),spec:'Gear pump, insulated casing, 140-160°C service'},
+      {tag:'BL-05',name:'Inline Static Mixer',qty:1,cost:95000,spec:'Kenics type, SS316, 80mm dia',isNew:true},
+      {tag:'BL-06',name:'Online Viscosity Meter',qty:1,cost:220000,spec:'Torsional vibration type, IS 1206, display',isNew:true},
+      {tag:'BL-07',name:'Blend Ratio Control System',qty:1,cost:380000,spec:'Mass flow meters + PLC ratio control',isNew:true},
+      {tag:'BL-08',name:'Hot-oil Heat Exchanger (if no trace)',qty:1,cost:Math.round(450000*cf),spec:'Plate type, SS316, 150°C service, TEMA',isNew:true},
+    ],
+    civil_area:0,
+    management:[
+      {role:'Blending Operator',count:3,shift:'3 shifts',type:'must'},
+      {role:'QC Chemist (blend approval)',count:1,shift:'General',type:'must'},
+    ],
+    drawing_prompt_extra:'Show: tanks in plan with insulation outer boundary, hot surface warning marks, mixer in elevation with shaft and motor, pump positions, blend ratio flow diagram as small inset, hot surface guard railing, temperature transmitter positions on all tanks.',
+    add_items:['Automatic batch record logger','Sample port after each blend step','Temperature data logger with cloud upload'],
+  },
+
+  // G - Storage
+  {
+    id:'G', name:'Finished Goods Storage', color:'#4527a0',
+    dims:{L:Math.round(30+cap*0.5),W:20,H:8,area:0,type:'Mix: insulated tanks + covered shed',note:'Dyke for liquid tanks, silo for biochar'},
+    extra_dims:[
+      {l:'Finished bitumen tanks',v:`${Math.round(cap*0.55*5)} m3 total (5-day), ${Math.round(cap*0.18+0.5)}m dia each`},
+      {l:'Biochar silo',v:`${(cap*0.28*5).toFixed(1)}m3, ${(cap*0.12+1.5).toFixed(1)}m dia × 6m ht`},
+      {l:'Bio-oil surplus tank',v:`${(cap*0.05*3).toFixed(1)}m3, ${(cap*0.05+1).toFixed(1)}m dia`},
+      {l:'Diesel tank (underground)',v:`${Math.round(cap*50)} L, FRP underground IS 5484`},
+      {l:'Dyke bund (bitumen+bio-oil)',v:'1.0m ht RCC, all liquid tanks inside'},
+      {l:'Tanker loading bay',v:'12m × 6m, 4.5m clearance ht'},
+    ],
+    equip:[
+      {tag:'ST-01',name:'Finished Bitumen Storage Tank',qty:3,cost:Math.round(850000*cf),spec:`${Math.round(cap*0.55*5/3)}m3 each, 160°C, trace heated, IS 803`},
+      {tag:'ST-02',name:'Biochar Storage Silo',qty:1,cost:Math.round(680000*cf),spec:`${(cap*0.28*5).toFixed(1)}m3, inert purge, CO detector`},
+      {tag:'ST-03',name:'Bio-Oil Surplus Tank',qty:1,cost:Math.round(380000*cf),spec:`${(cap*0.05*3).toFixed(1)}m3, fixed roof, flame arrestor`},
+      {tag:'ST-04',name:'Diesel Storage Tank (underground)',qty:1,cost:Math.round(320000),spec:`${Math.round(cap*50)}L, FRP, IS 5484, vent + dipstick`},
+      {tag:'ST-05',name:'Dyke Bund (RCC)',qty:1,cost:Math.round(350000*cf),spec:'IS 15663, all liquid tanks, 1.0m ht',isNew:true},
+      {tag:'ST-06',name:'Inventory Management System (RFID)',qty:1,cost:150000,spec:'Barcode/RFID, scanner, software',isNew:true},
+      {tag:'ST-07',name:'Level Indicators (all tanks)',qty:6,cost:180000,spec:'Guided radar type, 4-20mA, IS 11591',isNew:true},
+    ],
+    civil_area:0,
+    management:[
+      {role:'Stores Incharge',count:1,shift:'General',type:'must'},
+      {role:'Stores Assistant',count:2,shift:'2 shifts',type:'must'},
+    ],
+    drawing_prompt_extra:'Show: all tanks in plan with dyke bund outline, 110% volume dyke calculation shown, diesel tank as underground symbol, silo elevation with cone angle 60°, level transmitter nozzle positions, vent and flame arrestor on each tank, loading bay approach road.',
+    add_items:['Bitumen tanker parking with wheel stoppers','Automated tank gauging system','LACT unit (lease automatic custody transfer) for billing'],
+  },
+
+  // H - Packing & Dispatch
+  {
+    id:'H', name:'Packing & Dispatch', color:'#e65100',
+    dims:{L:Math.round(35+cap*0.6),W:22,H:9,area:0,type:'PEB shed + loading bay',note:'High traffic, min 2 docks'},
+    extra_dims:[
+      {l:'Drum filling bay',v:'12m × 8m, crane 3T capacity'},
+      {l:'Bagging machine platform',v:'4m × 3m, 0.3m ht'},
+      {l:'Tanker loading arm position',v:'6m × 6m open area, 4m ht clearance'},
+      {l:'Loading bay (trucks)',v:'Min 2 docks, each 12m × 5m'},
+      {l:'Forklift charging bay',v:'5m × 4m, ventilated, IS 2148 Ex'},
+      {l:'Truck parking / dispatch yard',v:`${Math.round(30+cap*0.5)}m × 20m, 2-way traffic`},
+      {l:'Pallet storage area',v:'20m × 8m racking or floor storage'},
+    ],
+    equip:[
+      {tag:'PD-01',name:'Drum Filling Machine',qty:1,cost:Math.round(550000*cf),spec:'Auto weighing, 180kg drum, hot bitumen, IS 1502'},
+      {tag:'PD-02',name:'Bagging Machine (biochar)',qty:1,cost:Math.round(420000*cf),spec:'25-50kg bags, impeller type, 8-12 bags/min'},
+      {tag:'PD-03',name:'Tanker Loading Arm',qty:1,cost:Math.round(680000*cf),spec:'Top-loading, insulated, DN100, 160°C, IS 8148'},
+      {tag:'PD-04',name:'Loading Bay (RCC dock)',qty:2,cost:Math.round(350000),spec:'1.2m ht dock, 5T capacity, leveller'},
+      {tag:'PD-05',name:'Forklift (3T electric)',qty:2,cost:Math.round(1800000),spec:'3T capacity, 4m lift, IS 4660'},
+      {tag:'PD-06',name:'Truck Parking / Dispatch Yard',qty:1,cost:Math.round(1200000*sm),spec:'RCC pavement 200mm, 6 truck bays, drainage'},
+      {tag:'PD-07',name:'Stretch Wrapping Machine',qty:1,cost:180000,spec:'Automatic, pallet wrapping, IS 11197',isNew:true},
+      {tag:'PD-08',name:'Batch Coding & Labelling System',qty:1,cost:120000,spec:'Inkjet coder, label printer, barcode',isNew:true},
+      {tag:'PD-09',name:'Certificate of Analysis Printer',qty:1,cost:45000,spec:'Lab connected, auto-print per batch',isNew:true},
+      {tag:'PD-10',name:'ERP Dispatch Module',qty:1,cost:250000,spec:'Invoice, delivery note, lorry receipt, GST e-way bill',isNew:true},
+    ],
+    civil_area:0,
+    management:[
+      {role:'Dispatch Incharge',count:1,shift:'General',type:'must'},
+      {role:'Packing Operator',count:4,shift:'2 shifts × 2',type:'must'},
+      {role:'Forklift Operator',count:2,shift:'2 shifts',type:'must'},
+      {role:'Dispatch Clerk',count:1,shift:'General',type:'must'},
+    ],
+    drawing_prompt_extra:'Show: loading dock section view with leveller, tanker loading arm in elevation, drum filling conveyor flow, forklift turning circle 3.5m radius, truck approach lanes 1-way with arrows, pallet storage layout, emergency spill kit position near loading area.',
+    add_items:['Drum inspection station before filling','Certificate of Conformance automatic printing','Truck documentation kiosk (ERP linked)','Night lighting for late dispatch'],
+  },
+
+  // I - Electrical
+  {
+    id:'I', name:'Electrical Infrastructure', color:'#00695c',
+    dims:{L:12,W:10,H:5,area:120,type:'RCC framed, fire-rated 2hr',note:'Dry, positive pressure, no drainage inside'},
+    extra_dims:[
+      {l:'Substation building',v:'12m × 10m × 5m, RCC, 2hr fire rated'},
+      {l:'Transformer plinth (outdoor)',v:'4m × 3m × 0.3m, oil containment pit'},
+      {l:'DG set room',v:`${Math.round(6+cap*0.1)}m × 5m, ventilated, acoustic 45dB(A)`},
+      {l:'HT cable trench',v:'0.6m W × 0.75m D, covered, sealed'},
+      {l:'Cable tray routes',v:'300mm W × 100mm D, GI hot-dip galv'},
+      {l:'Earth pit locations',v:'Min 2 per building, IS 3043'},
+    ],
+    equip:[
+      {tag:'EL-01',name:'HT/LT Transformer',qty:1,cost:Math.round(2800000*cf),spec:`${Math.round(cap*25+200)} kVA, 11kV/415V, ONAN, CRGO, IS 2026`},
+      {tag:'EL-02',name:'DG Set (standby)',qty:1,cost:Math.round(1800000*cf),spec:`${Math.round(cap*20+150)} kVA, diesel, AMF panel, IS 10001`},
+      {tag:'EL-03',name:'Main LT Panel / MCC',qty:1,cost:Math.round(1600000*cf),spec:'IP54 Form-4, 415V, 25kA, IS 8623, incomer + feeders'},
+      {tag:'EL-04',name:'Power Factor Correction Panel',qty:1,cost:Math.round(380000*cf),spec:`${Math.round(cap*20)} kVAR, auto-switching, IS 13925`},
+      {tag:'EL-05',name:'Street Lighting System',qty:1,cost:Math.round(550000*sm),spec:'LED 100W, 9m poles, IS 1944, photocell control'},
+      {tag:'EL-06',name:'UPS System (for SCADA/PLC)',qty:1,cost:350000,spec:'20kVA online double-conversion, 60min backup',isNew:true},
+      {tag:'EL-07',name:'Earthing & Lightning Protection',qty:1,cost:Math.round(280000*sm),spec:'IS 3043 earth mat, IS 2309 LA, <1Ω main earth',isNew:true},
+      {tag:'EL-08',name:'Energy Meter (main + sub)',qty:8,cost:120000,spec:'MFT energy meter, 4-20mA, RS485 Modbus',isNew:true},
+    ],
+    civil_area:120,
+    management:[
+      {role:'Licensed Electrician (HV)',count:1,shift:'General',type:'must'},
+      {role:'Electrician (LV)',count:2,shift:'2 shifts',type:'must'},
+    ],
+    drawing_prompt_extra:'Show: single line diagram inset, transformer oil containment pit dimensions, cable trench routes in plan, DG set room with louver positions (acoustic), UPS room with battery rack layout, earthing grid plan with electrode positions, street lighting pole positions and spacing.',
+    add_items:['Solar panels on rooftops (25-50kWp)','Smart metering for each process area','Power monitoring software dashboard'],
+  },
+
+  // J - Utilities
+  {
+    id:'J', name:'Utilities', color:'#5d4037',
+    dims:{L:Math.round(20+cap*0.2),W:15,H:5,area:0,type:'RCC + outdoor equipment',note:'Includes ETP area'},
+    extra_dims:[
+      {l:'ETP area',v:`${Math.round(20+cap*0.3)}m × ${Math.round(12+cap*0.1)}m, bunded`},
+      {l:'Water supply tank (overhead)',v:`${Math.round(cap*2+20)}kL, MS elevated, 9m ht`},
+      {l:'Water sump (underground)',v:`${Math.round(cap*3+30)}kL, RCC, IS 3370`},
+      {l:'Compressor room',v:'6m × 5m, ventilated, IS 7938'},
+      {l:'RO plant footprint',v:'5m × 3m, IS 10500 outlet'},
+      {l:'Piping distribution routes',v:'Overhead GI rack, 300mm W'},
+    ],
+    equip:[
+      {tag:'UT-01',name:'Air Compressor (screw type)',qty:2,cost:Math.round(680000*cf),spec:`${Math.round(cap*2+30)} CFM, 8 bar, 22kW, IS 5456, 1 standby`},
+      {tag:'UT-02',name:'Water Piping (plant-wide)',qty:1,cost:Math.round(850000*cf*sm),spec:'GI IS 1239, valves IS 778, fittings IS 1879'},
+      {tag:'UT-03',name:'ETP (physicochemical + STP)',qty:1,cost:Math.round(1200000*cf),spec:`${Math.round(cap*0.8+5)}KLD, pH control, MBBR, IS 10500 outlet`},
+      {tag:'UT-04',name:'RO Water Treatment Plant',qty:1,cost:Math.round(450000*cf),spec:`${Math.round(cap*0.5+5)}KLD, IS 10500 process water`},
+      {tag:'UT-05',name:'Septic Tank + Soak Pit',qty:1,cost:Math.round(180000),spec:'IS 2470, 3-chamber, 3KLD, soil absorption'},
+      {tag:'UT-06',name:'Fire Water Storage Tank',qty:1,cost:Math.round(680000*cf),spec:`${cap<=30?50:100}KL RCC, IS 3370, jockey pump, main pump`},
+      {tag:'UT-07',name:'Nitrogen Generation Unit',qty:1,cost:Math.round(950000*cf),spec:`${Math.round(cap*5+20)} Nm3/hr, PSA type, 99.5% purity, IS 7885`,isNew:true},
+      {tag:'UT-08',name:'Rainwater Harvesting System',qty:1,cost:Math.round(280000*sm),spec:'Rooftop collection, 50KL underground tank',isNew:true},
+      {tag:'UT-09',name:'Online Water Quality Analyser',qty:1,cost:180000,spec:'pH, COD, turbidity, continuous, CPCB compliant',isNew:true},
+    ],
+    civil_area:0,
+    management:[
+      {role:'Utility Operator',count:2,shift:'2 shifts',type:'must'},
+      {role:'Plumber/Fitter',count:1,shift:'General',type:'good'},
+    ],
+    drawing_prompt_extra:'Show: ETP process flow diagram as inset, water balance diagram, overhead tank structure with staging dimensions, RO plant as block with connections, drain routes and gradient (min 1:100 to ETP), nitrogen line route to reactor area, compressed air ring main with isolation valves.',
+    add_items:['Online effluent monitoring (CPCB OCEMS)','Biogas from ETP (if STP)'],
+  },
+
+  // K - Laboratory
+  {
+    id:'K', name:'Quality Control Laboratory', color:'#c62828',
+    dims:{L:12,W:9,H:3.5,area:108,type:'RCC building AC',note:'Separate ventilated fume hood. Min 6 exhaust changes/hr'},
+    extra_dims:[
+      {l:'Lab room dimensions',v:'12m × 9m × 3.5m clear ht, tile floor'},
+      {l:'Fume hood recess',v:'1.2m × 0.8m × 2.4m ht, SS interior'},
+      {l:'Instrument room',v:'4m × 3m, AC, UPS, vibration-free benches'},
+      {l:'Sample storage',v:'3m × 2m, fireproof cabinets'},
+      {l:'Lab benches',v:'900mm × 600mm W, epoxy top, 900mm ht'},
+      {l:'Wash area',v:'2m × 1.5m, IS drainage, acid-resistant'},
+    ],
+    equip:[
+      {tag:'LA-01',name:'Penetration Test Apparatus',qty:1,cost:85000,spec:'IS 1203, motorized, 0-300 × 0.1mm, 100g wt'},
+      {tag:'LA-02',name:'Softening Point Apparatus (R&B)',qty:1,cost:65000,spec:'IS 1205, digital, 2 rings, oil bath, IS 1206'},
+      {tag:'LA-03',name:'Kinematic Viscosity Bath',qty:1,cost:120000,spec:'IS 1206 Part 2, digital temp control ±0.1°C'},
+      {tag:'LA-04',name:'Ductility Test Machine',qty:1,cost:180000,spec:'IS 1208, 5cm/min, 25°C water bath, 1.5m travel'},
+      {tag:'LA-05',name:'Cleveland Flash Point Tester',qty:1,cost:95000,spec:'IS 1209, auto, digital, 300°C range'},
+      {tag:'LA-06',name:'Muffle Furnace (1200°C)',qty:1,cost:85000,spec:'IS 1609, 5L chamber, digital controller'},
+      {tag:'LA-07',name:'Marshall Stability Machine',qty:1,cost:220000,spec:'IS 2386 Part 5, 25kN cap, digital load cell'},
+      {tag:'LA-08',name:'Lab Furniture (benches, chairs)',qty:1,cost:350000,spec:'Epoxy top, SS sink, IS 1328 epoxy coating'},
+      {tag:'LA-09',name:'GC Analyser (bio-oil composition)',qty:1,cost:1800000,spec:'Gas chromatograph, FID detector, IS 7919',isNew:true},
+      {tag:'LA-10',name:'Karl Fischer Moisture Analyser',qty:1,cost:280000,spec:'Volumetric KF, ±0.01% moisture, IS 8691',isNew:true},
+      {tag:'LA-11',name:'Bomb Calorimeter',qty:1,cost:320000,spec:'Adiabatic, 0.1% accuracy, IS 1448 P28',isNew:true},
+      {tag:'LA-12',name:'Fume Hood (SS)',qty:1,cost:180000,spec:'1.2m W, motorized sash, 0.5m/s face velocity',isNew:true},
+      {tag:'LA-13',name:'LIMS (Lab Information System)',qty:1,cost:250000,spec:'Software, barcode, auto-report, linked to DPR',isNew:true},
+    ],
+    civil_area:108,
+    management:[
+      {role:'Lab Manager / Chemist',count:1,shift:'General',type:'must'},
+      {role:'Lab Technician',count:2,shift:'2 shifts',type:'must'},
+    ],
+    drawing_prompt_extra:'Show: lab bench layout in plan (900mm × 600mm benches, 1200mm aisle min), fume hood position with exhaust duct to roof, instrument room as separate enclosed space, wash area with floor drain, AC units positions, emergency eyewash position inside lab, fireproof cabinet for solvents.',
+    add_items:['IS 73-2013 bitumen standard test methods panel','Quality dashboard screen in lab','Calibration record board','NABL accreditation preparation equipment list'],
+  },
+
+  // L - Safety & Environment
+  {
+    id:'L', name:'Safety & Environment', color:'#283593',
+    dims:{L:8,W:6,H:3.5,area:48,type:'RCC room + open yard',note:'Safety station near process centre'},
+    extra_dims:[
+      {l:'Safety station room',v:'8m × 6m × 3.5m, AC'},
+      {l:'Fire hydrant spacing',v:'Max 45m between hydrants (NBC Part 4)'},
+      {l:'Fire hose box spacing',v:'Max 25m, RAL 3002 red'},
+      {l:'Stack height',v:'Min 30m (IS 11229), 600mm dia'},
+      {l:'Bag filter platform',v:'3m × 3m, 4m above GL'},
+      {l:'Gas detector zones',v:'2m radius around each detector'},
+      {l:'Eyewash station',v:'Within 10m of every hazard point'},
+    ],
+    equip:[
+      {tag:'SF-01',name:'Fire Hydrant Ring Main (underground)',qty:1,cost:Math.round(1800000*cf*sm),spec:'DN150 MS IS 1239, looped, IS 3844, 18m3/hr at 0.7barg'},
+      {tag:'SF-02',name:'Fire Extinguishers (assorted)',qty:Math.round(cap*1.5+15),cost:Math.round(180000),spec:'CO2 5kg, DCP 10kg, Foam 50L, IS 15683'},
+      {tag:'SF-03',name:'Bag Filter (air pollution control)',qty:1,cost:Math.round(680000*cf),spec:`${Math.round(cap*150+500)} m3/hr, PM <50mg/Nm3, IS 11229`},
+      {tag:'SF-04',name:'Wet Scrubber + Stack',qty:1,cost:Math.round(850000*cf),spec:'Packed column, 30m stack, MoEFCC 2016 norms'},
+      {tag:'SF-05',name:'Gas Detection System (fixed)',qty:1,cost:Math.round(650000),spec:'CO/H2S/CH4, IS 15809, 4-wire, central panel'},
+      {tag:'SF-06',name:'Eyewash Stations',qty:4,cost:85000,spec:'IS 15694, tepid water 26-38°C, 15min flow'},
+      {tag:'SF-07',name:'PPE Storage & Dispensing',qty:1,cost:120000,spec:'Lockable cabinet, all PPE types, IS 9167'},
+      {tag:'SF-08',name:'Fire Detection & Alarm Panel',qty:1,cost:Math.round(450000),spec:'IS 2189, addressable, smoke+heat+flame det',isNew:true},
+      {tag:'SF-09',name:'Safety Shower (near reactor)',qty:2,cost:65000,spec:'IS 15694, 60L/min, stainless, drench type',isNew:true},
+      {tag:'SF-10',name:'CEMS (Continuous Emission Monitor)',qty:1,cost:Math.round(1200000),spec:'SO2/NOx/PM/CO online, CPCB OCEMS compliant',isNew:true},
+      {tag:'SF-11',name:'First Aid Room + Stretcher',qty:1,cost:95000,spec:'NBC 2016, AED defibrillator, O2 cylinder, IS 4595',isNew:true},
+      {tag:'SF-12',name:'Wind Sock + Muster Point Boards',qty:3,cost:35000,spec:'6m MS pole, ISO 7010 signs',isNew:true},
+    ],
+    civil_area:48,
+    management:[
+      {role:'Safety Officer (IS 14489)',count:1,shift:'General',type:'must'},
+      {role:'Safety Steward',count:3,shift:'3 shifts',type:'must'},
+      {role:'First Aider (trained)',count:3,shift:'3 shifts',type:'must'},
+    ],
+    drawing_prompt_extra:'Show: fire hydrant positions numbered FH-01 to FH-N with 45m spacing ring, emergency assembly points A and B, all extinguisher stations, stack in elevation 30m, eyewash positions within 10m of every hazard, safety shower positions, fire detection zones on site plan, wind sock position visible from process area.',
+    add_items:['Mock drill records board','HAZOP study register','Permit-to-work station (hot work/height/confined space)','Emergency contact board (hospital, fire brigade, CPCB)'],
+  },
+
+  // M - Civil Works
+  {
+    id:'M', name:'Civil Works (Site-Wide)', color:'#37474f',
+    dims:{L:v('plotL')||120,W:v('plotW')||80,H:0,area:(v('plotL')||120)*(v('plotW')||80),type:'Site-wide',note:'All site civil — roads, compound, drainage, green belt'},
+    extra_dims:[
+      {l:'Compound wall',v:`${Math.round(2*((v('plotL')||120)+(v('plotW')||80)))}m perimeter, 2.4m ht, RCC + brick`},
+      {l:'Internal roads (RCC)',v:'6m width, 200mm thick M25 RCC'},
+      {l:'Fire access road',v:'6m, continuous ring, turning radius 9m'},
+      {l:'Paving (process area)',v:'Industrial pavement IS 1237, epoxy joints'},
+      {l:'Storm water drain',v:'600mm U-drain, gradient 1:100, IS 651'},
+      {l:'Green belt',v:`5m all sides = ${Math.round(2*((v('plotL')||120)+(v('plotW')||80)))*5} sqm`},
+      {l:'Plinth height',v:'450mm (or 900mm if flood-prone)'},
+    ],
+    equip:[
+      {tag:'CV-01',name:'Plant Building (Process Hall)',qty:1,cost:Math.round(((30+cap*0.4)*18+cap*18)*cs*10.76/1e7)*1e7,spec:`${Math.round((30+cap*0.4)*18+cap*18)} sqm, PEB/RCC as selected`},
+      {tag:'CV-02',name:'Office + Admin Block',qty:1,cost:Math.round(200*cs*10.76),spec:'200 sqm, RCC, 2-storey, AC'},
+      {tag:'CV-03',name:'Control Room (blast-resistant)',qty:1,cost:Math.round(48*cs*10.76*1.5),spec:'8m × 6m × 3.2m, 250mm blast walls, IS 13063'},
+      {tag:'CV-04',name:'Laboratory Building',qty:1,cost:Math.round(108*cs*10.76),spec:'12m × 9m, RCC, tile, AC, fume exhaust'},
+      {tag:'CV-05',name:'Canteen',qty:1,cost:Math.round(80*cs*10.76),spec:'80 sqm, RCC, IS 7250, 40 seats'},
+      {tag:'CV-06',name:'Toilets + Changeroom',qty:2,cost:Math.round(60*cs*10.76),spec:'30 sqm each, M/F separate, IS 5965'},
+      {tag:'CV-07',name:'Compound Wall + Gate',qty:1,cost:Math.round(Math.round(2*((v('plotL')||120)+(v('plotW')||80)))*2800*sm),spec:'2.4m ht, 200mm brick, RCC pillars 3m c/c'},
+      {tag:'CV-08',name:'Internal Roads (RCC)',qty:1,cost:Math.round((v('plotL')||120)*(v('plotW')||80)*0.18*1800*sm),spec:'200mm M25 RCC, 6m W, IS 15658'},
+      {tag:'CV-09',name:'Storm Drainage + ETP Drain',qty:1,cost:Math.round((v('plotL')||120)*(v('plotW')||80)*0.015*sm*2500),spec:'600mm U-drain, gradient 1:100, IS 651'},
+      {tag:'CV-10',name:'Green Belt + Landscaping',qty:1,cost:Math.round(Math.round(2*((v('plotL')||120)+(v('plotW')||80)))*5*350),spec:'5m wide, native trees, irrigation, IS 6533'},
+    ],
+    civil_area:(v('plotL')||120)*(v('plotW')||80)*0.3,
+    management:[
+      {role:'Site Engineer (Civil)',count:1,shift:'General',type:'must'},
+      {role:'Civil Supervisor',count:1,shift:'During construction',type:'must'},
+    ],
+    drawing_prompt_extra:'Show: complete site layout with all buildings in plan, compound wall perimeter dimensioned, road widths annotated, storm drain gradient arrow, green belt hatched with tree symbols, FFL elevation marks at each building, plot boundary with survey numbers, north arrow prominent.',
+    add_items:['RCC hardstand for equipment maintenance area','Solar-lit pathway lighting','CCTV pole positions on compound wall','Rainwater collection channels'],
+  },
+
+  // N - Office & Admin
+  {
+    id:'N', name:'Office & Administration', color:'#6d4c41',
+    dims:{L:20,W:10,H:7,area:200,type:'RCC 2-storey',note:'Ground: reception, conf. First: GM, accounts, HR'},
+    extra_dims:[
+      {l:'Ground floor',v:'10m × 10m = 100sqm: reception, conf 2, toilets'},
+      {l:'First floor',v:'10m × 10m = 100sqm: 5 cabins, open work 20 desks'},
+      {l:'Server room',v:'3m × 2m, AC, UPS, cable management'},
+      {l:'Conference room',v:'5m × 4m, 10 seats, projector'},
+      {l:'Reception',v:'4m × 3m, front desk, waiting 6 seats'},
+    ],
+    equip:[
+      {tag:'OF-01',name:'Office Furniture (desks, chairs)',qty:1,cost:Math.round(650000),spec:'25 workstations, partitions, ergonomic chairs IS 11254'},
+      {tag:'OF-02',name:'IT Equipment (PCs, server)',qty:1,cost:Math.round(850000),spec:'Desktop PCs, server rack, NAS, UPS, IS 13252'},
+      {tag:'OF-03',name:'Air Conditioning (split)',qty:6,cost:Math.round(480000),spec:'1.5T + 2T units, IS 1391, 5-star BEE rated'},
+      {tag:'OF-04',name:'Signage (outdoor + indoor)',qty:1,cost:Math.round(120000),spec:'Company name board, directional, safety signs IS 9457'},
+      {tag:'OF-05',name:'Lockers (staff)',qty:Math.round(cap*1.5+20),cost:Math.round(280000),spec:'Steel, IS 3190, 1800×300×450mm each'},
+      {tag:'OF-06',name:'PA / Intercom System',qty:1,cost:180000,spec:'24-zone PA, IS 2268, plant-wide coverage',isNew:true},
+      {tag:'OF-07',name:'Video Conferencing System',qty:1,cost:250000,spec:'65" display, 4K camera, Teams/Zoom certified',isNew:true},
+      {tag:'OF-08',name:'ERP Software (plant-wide)',qty:1,cost:Math.round(1200000),spec:'SAP B1 / Tally Prime Mfg, linked to SCADA',isNew:true},
+    ],
+    civil_area:200,
+    management:[
+      {role:'Plant Manager / GM',count:1,shift:'General',type:'must'},
+      {role:'HR Manager',count:1,shift:'General',type:'must'},
+      {role:'Accounts Manager',count:1,shift:'General',type:'must'},
+      {role:'Admin Executive',count:2,shift:'General',type:'must'},
+    ],
+    drawing_prompt_extra:'Show: office floor plans both levels, furniture layout at 1:50 scale, server room with raised floor symbol, conference table layout, reception desk at entry, toilet positions both levels, stair section, AC unit positions on exterior.',
+    add_items:['Plant KPI dashboard screen in GM cabin','Document management system (DMS)','Security access control per floor'],
+  },
+
+  // O - Maintenance
+  {
+    id:'O', name:'Maintenance & Workshop', color:'#1b5e20',
+    dims:{L:18,W:12,H:6,area:216,type:'RCC shed + mezzanine',note:'5T overhead crane mandatory'},
+    extra_dims:[
+      {l:'Workshop floor area',v:'18m × 12m = 216 sqm, epoxy floor'},
+      {l:'Overhead crane span',v:'12m, 5T SWL, IS 807, IS 3177'},
+      {l:'Parts storage (mezzanine)',v:'18m × 5m = 90 sqm, first floor'},
+      {l:'Crane hook height',v:'5m clearance under hook'},
+      {l:'Work bench height',v:'900mm, 300mm steel plate top'},
+      {l:'Vice position',v:'Every 1.5m bench, 150mm anvil vice'},
+      {l:'Lube bay',v:'3m × 3m, drip pan, IS 13365'},
+    ],
+    equip:[
+      {tag:'MT-01',name:'Workshop Tools Set (full)',qty:1,cost:Math.round(680000),spec:'Lathe 1.5m, drill press, grinder, IS 7270'},
+      {tag:'MT-02',name:'Spare Parts Store (shelving)',qty:1,cost:Math.round(320000),spec:'Heavy-duty racking, FIFO, IS 12792'},
+      {tag:'MT-03',name:'Overhead Crane / Hoist',qty:1,cost:Math.round(1800000),spec:'5T, 12m span, IS 807, IS 3177, end-carriage type'},
+      {tag:'MT-04',name:'Welding Machine (MIG+TIG+Arc)',qty:2,cost:Math.round(180000),spec:'Lincoln/ESAB, IS 4353, with PPE station',isNew:true},
+      {tag:'MT-05',name:'Hydraulic Press (50T)',qty:1,cost:Math.round(380000),spec:'C-frame, IS 7438, calibrated gauge',isNew:true},
+      {tag:'MT-06',name:'Condition Monitoring Kit',qty:1,cost:Math.round(450000),spec:'Vibration analyser, IR thermometer, ultrasonic, IS 14846',isNew:true},
+      {tag:'MT-07',name:'CMMS Software (maintenance mgmt)',qty:1,cost:350000,spec:'Asset register, PM schedule, spares, IS 14846',isNew:true},
+      {tag:'MT-08',name:'Mobile Scaffolding Set',qty:2,cost:120000,spec:'IS 3696, 4m ht, wheel-locked, IS PPE',isNew:true},
+    ],
+    civil_area:216,
+    management:[
+      {role:'Maintenance Supervisor',count:1,shift:'General',type:'must'},
+      {role:'Mechanical Fitter',count:2,shift:'2 shifts',type:'must'},
+      {role:'Electrical Technician',count:1,shift:'2 shifts',type:'must'},
+      {role:'Instrument Technician',count:1,shift:'General',type:'good'},
+    ],
+    drawing_prompt_extra:'Show: crane elevation and plan with span dimension, travel buffer marks, floor drain positions, work bench layout, parts racking elevations, vehicle access door (5m wide × 5m ht), lube bay with drip tray, welding bay with ventilation duct, safe load notice prominent.',
+    add_items:['Confined space rescue kit','Rigging equipment (slings, shackles) certified','Annual statutory crane inspection record board'],
+  },
+  ]; // end return
+}
+
+let ZONE_DATA = [];
+
+function recalc(){
+  const cap = v('cap'), btype = document.getElementById('btype').value;
+  const state = document.getElementById('state').value;
+  const conting = v('conting')/100;
+  const cs = buildCostPerSqm(btype,state);
+
+  ZONE_DATA = getZoneData(cap,btype,state);
+
+  // Fix computed area fields
+  ZONE_DATA[1].dims.area = (40+cap*0.5)*(20+cap*0.3);
+  ZONE_DATA[2].dims.area = (30+cap*0.4)*18;
+  ZONE_DATA[3].dims.area = (35+cap*0.6)*(25+cap*0.3);
+  ZONE_DATA[4].dims.area = (25+cap*0.4)*18;
+  ZONE_DATA[5].dims.area = (22+cap*0.3)*15;
+  ZONE_DATA[6].dims.area = (30+cap*0.5)*20;
+  ZONE_DATA[7].dims.area = (35+cap*0.6)*22;
+  ZONE_DATA[9].dims.area = (20+cap*0.2)*15 + (20+cap*0.3)*(12+cap*0.1);
+  ZONE_DATA[12].dims.area = v('plotL')*v('plotW');
+  ZONE_DATA[12].dims.L = v('plotL'); ZONE_DATA[12].dims.W = v('plotW');
+
+  let totalCivil=0, totalEquip=0, totalElec=0, totalArea=0;
+  ZONE_DATA.forEach(z=>{
+    const eqTotal = z.equip.reduce((s,e)=>s+e.cost*e.qty,0);
+    totalEquip += eqTotal;
+    const civilCost = z.civil_area * cs * 10.76;
+    totalCivil += civilCost;
+    totalArea += z.civil_area || 0;
+  });
+  totalElec = totalEquip * 0.12 + 500000*(v('cap')/20)*STATE_MULT[state];
+  const subtotal = totalCivil + totalEquip + totalElec;
+  const contingAmt = subtotal * conting;
+  const grand = subtotal + contingAmt;
+
+  document.getElementById('s-civil').textContent = (totalCivil/1e7).toFixed(2);
+  document.getElementById('s-equip').textContent = (totalEquip/1e7).toFixed(2);
+  document.getElementById('s-elec').textContent = (totalElec/1e7).toFixed(2);
+  document.getElementById('s-area').textContent = Math.round(totalArea).toLocaleString('en-IN');
+  document.getElementById('s-conting').textContent = (contingAmt/1e7).toFixed(2);
+  document.getElementById('s-total').textContent = (grand/1e7).toFixed(2);
+
+  buildSidebar();
+  const upd = document.getElementById('upd');
+  upd.classList.add('show');
+  setTimeout(()=>upd.classList.remove('show'),2000);
+}
+
+function buildCostPerSqm(bt,st){
+  const sm = STATE_MULT[st]||1;
+  return (bt==='rcc'?18000:11000)*sm;
+}
+
+function buildSidebar(){
+  const sb = document.getElementById('sidebar');
+  const state = document.getElementById('state').value;
+  const cs = buildCostPerSqm(document.getElementById('btype').value,state);
+  let html = '<div style="padding:8px 12px;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--bdr)">Select Zone</div>';
+  ZONE_DATA.forEach(z=>{
+    const eqTotal = z.equip.reduce((s,e)=>s+e.cost*e.qty,0);
+    const civTotal = (z.civil_area||0)*cs*10.76;
+    const zTotal = eqTotal+civTotal;
+    const active = document.querySelector('.zone-btn.active')?.dataset.zone;
+    html += `<button class="zone-btn${active===z.id?' active':''}" data-zone="${z.id}" onclick="showZone('${z.id}')">
+      <div class="zone-dot" style="background:${z.color}"></div>
+      <span>${z.id}. ${z.name}</span>
+      <span class="zone-cost">${(zTotal/1e5).toFixed(0)}L</span>
+    </button>`;
+  });
+  html += `<button class="zone-btn" data-zone="boq" onclick="showZone('boq')"><div class="zone-dot" style="background:#1565c0"></div>Full BOQ</button>`;
+  html += `<button class="zone-btn" data-zone="mgmt" onclick="showZone('mgmt')"><div class="zone-dot" style="background:#880e4f"></div>Management Chart</button>`;
+  sb.innerHTML = html;
+}
+
+function showZone(id){
+  document.querySelectorAll('.zone-btn').forEach(b=>b.classList.toggle('active',b.dataset.zone===id));
+  const content = document.getElementById('content');
+
+  if(id==='boq'){ content.innerHTML = buildBOQ(); return; }
+  if(id==='mgmt'){ content.innerHTML = buildMgmt(); return; }
+
+  const z = ZONE_DATA.find(x=>x.id===id);
+  if(!z) return;
+  const state = document.getElementById('state').value;
+  const cs = buildCostPerSqm(document.getElementById('btype').value,state);
+  const eqTotal = z.equip.reduce((s,e)=>s+e.cost*e.qty,0);
+  const civCost = (z.civil_area||0)*cs*10.76;
+
+  let html = `<div class="zone-page active" id="tab-${id}">
+    <div class="zone-title"><div class="zt-dot" style="background:${z.color}"></div><div class="zt-text">${id}. ${z.name}</div></div>
+    <div class="zone-sub">Civil: ${fmtL(civCost)} &nbsp;·&nbsp; Equipment: ${fmtL(eqTotal)} &nbsp;·&nbsp; Area: ${Math.round(z.dims.area || z.civil_area || 0)} sqm &nbsp;·&nbsp; Type: ${z.dims.type}</div>
+
+    <div class="zone-grid">
+      <!-- DIMENSIONS -->
+      <div class="card">
+        <div class="card-head">Building & Area Dimensions <span style="font-size:10px;color:var(--blue)">For Drawing</span></div>
+        <div class="card-body" style="padding:0">
+          <div class="dim-row"><div class="dim-label">Length (L)</div><div class="dim-val">${Math.round(z.dims.L||0)} m</div><div class="dim-note">main dimension</div></div>
+          <div class="dim-row"><div class="dim-label">Width (W)</div><div class="dim-val">${Math.round(z.dims.W||0)} m</div><div class="dim-note">secondary dimension</div></div>
+          ${z.dims.H?`<div class="dim-row"><div class="dim-label">Eave Height</div><div class="dim-val">${z.dims.H} m</div><div class="dim-note">to eave/haunch</div></div>`:''}
+          <div class="dim-row"><div class="dim-label">Covered Area</div><div class="dim-val">${Math.round(z.dims.area||z.civil_area||0)} sqm</div><div class="dim-note">plan area</div></div>
+          <div class="dim-row"><div class="dim-label">Build Type</div><div class="dim-val" style="font-size:11px">${z.dims.type}</div><div class="dim-note">${z.dims.note}</div></div>
+          ${z.extra_dims.map(d=>`<div class="dim-row"><div class="dim-label">${d.l}</div><div class="dim-val" style="font-size:11px">${d.v}</div><div class="dim-note"></div></div>`).join('')}
+        </div>
+      </div>
+
+      <!-- CIVIL COST -->
+      <div class="card">
+        <div class="card-head">Civil Cost (₹)</div>
+        <div class="card-body" style="padding:0">
+          <div class="dim-row"><div class="dim-label">Floor area</div><div class="dim-val">${Math.round(z.civil_area||0)} sqm</div><div class="dim-note"></div></div>
+          <div class="dim-row"><div class="dim-label">Rate (${document.getElementById('btype').value.toUpperCase()})</div><div class="dim-val">₹${Math.round(cs).toLocaleString('en-IN')}/sqm</div><div class="dim-note">incl. finish</div></div>
+          <div class="dim-row"><div class="dim-label">State factor</div><div class="dim-val">${STATE_MULT[state]||1}×</div><div class="dim-note">${state.toUpperCase()}</div></div>
+          <div class="dim-row" style="background:var(--green2)"><div class="dim-label" style="font-weight:600">Civil Total</div><div class="dim-val" style="color:var(--green);font-weight:600">${fmtL(civCost)}</div><div class="dim-note"></div></div>
+          <div class="dim-row" style="background:var(--amber2)"><div class="dim-label" style="font-weight:600">Equipment Total</div><div class="dim-val" style="color:var(--amber);font-weight:600">${fmtL(eqTotal)}</div><div class="dim-note"></div></div>
+          <div class="dim-row" style="background:var(--blue2)"><div class="dim-label" style="font-weight:600;color:var(--blue)">Zone Total</div><div class="dim-val" style="color:var(--blue);font-weight:700;font-size:14px">${fmtL(civCost+eqTotal)}</div><div class="dim-note"></div></div>
+          <div class="dim-row"><div class="dim-label">Add items</div><div class="dim-val" style="font-size:11px">${z.add_items.length} recommended</div><div class="dim-note">see list below</div></div>
+        </div>
+      </div>
+
+      <!-- MANAGEMENT -->
+      <div class="card">
+        <div class="card-head">Staff Required</div>
+        <div class="card-body" style="padding:0">
+          <table class="mgmt-table">
+            <thead><tr><th>Role</th><th>No.</th><th>Shift</th><th>Req.</th></tr></thead>
+            <tbody>${z.management.map(m=>`<tr><td>${m.role}</td><td style="text-align:center;font-family:DM Mono">${m.count}</td><td style="font-size:10px;color:var(--text3)">${m.shift}</td><td><span class="badge b-${m.type}">${m.type.toUpperCase()}</span></td></tr>`).join('')}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- EQUIPMENT TABLE -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-head">Equipment List — Zone ${id} <span style="font-size:10px;color:var(--text3)">${z.equip.filter(e=>e.isNew).length} new additions shown in green</span></div>
+      <div style="overflow-x:auto">
+        <table class="eq-table">
+          <thead><tr><th>Tag</th><th>Equipment / Item</th><th>Qty</th><th>Specification</th><th>Unit Cost ₹</th><th>Total ₹</th></tr></thead>
+          <tbody>
+            ${z.equip.map(e=>`<tr>
+              <td><span class="eq-tag ${e.isNew?'new':''}">${e.tag}</span></td>
+              <td style="font-weight:${e.isNew?'500':'400'};color:${e.isNew?'var(--green)':'inherit'}">${e.name}${e.isNew?' ★':''}</td>
+              <td class="eq-qty">${e.qty}</td>
+              <td style="font-size:10px;color:var(--text3)">${e.spec}</td>
+              <td class="eq-cost">${fmtPln(e.cost)}</td>
+              <td class="eq-cost" style="font-weight:600">${fmtPln(e.cost*e.qty)}</td>
+            </tr>`).join('')}
+            <tr class="total-row">
+              <td colspan="5">Zone ${id} Equipment Total</td>
+              <td>${fmtPln(eqTotal)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ADD ITEMS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="card">
+        <div class="card-head" style="color:var(--green)">Additional Items to Add (Recommended)</div>
+        <div class="card-body"><ul style="padding-left:16px;font-size:12px;color:var(--text2);line-height:2">${z.add_items.map(a=>`<li>${a}</li>`).join('')}</ul></div>
+      </div>
+      <div class="card">
+        <div class="card-head" style="color:var(--purple)">Drawing Requirements — What to Show</div>
+        <div class="draw-spec" style="margin-top:0;border-radius:0;background:var(--purple2);border:none;padding:10px">
+          <ul class="ds-list">${(z.drawing_prompt_extra||'').split(',').map(s=>s.trim()).filter(Boolean).map(s=>`<li>${s}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI DRAWING PROMPT -->
+    <div class="prompt-box">
+      <div class="pb-title">Auto-Generated Drawing Prompt for Zone ${id} — Paste into any AI</div>
+      <button class="pb-copy" onclick="navigator.clipboard.writeText(document.getElementById('prompt-${id}').textContent).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
+      <div class="pb-text" id="prompt-${id}">${generatePrompt(z,state)}</div>
+    </div>
+  </div>`;
+  content.innerHTML = html;
+}
+
+function generatePrompt(z,state){
+  const cap = v('cap'), btype = document.getElementById('btype').value;
+  const cs = buildCostPerSqm(btype,state);
+  const eqList = z.equip.map(e=>`${e.tag}: ${e.name} (${e.qty} no., ${e.spec})`).join('\n');
+  return `DRAWING PROMPT — ZONE ${z.id}: ${z.name.toUpperCase()}
+Plant Capacity: ${cap} TPD Bio-Bitumen from Agro-Waste
+State: ${state.toUpperCase()} | Build Type: ${btype.toUpperCase()} | IS Standards apply throughout
+
+=== DIMENSIONS (FIXED — DO NOT MODIFY) ===
+Area: ${Math.round(z.dims.L||0)}m × ${Math.round(z.dims.W||0)}m${z.dims.H?` × ${z.dims.H}m eave height`:''}
+Total floor area: ${Math.round(z.dims.area||z.civil_area||0)} sqm
+Construction: ${z.dims.type}
+${z.extra_dims.map(d=>`${d.l}: ${d.v}`).join('\n')}
+
+=== EQUIPMENT TO SHOW ON DRAWING ===
+${eqList}
+
+=== DRAWING SPECIFIC REQUIREMENTS ===
+${z.drawing_prompt_extra}
+
+=== COLOUR CODE (IS 2379) ===
+Equipment: per IS 2379. Reactors/vessels: RAL 3002. Rotating: RAL 1003. Static: RAL 7035.
+Fire fighting: RAL 3002. Electrical: RAL 7032. Insulated hot: RAL 1003.
+Pipes: Water=RAL6018, Gas=RAL1003, Oil=RAL8025, Fire=RAL3002, Bitumen=RAL9005.
+
+=== MANDATORY DRAWING ELEMENTS ===
+1. Title block (IS 11065): Project name, Drawing No, Scale, Drawn by, Rev, Date
+2. North arrow on plan views
+3. Scale bar (1:100 or appropriate)
+4. Minimum 3 dimension chains (length, width, height/level)
+5. All equipment tag numbers visible
+6. Legend/symbol table
+7. Grid lines A-A, B-B etc.
+
+=== STANDARDS TO COMPLY ===
+IS 696 (drawing), IS 2379 (colour), IS 9457 (safety signs),
+IS 14489 (safety clearances), NBC 2016 (fire), IS 1893 Zone ${document.getElementById('state').value==='pb'?'II':'III'}
+
+=== ANTI-RANDOMNESS RULE ===
+Every dimension MUST come from data above. If any value is unknown, write [VALUE NEEDED].
+Do not invent or estimate any dimension, clearance, or pipe size.
+The drawing must reflect EXACTLY the capacity of ${cap} TPD.`;
+}
+
+function buildBOQ(){
+  const state = document.getElementById('state').value;
+  const cs = buildCostPerSqm(document.getElementById('btype').value,state);
+  let rows='', grandTotal=0;
+  ZONE_DATA.forEach(z=>{
+    const eqTotal=z.equip.reduce((s,e)=>s+e.cost*e.qty,0);
+    const civCost=(z.civil_area||0)*cs*10.76;
+    const zTotal=eqTotal+civCost;
+    grandTotal+=zTotal;
+    rows+=`<tr class="boq-zone-row"><td colspan="7">Zone ${z.id}: ${z.name}</td></tr>`;
+    rows+=`<tr><td style="padding-left:24px">Civil / Building</td><td>${Math.round(z.civil_area||0)} sqm</td><td>₹${Math.round(cs).toLocaleString()}/sqm</td><td>—</td><td>—</td><td class="tr">${fmtPln(civCost)}</td><td>${(civCost/1e7).toFixed(2)} Cr</td></tr>`;
+    z.equip.forEach(e=>{
+      rows+=`<tr><td style="padding-left:24px;font-size:11px">${e.tag}: ${e.name}</td><td>${e.qty}</td><td>${fmtPln(e.cost)}</td><td>—</td><td>—</td><td class="tr">${fmtPln(e.cost*e.qty)}</td><td style="font-family:DM Mono;color:var(--text3);font-size:10px">${(e.cost*e.qty/1e7).toFixed(3)}</td></tr>`;
+    });
+  });
+  const conting = grandTotal*v('conting')/100;
+  const elec = grandTotal*0.12;
+  const totalWithAll = grandTotal+elec+conting;
+
+  return `<div class="zone-page active" style="padding:20px 24px">
+    <h2 style="font-size:18px;font-weight:600;margin-bottom:4px">Complete Bill of Quantities (BOQ)</h2>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Capacity: ${v('cap')} TPD | State: ${state.toUpperCase()} | All prices ₹ | Rates 2025-26</p>
+    <div style="overflow-x:auto">
+      <table class="boq-table">
+        <thead><tr><th>Item</th><th>Qty/Area</th><th>Rate</th><th>Brand/Spec</th><th>IS Ref</th><th class="tr">Amount ₹</th><th>₹ Crore</th></tr></thead>
+        <tbody>
+          ${rows}
+          <tr class="boq-civil"><td colspan="5">Electrical Infrastructure (12% of equipment)</td><td class="tr">${fmtPln(elec)}</td><td>${(elec/1e7).toFixed(2)}</td></tr>
+          <tr class="boq-civil"><td colspan="5">Contingency (${v('conting')}%)</td><td class="tr">${fmtPln(conting)}</td><td>${(conting/1e7).toFixed(2)}</td></tr>
+          <tr class="boq-total"><td colspan="5">GRAND TOTAL (excl. land, statutory fees, working capital)</td><td class="tr">${fmtPln(totalWithAll)}</td><td>${(totalWithAll/1e7).toFixed(2)}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:16px;padding:12px;background:var(--blue2);border-radius:8px;font-size:12px;color:var(--blue)">
+      <strong>Note:</strong> Add to above: Land cost (varies by state), Statutory approvals (EIA, CTE, CTO) ₹25-60L, Working capital ${v('cap')>30?'₹1.5-2.5 Cr':'₹0.8-1.5 Cr'}, Pre-operative expenses (DPR, design, PMC) 3-5% of project cost.
+    </div>
+  </div>`;
+}
+
+function buildMgmt(){
+  let allStaff=[];
+  ZONE_DATA.forEach(z=>z.management.forEach(m=>allStaff.push({zone:z.id,name:z.name,...m})));
+  const total = allStaff.reduce((s,m)=>s+m.count,0);
+  const must = allStaff.filter(m=>m.type==='must').reduce((s,m)=>s+m.count,0);
+
+  return `<div class="zone-page active" style="padding:20px 24px">
+    <h2 style="font-size:18px;font-weight:600;margin-bottom:4px">Management & Staffing Chart</h2>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Total headcount: ${total} | Must-have: ${must} | Good to have: ${total-must} | Capacity: ${v('cap')} TPD</p>
+    <div style="overflow-x:auto">
+      <table class="boq-table">
+        <thead><tr><th>Zone</th><th>Department</th><th>Role</th><th>Count</th><th>Shift Pattern</th><th>Priority</th><th>Monthly Salary (est.)</th></tr></thead>
+        <tbody>
+          ${allStaff.map(m=>{
+            const sal = m.type==='must'?
+              (m.role.includes('Manager')||m.role.includes('Officer')||m.role.includes('Chemist')?'₹45,000-75,000':
+               m.role.includes('Supervisor')||m.role.includes('Incharge')?'₹28,000-40,000':
+               m.role.includes('Operator')||m.role.includes('Technician')?'₹18,000-28,000':
+               '₹14,000-22,000'):'₹12,000-18,000';
+            return `<tr>
+              <td><span style="font-family:DM Mono;font-size:11px;background:var(--blue2);color:var(--blue);padding:1px 7px;border-radius:3px">${m.zone}</span></td>
+              <td style="font-size:11px">${m.name}</td>
+              <td style="font-weight:500">${m.role}</td>
+              <td style="font-family:DM Mono;text-align:center;font-weight:600">${m.count}</td>
+              <td style="font-size:11px;color:var(--text3)">${m.shift}</td>
+              <td><span class="badge b-${m.type}">${m.type.toUpperCase()}</span></td>
+              <td style="font-size:11px;font-family:DM Mono;color:var(--text2)">${sal}</td>
+            </tr>`;
+          }).join('')}
+          <tr style="background:var(--blue2);font-weight:700;color:var(--blue)">
+            <td colspan="3">TOTAL STAFF</td>
+            <td style="font-family:DM Mono;text-align:center;font-size:16px">${total}</td>
+            <td colspan="2"></td>
+            <td style="font-size:11px">Monthly payroll ~${fmtL(total*25000)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:16px;padding:12px;background:var(--green2);border-radius:8px;font-size:12px;color:var(--green)">
+      <strong>Org structure:</strong> Plant Manager → Department Heads (Production, Maintenance, QC, Safety, Admin) → Supervisors → Operators/Technicians/Helpers. Add: 1 Accountant, 1 HR Executive, 1 Purchase Officer, 1 Sales Executive, 1 Logistics Coordinator. Total with admin: ~${total+5} persons.
+    </div>
+  </div>`;
+}
+
+// Init
+recalc();
+showZone('A');
+</script>
+</body>
+</html>
