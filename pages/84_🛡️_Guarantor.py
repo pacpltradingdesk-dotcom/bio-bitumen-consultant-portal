@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+from state_manager import init_state, get_config
 from engines.guarantor_engine import (
     load_gs, save_gs, run_all_rules, get_module_health, health_score,
     can_export_dpr, get_rules_for_module, ai_deep_audit,
@@ -24,6 +25,8 @@ st.set_page_config(
     page_icon="🛡️",
     layout="wide",
 )
+init_state()
+cfg = get_config()
 
 # ── styles ────────────────────────────────────────────────────────────
 st.markdown("""

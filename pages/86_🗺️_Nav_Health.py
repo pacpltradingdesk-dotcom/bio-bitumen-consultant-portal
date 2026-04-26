@@ -13,6 +13,7 @@ import streamlit as st
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+from state_manager import init_state, get_config
 
 PORTAL_DIR = Path(__file__).parent.parent
 PAGES_DIR  = PORTAL_DIR / "pages"
@@ -23,6 +24,8 @@ st.set_page_config(
     page_icon="🗺️",
     layout="wide",
 )
+init_state()
+cfg = get_config()
 
 # ── Custom CSS — dark gold theme matching HTML mockup ──────────────────
 st.markdown("""

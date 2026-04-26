@@ -16,6 +16,7 @@ import streamlit as st
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+from state_manager import init_state, get_config
 
 # ── Storage root ──────────────────────────────────────────────────────
 PROJECTS_ROOT = Path(__file__).parent.parent / "data" / "projects"
@@ -64,6 +65,8 @@ st.set_page_config(
     page_icon="📁",
     layout="wide",
 )
+init_state()
+cfg = get_config()
 
 st.markdown("""
 <style>

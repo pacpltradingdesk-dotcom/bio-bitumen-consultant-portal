@@ -14,6 +14,8 @@ from datetime import datetime
 from pathlib import Path
 
 import streamlit as st
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from state_manager import init_state, get_config
 
 # ── paths ──────────────────────────────────────────────────────────────
 _HERE = Path(__file__).parent.parent
@@ -25,6 +27,8 @@ st.set_page_config(
     page_icon="🧠",
     layout="wide",
 )
+init_state()
+cfg = get_config()
 
 # ── custom CSS ─────────────────────────────────────────────────────────
 st.markdown("""
