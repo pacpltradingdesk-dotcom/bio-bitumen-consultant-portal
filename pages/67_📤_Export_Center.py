@@ -39,8 +39,9 @@ now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 # EXPORT CATEGORIES
 # ══════════════════════════════════════════════════════════════════════
 
-tab_fin, tab_market, tab_crm, tab_compliance, tab_full = st.tabs([
-    "Financial Report", "Market & Tenders", "CRM Data", "Compliance", "Full Project Report"
+tab_fin, tab_market, tab_crm, tab_compliance, tab_full, tab_master = st.tabs([
+    "Financial Report", "Market & Tenders", "CRM Data", "Compliance",
+    "Full Project Report", "🔗 Master Export"
 ])
 
 # ── TAB 1: Financial Report ──────────────────────────────────────────
@@ -268,6 +269,116 @@ Contact: {COMPANY['phone']} | {COMPANY['email']}
     st.download_button("Download Full Project Report (TXT)", full_report,
                         f"Bio_Bitumen_Full_Report_{datetime.datetime.now().strftime('%Y%m%d')}.txt",
                         "text/plain")
+
+# ── TAB 6: Master Export (all engines connected) ─────────────────────
+with tab_master:
+    st.subheader("Master Export — All Portal Data in One Click")
+    st.caption("Pulls Financial + Carbon + Govt Schemes + Viability Rating into every export")
+
+    mx1, mx2, mx3, mx4 = st.columns(4)
+    mx1.metric("Revenue (Yr3)",   f"₹ {cfg.get('revenue_lac',0):.0f} Lac")
+    mx2.metric("Net Profit (Yr3)",f"₹ {cfg.get('net_profit_lac',0):.0f} Lac")
+    mx3.metric("Output TPD",      f"{cfg.get('output_tpd',0):.1f} TPD")
+    mx4.metric("Biomass Cost",    f"₹ {cfg.get('biomass_price_per_mt',0):.0f}/MT")
+
+    if st.button("🔗 Run All Engines & Build Master Export", type="primary", key="master_export_btn"):
+        with st.spinner("Running carbon, scheme, rating engines…"):
+            try:
+                from engines.master_connector import get_full_project_data, save_full_snapshot
+                full = get_full_project_data(cfg, run_engines=True)
+                st.session_state["master_export_data"] = full
+                snap_path = save_full_snapshot(cfg)
+                st.success(
+                    f"✅ All engines complete — "
+                    f"CO₂: {full.get('total_co2_saved_tpa',0):,.0f} tCO₂e/yr  |  "
+                    f"Schemes: {full.get('schemes_count',0)}  |  "
+                    f"Grade: {full.get('viability_grade','—')}  |  "
+                    f"Snapshot: {snap_path.name}"
+                )
+            except Exception as e:
+                st.error(f"Master export error: {e}")
+
+    full = st.session_state.get("master_export_data")
+    if full:
+        st.markdown("---")
+        ecols = st.columns(3)
+
+        # Export 1: Complete Summary TXT
+        summary_lines = [
+            f"BIO BITUMEN MASTER PROJECT EXPORT",
+            f"Generated: {now_str}",
+            f"{'='*60}",
+            f"Project: {full.get('project_name','')}",
+            f"Client:  {full.get('client_name','')}",
+            f"Location:{full.get('location','')}, {full.get('state','')}",
+            f"Capacity:{full.get('capacity_tpd',20)} TPD  |  Output: {full.get('output_tpd',0):.1f} TPD",
+            f"",
+            f"FINANCIALS",
+            f"  Investment    : {full.get('fmt_investment','')}",
+            f"  Revenue Yr3   : {full.get('fmt_revenue','')}",
+            f"  Net Profit Yr3: {full.get('fmt_net_profit','')}",
+            f"  Gross Profit  : {full.get('fmt_gross_profit','')}",
+            f"  IRR           : {full.get('fmt_irr','')}",
+            f"  ROI           : {full.get('fmt_roi','')}",
+            f"  Break-even    : {full.get('break_even_str','')}",
+            f"  Monthly EMI   : {full.get('fmt_emi','')}",
+            f"  Biomass Cost  : ₹ {full.get('biomass_price_per_mt',0):.0f}/MT (weighted avg)",
+            f"",
+            f"CARBON PROFILE",
+            f"  CO₂ Saved/yr  : {full.get('total_co2_saved_tpa',0):,.0f} tCO₂e",
+            f"  Carbon Revenue: {full.get('fmt_carbon_rev','')}",
+            f"  Best Scheme   : {full.get('best_carbon_scheme','')}",
+            f"  Trees Equiv   : {full.get('trees_equivalent',0):,}",
+            f"",
+            f"GOVT SCHEMES",
+            f"  Schemes Found : {full.get('schemes_count',0)}",
+            f"  Total Benefit : {full.get('fmt_schemes_total','')}",
+            f"",
+            f"VIABILITY RATING",
+            f"  Grade: {full.get('viability_grade','—')}  Score: {full.get('viability_score',0)}/100",
+            f"  Label: {full.get('viability_label','')}",
+        ]
+        summary_txt = "\n".join(summary_lines)
+        with ecols[0]:
+            st.download_button(
+                "⬇ Complete Summary TXT",
+                summary_txt,
+                f"master_summary_{datetime.datetime.now():%Y%m%d}.txt",
+                "text/plain", key="dl_master_txt",
+            )
+
+        # Export 2: Full JSON snapshot
+        import json as _json
+        json_str = _json.dumps(
+            {k: v for k, v in full.items()
+             if not isinstance(v, (bytes, type(None))) and k not in ("carbon", "schemes", "rating")},
+            indent=2, ensure_ascii=False, default=str
+        )
+        with ecols[1]:
+            st.download_button(
+                "⬇ Full JSON Snapshot",
+                json_str,
+                f"project_snapshot_{datetime.datetime.now():%Y%m%d}.json",
+                "application/json", key="dl_master_json",
+            )
+
+        # Export 3: Schemes CSV
+        if full.get("schemes"):
+            schemes_df = pd.DataFrame([{
+                "Scheme": s.get("name",""), "Type": s.get("type",""),
+                "Category": s.get("category",""), "Ministry": s.get("ministry",""),
+                "Benefit": s.get("benefit_type",""),
+                "Rate %": s.get("benefit_pct",""),
+                "Est Benefit Cr": s.get("est_benefit_cr",0),
+                "Apply At": s.get("apply_at",""),
+            } for s in full["schemes"]])
+            with ecols[2]:
+                st.download_button(
+                    "⬇ Schemes + Subsidies CSV",
+                    schemes_df.to_csv(index=False),
+                    f"schemes_{cfg.get('state','')[:5]}_{datetime.datetime.now():%Y%m%d}.csv",
+                    "text/csv", key="dl_master_schemes",
+                )
 
 st.markdown("---")
 st.caption(f"{COMPANY['name']} | Export Center")

@@ -35,17 +35,23 @@ except Exception:
     pass
 
 
-# ── Current Config Display ────────────────────────────────────────────
-st.info(
-    f"**Current Config:** {cfg['capacity_tpd']:.0f} MT/Day | "
-    f"Rs {cfg['investment_cr']:.2f} Cr | "
-    f"ROI {cfg['roi_pct']:.1f}% | "
-    f"IRR {cfg['irr_pct']:.1f}% | "
-    f"DSCR {cfg['dscr_yr3']:.2f}x | "
-    f"{cfg.get('state', '')} | "
-    f"{'Bitumen' if cfg['product_model'] == 'bitumen' else 'Oil+Char'}"
-)
-st.caption("Change any input in Plant Design or Financial Model → documents auto-reflect new values")
+# ── Live enriched data bar ────────────────────────────────────────────
+try:
+    from engines.master_connector import get_full_project_data
+    _prev = get_full_project_data(cfg, run_engines=False)
+    _c1, _c2, _c3, _c4, _c5, _c6 = st.columns(6)
+    _c1.metric("Capacity",      f"{cfg['capacity_tpd']:.0f} TPD")
+    _c2.metric("Investment",    f"₹ {cfg['investment_cr']:.2f} Cr")
+    _c3.metric("Revenue (Yr3)", _prev["fmt_revenue"])
+    _c4.metric("IRR",           _prev["fmt_irr"])
+    _c5.metric("Break-even",    _prev["break_even_str"])
+    _c6.metric("Grade",         _prev.get("viability_grade","—"))
+except Exception:
+    st.info(
+        f"**Config:** {cfg['capacity_tpd']:.0f} TPD | ₹ {cfg['investment_cr']:.2f} Cr | "
+        f"ROI {cfg['roi_pct']:.1f}% | IRR {cfg['irr_pct']:.1f}%"
+    )
+st.caption("All documents pull from current portal data — change any input and regenerate")
 
 # ── Customer Selection ────────────────────────────────────────────────
 customers = get_all_customers()
@@ -81,16 +87,42 @@ with col1:
             insert_report_generation({"report_type": "DPR_DOCX", "capacity_tpd": cfg["capacity_tpd"],
                                        "customer_id": customer["id"] if customer else None})
 
-    st.markdown("### DPR (PDF)")
+    st.markdown("### DPR (PDF) — Full Portal Data")
+    st.caption("Includes Carbon Credits + Govt Schemes + Rating")
     if st.button("Generate DPR PDF", key="gen_dpr_pdf"):
-        with st.spinner("Generating PDF..."):
-            path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data",
-                                 f"DPR_{cfg['capacity_tpd']:.0f}MT.pdf")
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            generate_dpr_pdf(path, cfg, COMPANY)
-            with open(path, "rb") as f:
-                st.download_button("Download DPR.pdf", f.read(),
-                                    f"DPR_{cfg['capacity_tpd']:.0f}MT.pdf", "application/pdf")
+        with st.spinner("Generating enriched DPR PDF…"):
+            try:
+                from engines.dpr_pdf_engine import generate_dpr_pdf as _gen_pdf
+                from engines.master_connector import get_full_project_data
+                full = get_full_project_data(cfg, run_engines=True)
+                cfg_copy = dict(cfg)
+                for k in ("revenue_lac","net_profit_lac","gross_profit_lac",
+                          "output_tpd","biomass_price_per_mt"):
+                    cfg_copy[k] = full.get(k, cfg.get(k, 0))
+                pdf_bytes = _gen_pdf(
+                    cfg_copy,
+                    schemes=full.get("schemes"),
+                    carbon=full.get("carbon"),
+                )
+                st.download_button(
+                    "Download DPR.pdf", pdf_bytes,
+                    f"DPR_{cfg['capacity_tpd']:.0f}MT_{cfg.get('state','')[:4]}.pdf",
+                    "application/pdf", key="dl_dpr_pdf_65",
+                )
+            except Exception as _e:
+                # Fallback to old engine
+                import traceback
+                path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                    "data", f"DPR_{cfg['capacity_tpd']:.0f}MT.pdf")
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                try:
+                    generate_dpr_pdf(path, cfg, COMPANY)
+                    with open(path, "rb") as f:
+                        st.download_button("Download DPR.pdf", f.read(),
+                                           f"DPR_{cfg['capacity_tpd']:.0f}MT.pdf", "application/pdf",
+                                           key="dl_dpr_pdf_65_fb")
+                except Exception:
+                    st.error(f"PDF error: {_e}")
 
 # ── Bank Proposal (DOCX) ─────────────────────────────────────────
 with col2:

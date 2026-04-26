@@ -295,39 +295,47 @@ class DPR_PDF:
         self._section_header("4. Financial Projections")
         cfg = self.cfg
 
+        inv_cr  = cfg.get("investment_cr", 0)
+        eq_r    = cfg.get("equity_ratio", 0.4)
+        rm_cost_lac = round(
+            cfg.get("capacity_tpd", 20) * cfg.get("working_days", 300)
+            * cfg.get("raw_material_cost_per_mt", 2500) / 100000, 0
+        )
         fin_rows = [
-            ["Total Project Cost",    f"₹ {cfg.get('investment_cr',0):.2f} Cr"],
-            ["Equity (Own Funds)",    f"₹ {cfg.get('investment_cr',0)*cfg.get('equity_ratio',0.4):.2f} Cr"],
-            ["Bank Loan",             f"₹ {cfg.get('investment_cr',0)*(1-cfg.get('equity_ratio',0.4)):.2f} Cr"],
-            ["Interest Rate",         f"{cfg.get('interest_rate',0.115)*100:.1f}% p.a."],
-            ["Loan Tenure",           f"{cfg.get('emi_tenure_months',84)} months"],
-            ["Monthly EMI",           f"₹ {cfg.get('emi_lac_mth',0):.2f} Lac"],
-            ["Annual Revenue",        f"₹ {cfg.get('revenue_lac',0):.0f} Lac"],
-            ["Raw Material Cost",     f"₹ {cfg.get('rm_cost_lac', cfg.get('capacity_tpd',20)*cfg.get('working_days',300)*cfg.get('raw_material_cost_per_mt',2500)/100000):.0f} Lac"],
-            ["Gross Profit",          f"₹ {cfg.get('gross_profit_lac',0):.0f} Lac"],
-            ["Net Profit (Yr 1)",     f"₹ {cfg.get('net_profit_lac',0):.0f} Lac"],
-            ["Return on Investment",  f"{cfg.get('roi_pct',0):.1f}%"],
-            ["Internal Rate of Return",f"{cfg.get('irr_pct',0):.1f}%"],
-            ["Break-even Period",     f"{cfg.get('break_even_months',0)} months"],
-            ["Selling Price (Bio-Oil)",f"₹ {cfg.get('selling_price_per_mt',35000):,}/MT"],
+            ["Total Project Cost",      f"₹ {inv_cr:.2f} Cr"],
+            ["Equity (Own Funds)",       f"₹ {inv_cr*eq_r:.2f} Cr ({eq_r*100:.0f}%)"],
+            ["Bank Loan",                f"₹ {inv_cr*(1-eq_r):.2f} Cr @ {cfg.get('interest_rate',0.115)*100:.1f}%"],
+            ["Loan Tenure",              f"{cfg.get('emi_tenure_months',84)} months"],
+            ["Monthly EMI",              f"₹ {cfg.get('emi_lac_mth',0):.2f} Lac"],
+            ["Annual Revenue (Yr 3)",    f"₹ {cfg.get('revenue_lac',0):.0f} Lac"],
+            ["Raw Material Cost (Yr 3)", f"₹ {rm_cost_lac:.0f} Lac"],
+            ["Gross Profit / EBITDA",    f"₹ {cfg.get('gross_profit_lac',0):.0f} Lac"],
+            ["Net Profit (PAT Yr 3)",    f"₹ {cfg.get('net_profit_lac',0):.0f} Lac"],
+            ["Biomass Feedstock Cost",   f"₹ {cfg.get('biomass_price_per_mt',0):.0f}/MT (weighted avg)"],
+            ["Return on Investment",     f"{cfg.get('roi_pct',0):.1f}%"],
+            ["Internal Rate of Return",  f"{cfg.get('irr_pct',0):.1f}%"],
+            ["Break-even Period",        f"{cfg.get('break_even_months',0)} months"],
+            ["Selling Price (Bio-Oil)",  f"₹ {cfg.get('selling_price_per_mt',35000):,}/MT"],
+            ["Selling Price (Biochar)",  f"₹ {cfg.get('biochar_price_per_mt',4000):,}/MT"],
         ]
         self._table(["Financial Parameter", "Value"], fin_rows, [100, 70])
 
-        # 5-year projection table
-        timeline = cfg.get("timeline", [])
+        # 5-year projection table (uses roi_timeline — populated by recalculate())
+        timeline = cfg.get("roi_timeline", [])
         if timeline:
-            self._section_header("4.1 Five-Year Revenue Projection")
-            tl_headers = ["Year", "Revenue (₹ Lac)", "EBITDA (₹ Lac)", "Net Profit (₹ Lac)", "Cash Accrual (₹ Lac)"]
+            self._section_header("4.1 Five-Year Revenue & Profit Projection")
+            tl_headers = ["Year", "Utilization", "Revenue (₹L)", "EBITDA (₹L)", "PAT (₹L)", "DSCR"]
             tl_rows = []
             for row in timeline[:5]:
                 tl_rows.append([
                     str(row.get("Year", "")),
-                    f"{row.get('Revenue (Lac)',0):.0f}",
-                    f"{row.get('EBITDA (Lac)',0):.0f}",
-                    f"{row.get('Net Profit (Lac)',0):.0f}",
-                    f"{row.get('Cash Accrual (Lac)',0):.0f}",
+                    str(row.get("Utilization", "")),
+                    f"{row.get('Revenue (Lac)', 0):.0f}",
+                    f"{row.get('EBITDA (Lac)', 0):.0f}",
+                    f"{row.get('PAT (Lac)', 0):.0f}",
+                    f"{row.get('DSCR', 0):.2f}",
                 ])
-            self._table(tl_headers, tl_rows, [20, 38, 38, 38, 36])
+            self._table(tl_headers, tl_rows, [14, 22, 32, 32, 32, 28])
         self._footer()
 
     # ── Section 5: Govt Schemes ──────────────────────────────────────────
@@ -481,7 +489,32 @@ class DPR_PDF:
 
 def generate_dpr_pdf(cfg: dict, schemes: list | None = None,
                      carbon: dict | None = None) -> bytes:
-    """Main entry point. Returns PDF bytes."""
+    """Main entry point.  Auto-fetches carbon + schemes via master_connector
+    if not explicitly provided.  Returns PDF bytes."""
+    # Auto-enrich cfg with flat summary fields if missing (outside Streamlit)
+    if not cfg.get("revenue_lac") and cfg.get("roi_timeline"):
+        tl = cfg["roi_timeline"]
+        ref = tl[2] if len(tl) >= 3 else tl[0]
+        cfg.setdefault("revenue_lac",      ref.get("Revenue (Lac)", 0))
+        cfg.setdefault("net_profit_lac",   ref.get("PAT (Lac)", 0))
+        cfg.setdefault("gross_profit_lac", ref.get("EBITDA (Lac)", 0))
+
+    # Auto-fetch carbon if not passed
+    if carbon is None:
+        try:
+            from engines.carbon_engine import load_carbon, calculate_carbon
+            carbon = load_carbon() or calculate_carbon(cfg)
+        except Exception:
+            carbon = {}
+
+    # Auto-fetch schemes if not passed
+    if schemes is None:
+        try:
+            from engines.scheme_finder_engine import load_schemes, find_schemes
+            schemes = load_schemes() or find_schemes(cfg)
+        except Exception:
+            schemes = []
+
     dpr = DPR_PDF(cfg)
     return dpr.generate(schemes=schemes, carbon=carbon)
 

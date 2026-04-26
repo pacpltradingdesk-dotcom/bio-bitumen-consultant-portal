@@ -504,6 +504,16 @@ def _full_default():
         "dscr_schedule": [],       # DSCR for all 7 years
         "cash_flow_statement": [],  # Operating + Investing + Financing
         "balance_sheet": [],        # Assets = Liabilities + Equity
+
+        # ── FLAT SUMMARY FIELDS — used by PDF/Share/Export/Scenario ──
+        "revenue_lac": 0,           # Year-3 steady revenue (₹ Lac)
+        "net_profit_lac": 0,        # Year-3 PAT (₹ Lac)
+        "gross_profit_lac": 0,      # Year-3 EBITDA (₹ Lac)
+        "operating_cost_lac": 0,    # Year-3 variable+fixed cost (₹ Lac)
+        "output_tpd": 0,            # Bio-oil output TPD (capacity × yield)
+        "biomass_price_per_mt": 0,  # Weighted avg feedstock cost ₹/MT
+        "weighted_feedstock_cost": 0,  # Same as above (alias)
+        "break_even_label": "Total Investment Payback (months)",
     })
     return cfg
 
@@ -793,6 +803,33 @@ def recalculate():
             "EMI": cfg["emi_lac_mth"],
             "Net Surplus": round((yr5["PAT (Lac)"] + yr5["Depreciation (Lac)"]) / 12 - cfg["emi_lac_mth"], 2),
         }
+
+    # ── Flat summary fields (Year 3 = first full steady-state year) ──
+    # Used by: dpr_pdf_engine, share_engine, export_center, scenario_engine,
+    #          rating_engine, carbon_engine, scheme_finder, page 67, page 90, page 94
+    ref_yr = timeline[2] if len(timeline) >= 3 else (timeline[0] if timeline else {})
+    cfg["revenue_lac"]       = ref_yr.get("Revenue (Lac)", 0)
+    cfg["net_profit_lac"]    = ref_yr.get("PAT (Lac)", 0)
+    cfg["gross_profit_lac"]  = ref_yr.get("EBITDA (Lac)", 0)
+    cfg["operating_cost_lac"] = round(
+        ref_yr.get("Variable Cost (Lac)", 0) + ref_yr.get("Fixed Cost (Lac)", 0), 2
+    )
+
+    # Bio-oil output in TPD
+    cfg["output_tpd"] = round(tpd * oil_yield, 2)
+
+    # Weighted average feedstock cost ₹/MT biomass
+    feedstocks = [
+        ("mix_rice_straw_loose",  "price_rice_straw_loose"),
+        ("mix_rice_straw_baled",  "price_rice_straw_baled"),
+        ("mix_wheat_straw",       "price_wheat_straw"),
+        ("mix_bagasse",           "price_bagasse"),
+        ("mix_lignin",            "price_lignin"),
+        ("mix_other_agro_waste",  "price_other_agro_waste"),
+    ]
+    wt_cost = sum(cfg.get(mx, 0) * cfg.get(pr, 0) for mx, pr in feedstocks)
+    cfg["biomass_price_per_mt"]    = round(wt_cost, 0)
+    cfg["weighted_feedstock_cost"] = round(wt_cost, 0)
 
 
 # ══════════════════════════════════════════════════════════════════════
