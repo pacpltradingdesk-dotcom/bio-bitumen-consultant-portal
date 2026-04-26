@@ -97,6 +97,37 @@ st.sidebar.markdown("---")
 st.sidebar.markdown(f"### {COMPANY['trade_name']}")
 st.sidebar.markdown("**Bio Bitumen Consulting System**")
 st.sidebar.markdown("---")
+
+# ── CLIENT SELECTOR ──────────────────────────────────────────────
+from database import get_all_client_profiles, init_db as _init_db2
+from state_manager import set_active_client, get_active_client_id, get_client_display_name
+
+try:
+    _init_db2()
+    profiles = get_all_client_profiles()
+    if profiles:
+        active_cid = get_active_client_id()
+        options = {0: "── Select Client ──"}
+        options.update({p["id"]: f"{p['name']} | {p.get('capacity_tpd',0):.0f} TPD | {p.get('city','') or p.get('state','')}" for p in profiles})
+        current_idx = list(options.keys()).index(active_cid) if active_cid in options else 0
+        selected_cid = st.sidebar.selectbox(
+            "Active Client",
+            list(options.keys()),
+            index=current_idx,
+            format_func=lambda x: options[x],
+            key="sidebar_client_sel"
+        )
+        if selected_cid and selected_cid != active_cid:
+            if set_active_client(selected_cid):
+                st.rerun()
+        if active_cid:
+            st.sidebar.caption(f"Client: {get_client_display_name()}")
+    else:
+        st.sidebar.info("No clients yet. Go to **Client Manager** to add.")
+except Exception as _e:
+    st.sidebar.caption("Client selector loading...")
+
+st.sidebar.markdown("---")
 st.sidebar.markdown(f"**Config:** {cfg['capacity_tpd']:.0f} TPD")
 st.sidebar.markdown(f"**Invest:** ₹{cfg['investment_cr']:.1f} Cr")
 st.sidebar.markdown(f"**ROI:** {cfg['roi_pct']:.1f}% | **IRR:** {cfg['irr_pct']:.1f}%")
@@ -151,9 +182,9 @@ st.markdown(f"""
         {greeting}, {user_name}! | Land Selection > Plant Setup > Financial Closure > EVERYTHING READY
     </p>
     <div style="display: flex; gap: 40px; margin-top: 15px;">
-        <div><span style="font-size: 2em; font-weight: bold;">{COMPANY['years_experience']}</span><br><span style="font-size: 0.85em;">Years Experience</span></div>
-        <div><span style="font-size: 2em; font-weight: bold;">{COMPANY['plants_built']}</span><br><span style="font-size: 0.85em;">Plants Built</span></div>
-        <div><span style="font-size: 2em; font-weight: bold;">{COMPANY['industry_contacts']:,}</span><br><span style="font-size: 0.85em;">Industry Contacts</span></div>
+        <div><span style="font-size: 2em; font-weight: bold;">{COMPANY['years_experience']}+</span><br><span style="font-size: 0.85em;">Years Experience</span></div>
+        <div><span style="font-size: 2em; font-weight: bold;">{COMPANY['plants_engaged']}</span><br><span style="font-size: 0.85em;">Plants Engaged</span></div>
+        <div><span style="font-size: 2em; font-weight: bold;">{COMPANY['industry_contacts']:,}</span><br><span style="font-size: 0.85em;">Industry Database</span></div>
         <div><span style="font-size: 2em; font-weight: bold;">{COMPANY['states_network']}</span><br><span style="font-size: 0.85em;">States Network</span></div>
         <div><span style="font-size: 2em; font-weight: bold;">{COMPANY['product_types']}</span><br><span style="font-size: 0.85em;">Product Types</span></div>
     </div>

@@ -774,6 +774,62 @@ def recalculate():
             "Net Surplus": round((yr5["PAT (Lac)"] + yr5["Depreciation (Lac)"]) / 12 - cfg["emi_lac_mth"], 2),
         }
 
+
+# ══════════════════════════════════════════════════════════════════════
+# CLIENT SWITCHING — Load any client's config into active session
+# ══════════════════════════════════════════════════════════════════════
+
+def get_active_client_id():
+    """Return active client's customer_id or None."""
+    return st.session_state.get("active_client_id")
+
+
+def set_active_client(customer_id):
+    """Switch to a different client — loads their saved config into session."""
+    try:
+        from database import load_client_config
+        saved = load_client_config(customer_id)
+        if saved:
+            cfg = _full_default()
+            for k, v in saved.items():
+                if k in cfg:
+                    cfg[k] = v
+            st.session_state["master_config"] = cfg
+            recalculate()
+        st.session_state["active_client_id"] = customer_id
+        return True
+    except Exception:
+        return False
+
+
+def save_current_as_client(customer_id):
+    """Save current session config under a specific client."""
+    try:
+        from database import save_client_config
+        cfg = st.session_state.get("master_config", {})
+        inputs_only = {k: v for k, v in cfg.items()
+                       if k in DEFAULTS or k in ("capacity_key",)}
+        save_client_config(customer_id, inputs_only)
+        st.session_state["active_client_id"] = customer_id
+        return True
+    except Exception:
+        return False
+
+
+def get_client_display_name():
+    """Return active client display string for sidebar."""
+    cid = get_active_client_id()
+    if not cid:
+        return "No client selected"
+    try:
+        from database import get_customer
+        c = get_customer(cid)
+        if c:
+            return f"{c.get('name', '')} — {c.get('company', '')}"
+    except Exception:
+        pass
+    return f"Client #{cid}"
+
     # ── BOQ Auto-Calculation (from capacity) ─────────────────────
     cfg["boq"] = calculate_boq(tpd)
 

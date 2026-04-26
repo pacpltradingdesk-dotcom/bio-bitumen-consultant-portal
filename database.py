@@ -648,3 +648,91 @@ def get_risk_items(customer_id=None):
         else:
             rows = conn.execute("SELECT * FROM risk_items ORDER BY created_at DESC").fetchall()
         return [dict(r) for r in rows]
+
+
+# ══════════════════════════════════════════════════════════════════════
+# CLIENT CONFIG — Save / Load full project config per client
+# ══════════════════════════════════════════════════════════════════════
+
+def save_client_config(customer_id, config_dict, name="Default"):
+    """Save or update a client's full project configuration."""
+    now = _now()
+    with get_connection() as conn:
+        existing = conn.execute(
+            "SELECT id FROM configurations WHERE customer_id=? AND name=?",
+            (customer_id, name)
+        ).fetchone()
+        if existing:
+            conn.execute(
+                "UPDATE configurations SET config_json=?, updated_at=? WHERE id=?",
+                (json.dumps(config_dict), now, existing["id"])
+            )
+        else:
+            conn.execute(
+                "INSERT INTO configurations (customer_id, name, config_json, created_at, updated_at) VALUES (?,?,?,?,?)",
+                (customer_id, name, json.dumps(config_dict), now, now)
+            )
+
+
+def load_client_config(customer_id, name="Default"):
+    """Load a client's saved project configuration. Returns dict or None."""
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT config_json FROM configurations WHERE customer_id=? AND name=? ORDER BY updated_at DESC LIMIT 1",
+            (customer_id, name)
+        ).fetchone()
+        if row and row["config_json"]:
+            try:
+                return json.loads(row["config_json"])
+            except Exception:
+                return None
+    return None
+
+
+def get_all_client_profiles():
+    """Return all customers with their latest config summary for the client switcher."""
+    with get_connection() as conn:
+        rows = conn.execute("""
+            SELECT c.id, c.name, c.company, c.state, c.city, c.status,
+                   cfg.config_json, cfg.updated_at as config_updated
+            FROM customers c
+            LEFT JOIN configurations cfg ON cfg.customer_id = c.id AND cfg.name = 'Default'
+            ORDER BY c.updated_at DESC
+        """).fetchall()
+        result = []
+        for r in rows:
+            d = dict(r)
+            if d.get("config_json"):
+                try:
+                    cfg_data = json.loads(d["config_json"])
+                    d["capacity_tpd"] = cfg_data.get("capacity_tpd", 0)
+                    d["investment_cr"] = cfg_data.get("investment_cr", 0)
+                    d["project_name"] = cfg_data.get("project_name", "")
+                except Exception:
+                    d["capacity_tpd"] = 0
+                    d["investment_cr"] = 0
+                    d["project_name"] = ""
+            else:
+                d["capacity_tpd"] = 0
+                d["investment_cr"] = 0
+                d["project_name"] = ""
+            del d["config_json"]
+            result.append(d)
+        return result
+
+
+def seed_client_if_missing(name, company, seed_config, customer_data=None):
+    """Insert a client + config only if they don't exist yet. Returns customer_id."""
+    with get_connection() as conn:
+        existing = conn.execute(
+            "SELECT id FROM customers WHERE company=? OR name=?", (company, name)
+        ).fetchone()
+        if existing:
+            return existing["id"]
+
+    data = {"name": name, "company": company, "status": "Active"}
+    if customer_data:
+        data.update(customer_data)
+    cid = insert_customer(data)
+    save_client_config(cid, seed_config)
+    return cid
