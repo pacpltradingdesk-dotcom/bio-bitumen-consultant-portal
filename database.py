@@ -40,6 +40,24 @@ def get_connection():
         conn.close()
 
 
+def migrate_db():
+    """Add missing columns to existing tables (idempotent ALTER TABLE migrations)."""
+    migrations = [
+        ("vendor_quotes", "category",    "TEXT DEFAULT ''"),
+        ("vendor_quotes", "email",       "TEXT DEFAULT ''"),
+        ("vendor_quotes", "rfq_status",  "TEXT DEFAULT 'TO_SEND'"),
+        ("vendor_quotes", "city",        "TEXT DEFAULT ''"),
+        ("vendor_quotes", "phone",       "TEXT DEFAULT ''"),
+        ("vendor_quotes", "website",     "TEXT DEFAULT ''"),
+    ]
+    with get_connection() as conn:
+        for table, col, col_def in migrations:
+            try:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {col_def}")
+            except Exception:
+                pass  # Column already exists — harmless
+
+
 def init_db():
     """Create all tables if they don't exist."""
     with get_connection() as conn:
@@ -214,6 +232,7 @@ def init_db():
                 notes TEXT DEFAULT ''
             );
         """)
+    migrate_db()
 
 
 # ── CUSTOMERS CRUD ────────────────────────────────────────────────────

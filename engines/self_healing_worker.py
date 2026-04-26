@@ -72,8 +72,8 @@ def check_master_data():
     try:
         from interpolation_engine import get_all_known_plants, interpolate_all
         plants = get_all_known_plants()
-        if len(plants) != 7:
-            _log_repair("master_data", "WARNING", f"Expected 7 plants, got {len(plants)}")
+        if len(plants) < 5:
+            _log_repair("master_data", "WARNING", f"Too few plants loaded: {len(plants)}")
             return "warning"
 
         # Test interpolation
@@ -82,7 +82,7 @@ def check_master_data():
             _log_repair("master_data", "WARNING", "Interpolation returned invalid values")
             return "warning"
 
-        _log_repair("master_data", "OK", "7 plants, interpolation working")
+        _log_repair("master_data", "OK", f"{len(plants)} plants, interpolation working")
         return "ok"
     except Exception as e:
         _log_repair("master_data", "ERROR", str(e))

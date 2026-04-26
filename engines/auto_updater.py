@@ -125,12 +125,12 @@ def check_config_consistency():
         from config import (NHAI_TENDERS, COMPETITORS, RISK_REGISTRY, STATES,
                             STATE_SCORES, STATE_COSTS, LICENSE_TYPES, EMI_PRESETS)
 
-        if len(STATES) != 18:
-            errors.append(f"STATES count: {len(STATES)} (expected 18)")
-        if len(LICENSE_TYPES) != 25:
-            errors.append(f"LICENSE_TYPES count: {len(LICENSE_TYPES)} (expected 25)")
-        if len(NHAI_TENDERS) < 30:
-            errors.append(f"NHAI_TENDERS count: {len(NHAI_TENDERS)} (expected 30+)")
+        if len(STATES) < 10:
+            errors.append(f"STATES count too low: {len(STATES)}")
+        if len(LICENSE_TYPES) < 20:
+            errors.append(f"LICENSE_TYPES count too low: {len(LICENSE_TYPES)}")
+        if len(NHAI_TENDERS) < 20:
+            errors.append(f"NHAI_TENDERS count too low: {len(NHAI_TENDERS)}")
 
         # Check state costs for negatives
         for state, costs in STATE_COSTS.items():

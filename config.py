@@ -19,7 +19,7 @@ from PROFILE_MASTER import (
 
 # ── PATHS ─────────────────────────────────────────────────────────────
 DOC_ROOT = Path(r"C:\Users\HP\Desktop\Bio Bitumen Full Working all document")
-MASTER_DATA_PATH = DOC_ROOT / "PROFESSIONAL_UPGRADE" / "MASTER_DATA_CORRECTED.py"
+MASTER_DATA_PATH = DOC_ROOT / "13_Professional_Upgrade" / "MASTER_DATA_CORRECTED.py"
 PORTAL_DIR = DOC_ROOT / "14_Consultant_Portal"
 DB_PATH = PORTAL_DIR / "data" / "consultant_portal.db"
 PACKAGE_OUTPUT_DIR = DOC_ROOT / "CUSTOMER_PACKAGES"

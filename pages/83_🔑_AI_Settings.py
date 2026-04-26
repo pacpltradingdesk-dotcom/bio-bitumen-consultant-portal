@@ -111,9 +111,11 @@ with p1:
     st.markdown("**OpenAI (GPT-4o)**")
     openai_key = st.text_input("OpenAI API Key", value=ai_cfg.get("openai_key", ""),
                                 type="password", placeholder="sk-...", key="openai_key_in")
-    openai_model = st.selectbox("OpenAI Model", ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini"],
-                                 index=["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini"].index(
-                                     ai_cfg.get("openai_model", "gpt-4o-mini")), key="openai_model_sel")
+    _openai_models = ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini"]
+    _saved_openai  = ai_cfg.get("openai_model", "gpt-4o-mini")
+    openai_model = st.selectbox("OpenAI Model", _openai_models,
+                                 index=_openai_models.index(_saved_openai) if _saved_openai in _openai_models else 0,
+                                 key="openai_model_sel")
 
     st.markdown("**DeepSeek (Cheapest paid — ₹0.05–0.15/1k)**")
     deepseek_key = st.text_input("DeepSeek API Key", value=ai_cfg.get("deepseek_key", ""),
@@ -123,10 +125,11 @@ with p2:
     st.markdown("**Anthropic Claude (Best writing quality)**")
     claude_key = st.text_input("Claude API Key", value=ai_cfg.get("claude_key", ""),
                                 type="password", placeholder="sk-ant-...", key="claude_key_in")
-    claude_model = st.selectbox("Claude Model",
-                                 ["claude-sonnet-4-6", "claude-opus-4-7", "claude-haiku-4-5-20251001"],
-                                 index=["claude-sonnet-4-6", "claude-opus-4-7", "claude-haiku-4-5-20251001"].index(
-                                     ai_cfg.get("claude_model", "claude-sonnet-4-6")), key="claude_model_sel")
+    _claude_models = ["claude-sonnet-4-6", "claude-opus-4-7", "claude-haiku-4-5-20251001"]
+    _saved_claude  = ai_cfg.get("claude_model", "claude-sonnet-4-6")
+    claude_model = st.selectbox("Claude Model", _claude_models,
+                                 index=_claude_models.index(_saved_claude) if _saved_claude in _claude_models else 0,
+                                 key="claude_model_sel")
 
 st.markdown("---")
 
