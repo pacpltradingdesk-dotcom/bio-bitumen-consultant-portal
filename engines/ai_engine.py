@@ -1,43 +1,103 @@
 """
-AI Engine — 6-Provider Auto-Fallback Chain with Self-Healing
-==============================================================
-Priority chain: OpenAI → Claude → Gemini (key) → DeepSeek → Gemini (free) → Offline Engine
-Falls back gracefully — user NEVER sees a failure.
+AI Engine — 11-Provider Auto-Fallback Chain with Health Tracking
+=================================================================
+FREE providers (no credit card needed):
+  1. Groq          console.groq.com          Llama 3.3 70B — fastest
+  2. Cerebras      cloud.cerebras.ai          Even faster than Groq
+  3. Gemini (key)  aistudio.google.com        1M context, multimodal
+  4. Gemini (free) No key needed              Limited but always on
+  5. Mistral       console.mistral.ai         EU-hosted, privacy
+  6. OpenRouter    openrouter.ai/keys         100+ free $0 models
+  7. GitHub Models github.com/marketplace     Free for GitHub users
+  8. Ollama        ollama.com (local)         Truly unlimited, offline
 
-Providers:
-  1. OpenAI GPT-4o-mini (paid, fast)
-  2. Claude Sonnet (paid, best quality)
-  3. Gemini with key (free tier at aistudio.google.com)
-  4. DeepSeek (ultra cheap, ₹0.05-0.15 per 1000 questions)
-  5. Gemini Flash free (no key needed, limited)
-  6. Built-in Offline Engine (always works, zero internet)
+PAID (optional, best quality):
+  9. OpenAI        platform.openai.com        GPT-4o-mini
+ 10. Claude        console.anthropic.com      Best writing quality
+ 11. DeepSeek      platform.deepseek.com      Cheapest paid (~₹0.10/1k)
 
-API keys stored in: data/ai_config.json (gitignored, never committed)
+ALWAYS ON:
+ 12. Built-in Offline Engine                  Zero internet needed
+
+Features: persistent HTTP session, cooldown per provider,
+          rate-limit detection (429), auto-recovery.
+API keys stored in: data/ai_config.json (gitignored)
 """
 import json
-import os
+import threading
+from datetime import datetime, timedelta
 from pathlib import Path
+import requests as _requests
+
+# ── Persistent HTTP session (one connection pool, no reconnect) ───────
+_session = _requests.Session()
+_adapter = _requests.adapters.HTTPAdapter(
+    pool_connections=10, pool_maxsize=10, max_retries=0
+)
+_session.mount("https://", _adapter)
+_session.mount("http://", _adapter)
+
+# ── Per-provider health / cooldown tracking ───────────────────────────
+_health_lock = threading.Lock()
+_health: dict = {}  # name → {"fails": int, "cooldown_until": datetime|None}
+
+
+def _is_available(name: str) -> bool:
+    with _health_lock:
+        h = _health.get(name, {})
+        until = h.get("cooldown_until")
+        return until is None or datetime.now() >= until
+
+
+def _mark_failed(name: str, base_cd: int = 60):
+    with _health_lock:
+        h = _health.setdefault(name, {"fails": 0, "cooldown_until": None})
+        h["fails"] += 1
+        cd = min(base_cd * (2 ** (h["fails"] - 1)), 1800)
+        h["cooldown_until"] = datetime.now() + timedelta(seconds=cd)
+
+
+def _mark_ok(name: str):
+    with _health_lock:
+        _health[name] = {"fails": 0, "cooldown_until": None}
 
 CONFIG_PATH = Path(__file__).parent.parent / "data" / "ai_config.json"
 
 # ══════════════════════════════════════════════════════════════════════
 # CONFIG MANAGEMENT
 # ══════════════════════════════════════════════════════════════════════
+_CONFIG_DEFAULTS = {
+    # Paid providers (optional)
+    "openai_key": "", "claude_key": "", "deepseek_key": "",
+    # Free providers (get these first)
+    "groq_key": "",        # console.groq.com
+    "cerebras_key": "",    # cloud.cerebras.ai
+    "gemini_key": "",      # aistudio.google.com/apikey
+    "mistral_key": "",     # console.mistral.ai
+    "openrouter_key": "",  # openrouter.ai/keys
+    "github_token": "",    # github.com/settings/tokens
+    # Local (no key needed)
+    "ollama_host": "http://localhost:11434",
+    "ollama_model": "llama3.2",
+    # Settings
+    "preferred_provider": "groq",
+    "openai_model": "gpt-4o-mini",
+    "claude_model": "claude-sonnet-4-20250514",
+    "gemini_model": "gemini-2.5-flash",
+    "deepseek_model": "deepseek-chat",
+}
+
+
 def load_ai_config():
     """Load API keys from secure config file."""
     if CONFIG_PATH.exists():
         try:
-            return json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+            data = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+            # Merge with defaults so new keys always present
+            return {**_CONFIG_DEFAULTS, **data}
         except Exception:
             pass
-    return {
-        "openai_key": "", "claude_key": "", "gemini_key": "", "deepseek_key": "", "groq_key": "",
-        "preferred_provider": "openai",
-        "openai_model": "gpt-4o-mini",
-        "claude_model": "claude-sonnet-4-20250514",
-        "gemini_model": "gemini-2.0-flash",
-        "deepseek_model": "deepseek-chat",
-    }
+    return dict(_CONFIG_DEFAULTS)
 
 
 def save_ai_config(config):
@@ -47,194 +107,298 @@ def save_ai_config(config):
 
 
 def is_ai_available():
-    """Check if any AI API is configured and ready (including free Gemini)."""
-    cfg = load_ai_config()
-    return bool(cfg.get("openai_key") or cfg.get("claude_key") or
-                cfg.get("gemini_key") or cfg.get("deepseek_key") or True)  # Always true — offline engine exists
+    """Always True — offline engine is the final fallback."""
+    return True
 
 
 def get_active_provider():
-    """Return which AI provider is active."""
+    """Return the best-available provider name."""
     cfg = load_ai_config()
-    pref = cfg.get("preferred_provider", "openai")
-    if pref == "claude" and cfg.get("claude_key"):
-        return "claude"
-    if pref == "openai" and cfg.get("openai_key"):
-        return "openai"
-    if pref == "gemini" and cfg.get("gemini_key"):
-        return "gemini"
-    if pref == "deepseek" and cfg.get("deepseek_key"):
-        return "deepseek"
-    # Auto-detect best available
-    if cfg.get("openai_key"):
-        return "openai"
-    if cfg.get("claude_key"):
-        return "claude"
-    if cfg.get("gemini_key"):
-        return "gemini"
-    if cfg.get("deepseek_key"):
-        return "deepseek"
-    return "gemini-free"  # Always available
+    # Free providers first
+    for name, key_field in [
+        ("groq",         "groq_key"),
+        ("cerebras",     "cerebras_key"),
+        ("gemini",       "gemini_key"),
+        ("mistral",      "mistral_key"),
+        ("openrouter",   "openrouter_key"),
+        ("github",       "github_token"),
+        # Paid
+        ("openai",       "openai_key"),
+        ("claude",       "claude_key"),
+        ("deepseek",     "deepseek_key"),
+    ]:
+        if cfg.get(key_field):
+            return name
+    return "gemini-free"  # No-key fallback
+
+
+def get_ai_provider_summary():
+    """Return list of dicts describing each provider for the settings UI."""
+    cfg = load_ai_config()
+    providers = [
+        # (display_name, internal_name, key_field, tier, signup_url, note)
+        ("Groq",          "groq",       "groq_key",       "FREE",  "console.groq.com",            "Llama 3.3 70B — fastest free LLM"),
+        ("Cerebras",      "cerebras",   "cerebras_key",   "FREE",  "cloud.cerebras.ai",           "Even faster than Groq"),
+        ("Gemini (key)",  "gemini",     "gemini_key",     "FREE",  "aistudio.google.com/apikey",  "1M context, multimodal, big quota"),
+        ("Gemini (free)", "gemini-free","",               "FREE",  "No signup needed",            "No key — limited requests/day"),
+        ("Mistral",       "mistral",    "mistral_key",    "FREE",  "console.mistral.ai",          "EU-hosted, privacy-focused"),
+        ("OpenRouter",    "openrouter", "openrouter_key", "FREE",  "openrouter.ai/keys",          "100+ free $0 models as backup"),
+        ("GitHub Models", "github",     "github_token",   "FREE",  "github.com/marketplace/models","Free for any GitHub account"),
+        ("Ollama (local)","ollama",     "",               "LOCAL", "ollama.com",                  "Runs on your PC — truly unlimited"),
+        ("OpenAI",        "openai",     "openai_key",     "PAID",  "platform.openai.com",         "GPT-4o-mini (best quality/speed)"),
+        ("Claude",        "claude",     "claude_key",     "PAID",  "console.anthropic.com",       "Best for writing & long docs"),
+        ("DeepSeek",      "deepseek",   "deepseek_key",   "PAID",  "platform.deepseek.com",       "Cheapest paid (~Rs 0.10/1k calls)"),
+    ]
+    result = []
+    for disp, name, key_field, tier, url, note in providers:
+        has_key = bool(cfg.get(key_field)) if key_field else (name in ("gemini-free", "ollama"))
+        result.append({
+            "display": disp, "name": name, "key_field": key_field,
+            "tier": tier, "url": url, "note": note,
+            "has_key": has_key,
+            "available": _is_available(name),
+        })
+    return result
+
+
+# ── Shared helper ─────────────────────────────────────────────────────
+def _openai_compat(name, url, api_key, model, prompt, system_prompt,
+                   max_tokens, timeout=30, extra_headers=None):
+    """Call any OpenAI-compatible chat endpoint using the shared session."""
+    if not _is_available(name):
+        return None
+    try:
+        headers = {"Authorization": f"Bearer {api_key}",
+                   "Content-Type": "application/json"}
+        if extra_headers:
+            headers.update(extra_headers)
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+        resp = _session.post(url, headers=headers, timeout=timeout,
+                             json={"model": model, "messages": messages,
+                                   "max_tokens": max_tokens, "temperature": 0.7})
+        if resp.status_code == 429:
+            _mark_failed(name, base_cd=300)
+            return None
+        if resp.status_code in (401, 403):
+            _mark_failed(name, base_cd=3600)
+            return None
+        data = resp.json()
+        if "choices" in data:
+            _mark_ok(name)
+            return data["choices"][0]["message"]["content"]
+        return None
+    except Exception:
+        _mark_failed(name)
+        return None
 
 
 # ══════════════════════════════════════════════════════════════════════
 # OPENAI API
 # ══════════════════════════════════════════════════════════════════════
 def _call_openai(prompt, system_prompt="", max_tokens=2000):
-    """Call OpenAI API (GPT-4o / GPT-4o-mini)."""
+    """Call OpenAI API (GPT-4o-mini)."""
     cfg = load_ai_config()
     api_key = cfg.get("openai_key", "")
-    model = cfg.get("openai_model", "gpt-4o-mini")
     if not api_key:
         return None
-    try:
-        import requests
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-        messages = []
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-        messages.append({"role": "user", "content": prompt})
-        resp = requests.post("https://api.openai.com/v1/chat/completions",
-                              headers=headers, timeout=60,
-                              json={"model": model, "messages": messages,
-                                    "max_tokens": max_tokens, "temperature": 0.7})
-        data = resp.json()
-        if "choices" in data:
-            return data["choices"][0]["message"]["content"]
-        return None
-    except Exception:
-        return None
+    return _openai_compat("openai", "https://api.openai.com/v1/chat/completions",
+                          api_key, cfg.get("openai_model", "gpt-4o-mini"),
+                          prompt, system_prompt, max_tokens, timeout=60)
 
 
 # ══════════════════════════════════════════════════════════════════════
 # CLAUDE API
 # ══════════════════════════════════════════════════════════════════════
 def _call_claude(prompt, system_prompt="", max_tokens=2000):
-    """Call Anthropic Claude API (Sonnet / Haiku)."""
+    """Call Anthropic Claude API."""
     cfg = load_ai_config()
     api_key = cfg.get("claude_key", "")
     model = cfg.get("claude_model", "claude-sonnet-4-20250514")
-    if not api_key:
+    if not api_key or not _is_available("claude"):
         return None
     try:
-        import requests
-        headers = {"x-api-key": api_key, "anthropic-version": "2023-06-01", "Content-Type": "application/json"}
+        headers = {"x-api-key": api_key, "anthropic-version": "2023-06-01",
+                   "Content-Type": "application/json"}
         body = {"model": model, "max_tokens": max_tokens,
                 "messages": [{"role": "user", "content": prompt}]}
         if system_prompt:
             body["system"] = system_prompt
-        resp = requests.post("https://api.anthropic.com/v1/messages",
-                              headers=headers, timeout=60, json=body)
+        resp = _session.post("https://api.anthropic.com/v1/messages",
+                             headers=headers, timeout=60, json=body)
+        if resp.status_code == 429:
+            _mark_failed("claude", 300); return None
         data = resp.json()
         if "content" in data:
+            _mark_ok("claude")
             return data["content"][0]["text"]
         return None
     except Exception:
-        return None
+        _mark_failed("claude"); return None
 
 
 # ══════════════════════════════════════════════════════════════════════
-# GEMINI API (Google AI — free tier + paid key)
+# GEMINI API (Google AI — free key at aistudio.google.com/apikey)
 # ══════════════════════════════════════════════════════════════════════
 def _call_gemini(prompt, system_prompt="", max_tokens=2000, use_free=False):
-    """Call Google Gemini API. use_free=True skips key requirement."""
+    """Call Google Gemini via OpenAI-compat endpoint (key) or native REST (free)."""
     cfg = load_ai_config()
     api_key = cfg.get("gemini_key", "")
-    model = cfg.get("gemini_model", "gemini-2.0-flash")
+    model = cfg.get("gemini_model", "gemini-2.5-flash")
+    tag = "gemini" if api_key and not use_free else "gemini-free"
 
+    if not _is_available(tag):
+        return None
     if not api_key and not use_free:
         return None
 
     try:
-        import requests
-        if api_key:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+        if api_key and not use_free:
+            # OpenAI-compat path — faster parsing
+            result = _openai_compat(
+                tag,
+                "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+                api_key, model, prompt, system_prompt, max_tokens, timeout=30)
+            return result
         else:
-            # Free tier — limited but works
-            url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent"
-
-        full_prompt = prompt
-        if system_prompt:
-            full_prompt = f"{system_prompt}\n\n{prompt}"
-
-        body = {
-            "contents": [{"role": "user", "parts": [{"text": full_prompt}]}],
-            "generationConfig": {"maxOutputTokens": max_tokens}
-        }
-
-        resp = requests.post(url, headers={"Content-Type": "application/json"},
-                              timeout=30, json=body)
-        data = resp.json()
-        if "candidates" in data:
-            return data["candidates"][0]["content"]["parts"][0]["text"]
-        return None
+            # Key-free native path
+            url = ("https://generativelanguage.googleapis.com/v1beta/models/"
+                   "gemini-2.0-flash-exp:generateContent")
+            full = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
+            body = {"contents": [{"role": "user", "parts": [{"text": full}]}],
+                    "generationConfig": {"maxOutputTokens": max_tokens}}
+            resp = _session.post(url, headers={"Content-Type": "application/json"},
+                                 timeout=30, json=body)
+            if resp.status_code == 429:
+                _mark_failed(tag, 300); return None
+            data = resp.json()
+            if "candidates" in data:
+                _mark_ok(tag)
+                return data["candidates"][0]["content"]["parts"][0]["text"]
+            return None
     except Exception:
-        return None
+        _mark_failed(tag); return None
 
 
 # ══════════════════════════════════════════════════════════════════════
-# DEEPSEEK API (Ultra low cost — ₹0.05-0.15 per 1000 questions)
+# DEEPSEEK (paid but ultra cheap — platform.deepseek.com)
 # ══════════════════════════════════════════════════════════════════════
 def _call_deepseek(prompt, system_prompt="", max_tokens=2000):
-    """Call DeepSeek API — best quality per rupee."""
     cfg = load_ai_config()
     api_key = cfg.get("deepseek_key", "")
     if not api_key:
         return None
-    try:
-        import requests
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-        messages = []
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-        messages.append({"role": "user", "content": prompt})
-        resp = requests.post("https://api.deepseek.com/v1/chat/completions",
-                              headers=headers, timeout=60,
-                              json={"model": "deepseek-chat", "messages": messages,
-                                    "max_tokens": max_tokens})
-        data = resp.json()
-        if "choices" in data:
-            return data["choices"][0]["message"]["content"]
-        return None
-    except Exception:
-        return None
+    return _openai_compat("deepseek", "https://api.deepseek.com/v1/chat/completions",
+                          api_key, "deepseek-chat", prompt, system_prompt, max_tokens, timeout=60)
 
 
 # ══════════════════════════════════════════════════════════════════════
-# GROQ API (Free, ultra-fast — llama-3.3-70b)
-# Get free key at console.groq.com
+# GROQ — FREE  (console.groq.com — Llama 3.3 70B, fastest)
 # ══════════════════════════════════════════════════════════════════════
 def _call_groq(prompt, system_prompt="", max_tokens=2000):
-    """Call Groq API — free tier, fastest inference."""
     cfg = load_ai_config()
     api_key = cfg.get("groq_key", "")
     if not api_key:
         return None
+    return _openai_compat("groq", "https://api.groq.com/openai/v1/chat/completions",
+                          api_key, "llama-3.3-70b-versatile",
+                          prompt, system_prompt, max_tokens, timeout=30)
+
+
+# ══════════════════════════════════════════════════════════════════════
+# CEREBRAS — FREE  (cloud.cerebras.ai — even faster than Groq)
+# ══════════════════════════════════════════════════════════════════════
+def _call_cerebras(prompt, system_prompt="", max_tokens=2000):
+    cfg = load_ai_config()
+    api_key = cfg.get("cerebras_key", "")
+    if not api_key:
+        return None
+    return _openai_compat("cerebras", "https://api.cerebras.ai/v1/chat/completions",
+                          api_key, "llama-3.3-70b",
+                          prompt, system_prompt, max_tokens, timeout=30)
+
+
+# ══════════════════════════════════════════════════════════════════════
+# MISTRAL — FREE tier  (console.mistral.ai — EU privacy)
+# ══════════════════════════════════════════════════════════════════════
+def _call_mistral(prompt, system_prompt="", max_tokens=2000):
+    cfg = load_ai_config()
+    api_key = cfg.get("mistral_key", "")
+    if not api_key:
+        return None
+    return _openai_compat("mistral", "https://api.mistral.ai/v1/chat/completions",
+                          api_key, "mistral-small-latest",
+                          prompt, system_prompt, max_tokens, timeout=30)
+
+
+# ══════════════════════════════════════════════════════════════════════
+# OPENROUTER — FREE $0 models  (openrouter.ai/keys)
+# ══════════════════════════════════════════════════════════════════════
+def _call_openrouter(prompt, system_prompt="", max_tokens=2000):
+    cfg = load_ai_config()
+    api_key = cfg.get("openrouter_key", "")
+    if not api_key:
+        return None
+    return _openai_compat(
+        "openrouter", "https://openrouter.ai/api/v1/chat/completions",
+        api_key, "meta-llama/llama-3.3-70b-instruct:free",
+        prompt, system_prompt, max_tokens, timeout=45,
+        extra_headers={"HTTP-Referer": "https://biobitumen.yuga.in",
+                       "X-Title": "Bio-Bitumen Consultant Portal"})
+
+
+# ══════════════════════════════════════════════════════════════════════
+# GITHUB MODELS — FREE for GitHub users  (github.com/marketplace/models)
+# ══════════════════════════════════════════════════════════════════════
+def _call_github_models(prompt, system_prompt="", max_tokens=2000):
+    cfg = load_ai_config()
+    api_key = cfg.get("github_token", "")
+    if not api_key:
+        return None
+    return _openai_compat(
+        "github", "https://models.inference.ai.azure.com/chat/completions",
+        api_key, "gpt-4o-mini",
+        prompt, system_prompt, max_tokens, timeout=45)
+
+
+# ══════════════════════════════════════════════════════════════════════
+# OLLAMA — LOCAL  (ollama.com — truly unlimited, offline)
+# Install: https://ollama.com  |  then: ollama pull llama3.2
+# ══════════════════════════════════════════════════════════════════════
+def _call_ollama(prompt, system_prompt="", max_tokens=2000):
+    cfg = load_ai_config()
+    host = cfg.get("ollama_host", "http://localhost:11434").rstrip("/")
+    model = cfg.get("ollama_model", "llama3.2")
+    if not _is_available("ollama"):
+        return None
     try:
-        import requests
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
         messages = []
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
-        resp = requests.post("https://api.groq.com/openai/v1/chat/completions",
-                              headers=headers, timeout=30,
-                              json={"model": "llama-3.3-70b-versatile", "messages": messages,
-                                    "max_tokens": max_tokens})
-        data = resp.json()
-        if "choices" in data:
-            return data["choices"][0]["message"]["content"]
+        resp = _session.post(
+            f"{host}/api/chat",
+            json={"model": model, "messages": messages, "stream": False,
+                  "options": {"num_predict": max_tokens}},
+            timeout=120)
+        if resp.status_code == 200:
+            _mark_ok("ollama")
+            return resp.json().get("message", {}).get("content")
+        _mark_failed("ollama", 30)
         return None
     except Exception:
+        _mark_failed("ollama", 30)
         return None
 
 
 # ══════════════════════════════════════════════════════════════════════
 # BUILT-IN OFFLINE ENGINE (always works, zero internet)
 # ══════════════════════════════════════════════════════════════════════
-def _call_offline(prompt, system_prompt="", max_tokens=2000):
-    """Built-in offline knowledge engine for bio-bitumen DPR questions.
-    Has all formulas, government scheme data, and industry knowledge baked in."""
+def _call_offline(prompt, system_prompt="", max_tokens=2000):  # system_prompt/max_tokens kept for interface parity
+    """Built-in offline knowledge engine for bio-bitumen DPR questions."""
+    _ = system_prompt, max_tokens  # interface parity with other providers
     q = prompt.lower()
 
     if any(w in q for w in ['bitumen', 'price', 'vg30', 'iocl']):
@@ -288,56 +452,52 @@ def _call_offline(prompt, system_prompt="", max_tokens=2000):
 # ══════════════════════════════════════════════════════════════════════
 # UNIFIED AI CALL — 6-Provider Auto-Fallback Chain
 # ══════════════════════════════════════════════════════════════════════
+def _dispatch(provider, prompt, system_prompt, max_tokens):
+    """Call a single provider by name. Returns text or None."""
+    if provider == "groq":          return _call_groq(prompt, system_prompt, max_tokens)
+    if provider == "cerebras":      return _call_cerebras(prompt, system_prompt, max_tokens)
+    if provider == "gemini":        return _call_gemini(prompt, system_prompt, max_tokens, use_free=False)
+    if provider == "gemini-free":   return _call_gemini(prompt, system_prompt, max_tokens, use_free=True)
+    if provider == "mistral":       return _call_mistral(prompt, system_prompt, max_tokens)
+    if provider == "openrouter":    return _call_openrouter(prompt, system_prompt, max_tokens)
+    if provider == "github":        return _call_github_models(prompt, system_prompt, max_tokens)
+    if provider == "ollama":        return _call_ollama(prompt, system_prompt, max_tokens)
+    if provider == "openai":        return _call_openai(prompt, system_prompt, max_tokens)
+    if provider == "claude":        return _call_claude(prompt, system_prompt, max_tokens)
+    if provider == "deepseek":      return _call_deepseek(prompt, system_prompt, max_tokens)
+    if provider == "offline":       return _call_offline(prompt, system_prompt, max_tokens)
+    return None
+
+
+# Default chain — free providers first, paid as premium fallback, offline always last
+_DEFAULT_CHAIN = [
+    "groq", "cerebras", "gemini", "mistral", "openrouter",
+    "github", "ollama", "gemini-free",
+    "openai", "claude", "deepseek",
+    "offline",
+]
+
+
 def ask_ai(prompt, system_prompt="", max_tokens=2000):
     """
-    Ask AI using best available provider. Falls back through 6 providers.
-    Chain: preferred → openai → claude → gemini(key) → deepseek → gemini(free) → offline
-    User NEVER sees a failure — offline engine always answers.
+    Ask AI using best available provider. Auto-fails over through all 11 providers.
+    Free providers tried first; offline engine is the ultimate fallback.
     Returns: (response_text, provider_name)
     """
     cfg = load_ai_config()
-    pref = cfg.get("preferred_provider", "openai")
+    pref = cfg.get("preferred_provider", "groq")
 
-    # Build fallback chain based on preference
-    chain = []
-    if pref == "openai":
-        chain = ["openai", "claude", "gemini", "deepseek", "groq", "gemini-free", "offline"]
-    elif pref == "claude":
-        chain = ["claude", "openai", "gemini", "deepseek", "groq", "gemini-free", "offline"]
-    elif pref == "gemini":
-        chain = ["gemini", "openai", "claude", "deepseek", "groq", "gemini-free", "offline"]
-    elif pref == "deepseek":
-        chain = ["deepseek", "openai", "claude", "gemini", "groq", "gemini-free", "offline"]
-    elif pref == "groq":
-        chain = ["groq", "openai", "claude", "gemini", "deepseek", "gemini-free", "offline"]
-    else:
-        chain = ["openai", "claude", "gemini", "deepseek", "groq", "gemini-free", "offline"]
+    # Put preferred provider at front of chain
+    chain = [pref] + [p for p in _DEFAULT_CHAIN if p != pref]
 
     for provider in chain:
         try:
-            if provider == "openai":
-                result = _call_openai(prompt, system_prompt, max_tokens)
-            elif provider == "claude":
-                result = _call_claude(prompt, system_prompt, max_tokens)
-            elif provider == "gemini":
-                result = _call_gemini(prompt, system_prompt, max_tokens, use_free=False)
-            elif provider == "deepseek":
-                result = _call_deepseek(prompt, system_prompt, max_tokens)
-            elif provider == "groq":
-                result = _call_groq(prompt, system_prompt, max_tokens)
-            elif provider == "gemini-free":
-                result = _call_gemini(prompt, system_prompt, max_tokens, use_free=True)
-            elif provider == "offline":
-                result = _call_offline(prompt, system_prompt, max_tokens)
-            else:
-                continue
-
+            result = _dispatch(provider, prompt, system_prompt, max_tokens)
             if result and len(result) > 10:
                 return result, provider
         except Exception:
             continue
 
-    # Ultimate fallback
     return _call_offline(prompt, system_prompt, max_tokens), "offline"
 
 
@@ -383,7 +543,8 @@ Project Details:
 
 Write 300-500 words, professional tone, suitable for bank submission."""
 
-    system = SYSTEM_PROMPT_BASE + "\nYou are writing a bank-ready DPR section."
+    trade = company.get("trade_name", "") if company else ""
+    system = SYSTEM_PROMPT_BASE + f"\nYou are writing a bank-ready DPR section for {trade}."
     return ask_ai(prompt, system, max_tokens=1500)
 
 
@@ -458,38 +619,40 @@ def ai_orchestrator(question, cfg=None):
         role = "financial_analyst"
         system = ("You are a chartered accountant and financial analyst for bio-bitumen DPR. "
                   "Give specific numbers, formulas, and calculations. Use Indian accounting standards.")
-        # Prefer DeepSeek for maths, then OpenAI
-        preferred_chain = ["deepseek", "openai", "gemini", "claude", "gemini-free", "offline"]
+        preferred_chain = ["deepseek", "groq", "cerebras", "openai", "gemini",
+                           "mistral", "openrouter", "claude", "gemini-free", "offline"]
 
     elif any(w in q for w in ['write', 'draft', 'document', 'dpr', 'report', 'proposal',
                                 'letter', 'email', 'application']):
         role = "document_writer"
         system = ("You are a professional DPR document writer. Write bank-ready, formal English. "
                   "Use proper formatting, headings, and specific project data.")
-        # Prefer Claude for writing quality
-        preferred_chain = ["claude", "openai", "gemini", "deepseek", "gemini-free", "offline"]
+        preferred_chain = ["claude", "openai", "groq", "cerebras", "gemini",
+                           "mistral", "deepseek", "gemini-free", "offline"]
 
     elif any(w in q for w in ['policy', 'scheme', 'mnre', 'government', 'subsidy', 'tender',
                                 'nhai', 'regulation', 'compliance', 'license']):
         role = "policy_advisor"
         system = ("You are an expert on Indian government policies for bio-energy and infrastructure. "
                   "Reference specific schemes, portal URLs, and application procedures.")
-        # Prefer Gemini for web search capability
-        preferred_chain = ["gemini", "gemini-free", "openai", "deepseek", "claude", "offline"]
+        preferred_chain = ["gemini", "groq", "cerebras", "openrouter", "mistral",
+                           "github", "openai", "gemini-free", "offline"]
 
     elif any(w in q for w in ['bitumen price', 'crude oil', 'market', 'live', 'current',
                                 'today', 'latest', 'iocl']):
         role = "market_analyst"
         system = ("You are a commodities market analyst for Indian bitumen industry. "
                   "Give current price estimates with sources and methodology.")
-        preferred_chain = ["gemini", "gemini-free", "openai", "offline", "deepseek", "claude"]
+        preferred_chain = ["gemini", "groq", "cerebras", "openrouter", "gemini-free",
+                           "openai", "offline"]
 
     elif any(w in q for w in ['process', 'pyrolysis', 'technology', 'reactor', 'yield',
                                 'temperature', 'equipment', 'drawing']):
         role = "technical_expert"
         system = ("You are a chemical engineer specializing in biomass pyrolysis and bio-bitumen. "
                   "Reference IS standards, CSIR-CRRI specs, and specific equipment parameters.")
-        preferred_chain = ["openai", "claude", "deepseek", "gemini", "gemini-free", "offline"]
+        preferred_chain = ["groq", "cerebras", "openai", "claude", "deepseek",
+                           "gemini", "mistral", "gemini-free", "offline"]
     else:
         role = "general_consultant"
         system = SYSTEM_PROMPT_BASE
@@ -506,22 +669,7 @@ def ai_orchestrator(question, cfg=None):
     if preferred_chain:
         for provider in preferred_chain:
             try:
-                if provider == "openai":
-                    result = _call_openai(question, system)
-                elif provider == "claude":
-                    result = _call_claude(question, system)
-                elif provider == "gemini":
-                    result = _call_gemini(question, system, use_free=False)
-                elif provider == "deepseek":
-                    result = _call_deepseek(question, system)
-                elif provider == "groq":
-                    result = _call_groq(question, system)
-                elif provider == "gemini-free":
-                    result = _call_gemini(question, system, use_free=True)
-                elif provider == "offline":
-                    result = _call_offline(question, system)
-                else:
-                    continue
+                result = _dispatch(provider, question, system, 2000)
                 if result and len(result) > 10:
                     return result, provider, role
             except Exception:
@@ -533,50 +681,38 @@ def ai_orchestrator(question, cfg=None):
 
 
 def test_api_connection():
-    """Test all 6 AI providers — returns status dict."""
-    results = {}
+    """Test all providers — returns status dict. Only tests those with keys configured."""
     cfg = load_ai_config()
+    ping = "Say OK"
 
-    # OpenAI
-    if cfg.get("openai_key"):
-        r = _call_openai("Say 'OK' in 1 word.", max_tokens=5)
-        results["openai"] = {"status": "OK" if r else "FAILED", "model": cfg.get("openai_model", "gpt-4o-mini")}
-    else:
-        results["openai"] = {"status": "No key", "model": ""}
+    PROVIDERS = [
+        # (name, key_field, model_label, call_fn)
+        ("groq",       "groq_key",       "llama-3.3-70b-versatile",      lambda: _call_groq(ping, max_tokens=5)),
+        ("cerebras",   "cerebras_key",   "llama-3.3-70b",                lambda: _call_cerebras(ping, max_tokens=5)),
+        ("gemini",     "gemini_key",     "gemini-2.5-flash",             lambda: _call_gemini(ping, max_tokens=5)),
+        ("mistral",    "mistral_key",    "mistral-small-latest",         lambda: _call_mistral(ping, max_tokens=5)),
+        ("openrouter", "openrouter_key", "llama-3.3-70b:free",           lambda: _call_openrouter(ping, max_tokens=5)),
+        ("github",     "github_token",   "gpt-4o-mini",                  lambda: _call_github_models(ping, max_tokens=5)),
+        ("openai",     "openai_key",     cfg.get("openai_model","gpt-4o-mini"), lambda: _call_openai(ping, max_tokens=5)),
+        ("claude",     "claude_key",     cfg.get("claude_model",""),     lambda: _call_claude(ping, max_tokens=5)),
+        ("deepseek",   "deepseek_key",   "deepseek-chat",                lambda: _call_deepseek(ping, max_tokens=5)),
+    ]
+    results = {}
+    for name, key_field, model_label, fn in PROVIDERS:
+        if cfg.get(key_field):
+            r = fn()
+            results[name] = {"status": "OK" if r else "FAILED", "model": model_label}
+        else:
+            results[name] = {"status": "No key", "model": model_label}
 
-    # Claude
-    if cfg.get("claude_key"):
-        r = _call_claude("Say 'OK' in 1 word.", max_tokens=5)
-        results["claude"] = {"status": "OK" if r else "FAILED", "model": cfg.get("claude_model", "")}
-    else:
-        results["claude"] = {"status": "No key", "model": ""}
+    # Always-on providers
+    r = _call_gemini(ping, max_tokens=5, use_free=True)
+    results["gemini-free"] = {"status": "OK" if r else "FAILED", "model": "gemini-2.0-flash-exp"}
 
-    # Gemini (with key)
-    if cfg.get("gemini_key"):
-        r = _call_gemini("Say 'OK' in 1 word.", max_tokens=5)
-        results["gemini"] = {"status": "OK" if r else "FAILED", "model": "gemini-2.0-flash"}
-    else:
-        results["gemini"] = {"status": "No key", "model": ""}
-
-    # DeepSeek
-    if cfg.get("deepseek_key"):
-        r = _call_deepseek("Say 'OK' in 1 word.", max_tokens=5)
-        results["deepseek"] = {"status": "OK" if r else "FAILED", "model": "deepseek-chat"}
-    else:
-        results["deepseek"] = {"status": "No key", "model": ""}
-
-    # Groq
-    if cfg.get("groq_key"):
-        r = _call_groq("Say 'OK' in 1 word.", max_tokens=5)
-        results["groq"] = {"status": "OK" if r else "FAILED", "model": "llama-3.3-70b-versatile"}
-    else:
-        results["groq"] = {"status": "No key", "model": ""}
-
-    # Gemini free
-    r = _call_gemini("Say 'OK' in 1 word.", max_tokens=5, use_free=True)
-    results["gemini-free"] = {"status": "OK" if r else "FAILED", "model": "gemini-2.0-flash-exp (free)"}
-
-    # Offline
+    r = _call_ollama(ping, max_tokens=5)
+    results["ollama"] = {
+        "status": "OK" if r else "Not running (install from ollama.com)",
+        "model": cfg.get("ollama_model", "llama3.2")
+    }
     results["offline"] = {"status": "ALWAYS ON", "model": "Built-in DPR Engine"}
-
     return results
