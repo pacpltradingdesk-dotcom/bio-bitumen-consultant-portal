@@ -505,25 +505,92 @@ def ask_ai(prompt, system_prompt="", max_tokens=2000):
 # SPECIALIZED AI FUNCTIONS
 # ══════════════════════════════════════════════════════════════════════
 
-SYSTEM_PROMPT_BASE = """You are BIO-BITUMEN PROJECT ASSISTANT for PPS Anantams Corporation,
-specializing in Bio-Modified Bitumen plant setup in India. You represent Prince Pratap Shah — 25 years hands-on in the bitumen industry (since 2001), MCA-registered Director since 2009 (DIN 06680837), founder of Omnipotent Industries Limited (BSE-listed via IPO 2020, CIN L74999MH2016PLC285902 — 3 plants, 11 JVs), founder of PPS Anantams Corporation Pvt Ltd (CIN U46632GJ2019PTC110676, 2019), proprietor of Global Enterprises (AMT Techno Worldwide Marketing Rep, 2015-17) and PS Enterprises (1.2 Lakh MT UK bitumen contract, 2023). 9 plants commissioned with 9+ documented plant innovations.
+SYSTEM_PROMPT_BASE = """You are YUGA PMC — BIO-BITUMEN FULL-SCOPE PROJECT CONSULTANT.
+Principal: Prince Pratap Shah | 25 years in bitumen industry | 9 plants commissioned.
+Entity: PPS Anantams Corporation Pvt Ltd (CIN U46632GJ2019PTC110676, Vadodara + Mumbai).
+Also Director of Omnipotent Industries Ltd (BSE-listed, CIN L74999MH2016PLC285902, 3 plants, 11 JVs).
 
-RULES YOU MUST FOLLOW:
-1. Numbers must be real — from formulas, market rates, or IS standards. Never invent.
-2. If a value is missing, ASK for it. Never assume.
-3. Always tell the user what comes next: "Next I can do: [Option A] / [Option B]"
-4. Never suggest removing legally mandatory items (IS 2825, IS 14489, NBC 2016, CPCB).
-5. Never say project is "guaranteed profitable" — say "projections show..."
+═══════════════════════════════════════════════════════
+YOUR FULL SCOPE OF EXPERTISE — ALL AREAS BELOW:
+═══════════════════════════════════════════════════════
 
-YOUR EXPERTISE:
-- Pyrolysis technology (450-550°C, bio-oil 32%, bio-char 28%, syngas 22%)
-- Indian Standards (IS 73, IS 2825, IS 14489, NBC 2016, Factories Act)
-- Financial modelling, DPR writing, BOQ preparation
-- 15 plant zones (A-O): Gate to Maintenance, 82 equipment items
-- India bitumen market: ₹45,750/T VG30, NHAI green mandate
-- Government schemes: MNRE, CGTMSE, State MSME subsidies
+A. CROSS-CALCULATION & PROJECT VALIDATION
+   - Verify investment vs capacity ratio (benchmark: Rs 0.40 Cr/TPD for 5-50 TPD range)
+   - Cross-check plant & machinery, civil, utility, working capital vs total investment
+   - Validate raw material cost vs output quantity vs selling price → gross margin
+   - Confirm break-even capacity utilisation (must be ≤ 60% for bankability)
+   - DSCR cross-check (Year 3 must be ≥ 1.25x; Year 5 ≥ 1.50x)
+   - ROI / IRR / payback vs industry benchmarks (ROI 20-35%, IRR 26-36%, payback 24-36 months)
+   - Flag any number that is inconsistent with the others
+   - State if project is PRACTICAL / MARGINAL / NOT VIABLE with reasons
 
-Format: Use headings, bullet points, tables. Be specific with numbers."""
+B. FINANCIAL MODELLING
+   - Investment split: P&M 55-60%, Civil 15-20%, Utility 8-12%, WC 10-15%
+   - Revenue: Bio-bitumen (primary), Biochar, Bio-oil, Syngas, Carbon credits
+   - Cost: Raw material, Power (electricity + diesel), Labour, Overhead, Depreciation, Interest
+   - Working capital = 3 months operating cost (raw material + power + labour)
+   - Loan = 60-65% of project cost; equity = 35-40%
+   - EMI formula: EMI = P × r(1+r)^n / ((1+r)^n - 1) where r = monthly rate, n = months
+   - State-wise cost difference: Gujarat cheapest, Northeast most expensive (+15-25%)
+   - Season-wise raw material: rice husk peak Oct-Jan (post-kharif), wheat straw Mar-May
+   - Minimum viable capacity: 5 TPD (below = uneconomical). Maximum per single unit: 100 TPD.
+
+C. DRAWINGS & LAYOUT PREPARATION
+   - Plant layout (top-view, zone-wise A to O: Gate, Security, Admin, Raw Material Store,
+     Pre-processing, Pyrolysis, Condensation, Oil Upgrade, PMB Blending, Storage, QC Lab,
+     Utility, ETP, Fire Point, Maintenance)
+   - Machinery placement: pyrolysis reactor central, condenser bank downwind,
+     VG-10 tank adjacent to blender, PMB tank near dispatch
+   - Raw material storage: husk 7-10 days buffer; bulk density 90-130 kg/m3
+   - Finished goods: PMB-40 insulated tank 160°C; VG-10 storage 140-150°C
+   - Fire safety layout: hydrant ring main 150mm dia, 2 fire points, foam bank at VG-10
+   - Electrical SLD: 11kV HT, transformer, MCC, distribution boards, earthing grid
+   - Process flow: biomass → dryer → reactor → condenser → decanter → upgrade → blending
+   - P&ID: control valves, pressure transmitters, safety relief valves, interlocks
+   - Civil foundations: pyrolysis reactor RCC pad 300mm thick; tanks on ring foundation
+
+D. PLANT & MACHINERY DETAILING
+   - Full BOM with 15 equipment categories, 82+ line items
+   - Technical specs: reactor SS316 shell, 480°C, 6 thermocouples, PLC-interlocked
+   - Capacity table: 5/10/15/20/30/50/75/100 TPD with proportional sizing rules
+   - Power load: 25-30 kW per TPD (connected), demand factor 0.7
+   - Space: main shed 18m×22m (396 sqm) for 5 TPD; scales as capacity^0.6
+   - Vendor quotation: 3-quote RFQ rule; technical-qualified lowest-bid principle
+   - AMC: 2-4% of P&M cost per year; critical spares buffer 0.5% of P&M cost
+
+E. DPR PREPARATION (BANK / INVESTOR / GOVERNMENT)
+   - Bank DPR: CMA format, DSCR, loan amortisation, collateral value, end-use cert
+   - Investor DPR: Bull/Base/Bear scenarios, IRR sensitivity, exit multiple, carbon upside
+   - Govt DPR: Udyam, MNRE, CPCB Form-1/IA, Haryana PADMA, state MSME subsidy format
+   - Mandatory sections: Exec Summary, Process, Technical, Financial, Risk, Compliance,
+     Promoter profile, Implementation timeline (12-month Gantt)
+   - Red flags to resolve before bank: land title, product LOI, tax rate confirmation
+
+F. PERMISSIONS & LICENCES (STATE-WISE)
+   - Central mandatory: GST, PAN, IEC (if export), Udyam MSME, PESO (if bulk LPG/flammables)
+   - CPCB/State PCB: CTE (Consent to Establish) → CTO (Consent to Operate)
+   - Factory Act 1948: Factory licence from Labour Dept (>10 workers with power)
+   - Fire NOC: from State Fire Service (mandatory for pyrolysis / bitumen storage)
+   - Electricity: load sanction + HT connection + CEIG certificate
+   - Water: groundwater permission (CGWB) or municipal supply NOC
+   - Weights & Measures: weighbridge stamping (Dept of Legal Metrology)
+   - Labour: PF (EPFO), ESIC, Contract Labour Reg., Shops & Est. Act
+   - BIS: IS 15462:2019 (PMB) product certification from BIS
+   - State-specific: Haryana PADMA, H-GUVY; Gujarat MSME incentive; Maharashtra PSI
+
+═══════════════════════════════════════════════════════
+HARD RULES:
+═══════════════════════════════════════════════════════
+1. Numbers must be real — from formulas, market rates, IS standards, or CBREs. Never invent.
+2. Always cross-check the number you give against at least one other known figure.
+3. If a value is missing, say "I need [X] to calculate this" — never assume.
+4. Flag inconsistencies clearly: "WARNING: your [X] does not match [Y] — reconcile."
+5. Never remove legally mandatory items (IS standards, CPCB, Factory Act, Fire NOC).
+6. Never say "guaranteed profitable" — say "projections show... subject to [condition]."
+7. Always end with: "Next I can: [A] / [B] / [C]" so the user knows what to ask next.
+
+FORMAT: Use tables for numbers, bullet lists for steps, bold for warnings.
+        State the source or formula for every key figure."""
 
 
 def ai_write_dpr_section(section_name, cfg, company):
@@ -678,6 +745,172 @@ def ai_orchestrator(question, cfg=None):
     else:
         result, provider = ask_ai(question, system)
         return result, provider, role
+
+
+def ai_cross_validate(cfg):
+    """AI cross-checks all project numbers and flags inconsistencies."""
+    prompt = f"""Cross-validate ALL numbers in this bio-bitumen project. Flag every inconsistency.
+
+PROJECT DATA:
+- Capacity: {cfg.get('capacity_tpd', 0):.1f} TPD
+- Total Investment: Rs {cfg.get('investment_cr', 0):.2f} Crore
+- Plant & Machinery: Rs {cfg.get('pm_cost_cr', 0):.2f} Cr
+- Civil & Structural: Rs {cfg.get('civil_cost_cr', 0):.2f} Cr
+- Utility & Electrical: Rs {cfg.get('utility_cost_cr', 0):.2f} Cr
+- Working Capital: Rs {cfg.get('wc_cr', 0):.2f} Cr
+- Pre-operative: Rs {cfg.get('preop_cr', 0):.2f} Cr
+- ROI: {cfg.get('roi_pct', 0):.1f}%
+- IRR: {cfg.get('irr_pct', 0):.1f}%
+- DSCR Year 3: {cfg.get('dscr_yr3', 0):.2f}x
+- Break-even: {cfg.get('break_even_months', 0)} months
+- Revenue Year 5: Rs {cfg.get('revenue_yr5_lac', 0):.0f} Lakhs
+- Capacity Utilisation Yr1: {cfg.get('util_yr1', 60):.0f}%
+- State: {cfg.get('state', 'India')}
+
+BENCHMARKS TO CHECK AGAINST:
+- Investment/TPD: Rs 0.35-0.55 Cr/TPD (red flag if outside range)
+- P&M share: 55-60% of investment
+- Civil share: 15-20%
+- Break-even ≤ 60% utilisation for bankability
+- DSCR Yr3 ≥ 1.25x (bank minimum)
+- ROI 20-35%, IRR 26-36%, payback 24-36 months
+
+For EACH parameter: show Expected vs Actual, status (OK / WARNING / RED FLAG), and fix recommendation.
+End with overall verdict: BANKABLE / MARGINAL / REVISE BEFORE SUBMISSION"""
+
+    system = SYSTEM_PROMPT_BASE + "\nYou are a DPR auditor performing a pre-submission cross-check."
+    return ask_ai(prompt, system, max_tokens=2000)
+
+
+def ai_viability_check(cfg):
+    """AI gives a PRACTICAL / MARGINAL / NOT VIABLE verdict with reasons."""
+    prompt = f"""Assess the COMMERCIAL VIABILITY of this bio-bitumen plant:
+
+- Capacity: {cfg.get('capacity_tpd', 0):.1f} TPD
+- Location/State: {cfg.get('state', 'India')}, City: {cfg.get('location', '')}
+- Investment: Rs {cfg.get('investment_cr', 0):.2f} Crore
+- ROI: {cfg.get('roi_pct', 0):.1f}% | IRR: {cfg.get('irr_pct', 0):.1f}%
+- DSCR Yr3: {cfg.get('dscr_yr3', 0):.2f}x
+- Break-even: {cfg.get('break_even_months', 0)} months
+- Revenue Yr5: Rs {cfg.get('revenue_yr5_lac', 0):.0f} Lakhs
+
+Evaluate across 5 dimensions:
+1. FINANCIAL VIABILITY (numbers vs benchmarks)
+2. MARKET VIABILITY (demand, competition, offtake risk in that state)
+3. TECHNICAL VIABILITY (capacity feasibility, technology risk)
+4. COMPLIANCE VIABILITY (location-specific approvals — is it even permittable?)
+5. OPERATIONAL VIABILITY (raw material supply, skilled labour, logistics)
+
+Score each /10. Then give overall verdict:
+- PRACTICAL (≥7/10 on all 5): Green light, proceed to DPR
+- MARGINAL (5-7 on any): Proceed with listed conditions
+- NOT VIABLE (<5 on any): Do not proceed until issues resolved
+
+Be direct. Investors read this to make a Go/No-Go decision."""
+
+    system = SYSTEM_PROMPT_BASE + "\nYou are a senior investment analyst doing a Go/No-Go assessment."
+    return ask_ai(prompt, system, max_tokens=2000)
+
+
+def ai_permissions_guide(state, capacity_tpd):
+    """AI generates state-wise permission checklist with timelines and costs."""
+    prompt = f"""Generate a COMPLETE permission and licence checklist for a {capacity_tpd:.0f} TPD bio-bitumen (PMB) plant in {state}, India.
+
+For each licence/permission provide:
+- Authority name (exact dept + officer designation)
+- Documents required
+- Timeline (typical weeks)
+- Fee (approximate Rs)
+- Portal/address
+- Sequence (which must come before which)
+
+Categories to cover:
+1. Land & Site (NA conversion, layout approval, building plan)
+2. Environment (PCB CTE → CTO; Form-1/IA if applicable)
+3. Factory & Labour (Factory licence, ESIC, EPF, Contract Labour)
+4. Fire & Safety (Fire NOC, PESO if LPG storage, HAZMAT permit)
+5. Electricity (Load sanction, HT connection, CEIG approval)
+6. Water (CGWB groundwater or municipal NOC)
+7. Business Registration (Udyam, GST, IEC if export, Shops & Est)
+8. Product Certification (BIS IS 15462:2019 for PMB; CSIR-CRRI approval)
+9. Subsidies & Incentives (MNRE, State MSME, CGTMSE — apply timeline)
+10. State-specific: list any special permits unique to {state}
+
+Also give: Critical Path (longest-lead permissions that must start Day 1)
+And: Total expected cost of all permissions (Rs estimate)"""
+
+    system = SYSTEM_PROMPT_BASE + f"\nYou are a statutory compliance expert for {state}."
+    return ask_ai(prompt, system, max_tokens=2500)
+
+
+def ai_layout_guidance(cfg):
+    """AI gives zone-wise plant layout guidance and area schedule."""
+    capacity = cfg.get('capacity_tpd', 5)
+    state = cfg.get('state', 'India')
+    plot_area = cfg.get('plot_area_sqm', 0)
+
+    prompt = f"""Design the zone-wise plant layout for a {capacity:.0f} TPD bio-bitumen (PMB-40) plant in {state}.
+
+{'Plot available: ' + str(plot_area) + ' sqm' if plot_area else 'Estimate required plot area.'}
+
+Provide:
+1. AREA SCHEDULE — table with all 15 zones (A–O), their function, and area (sqm):
+   A:Gate/Security, B:Admin/Lab, C:Raw Material Store, D:Pre-processing,
+   E:Pyrolysis Block, F:Condensation, G:Oil Upgrade, H:PMB Blending,
+   I:PMB Storage, J:VG-10/Bitumen Storage, K:QC Lab, L:Utility/DG,
+   M:ETP, N:Fire Point, O:Maintenance/Workshop
+
+2. ADJACENCY RULES — which zones must be adjacent, which must be separated (fire/wind)
+
+3. CRITICAL DIMENSIONS — main shed size, tank farm layout, road width
+
+4. FIRE SAFETY LAYOUT — hydrant ring main dia, fire point locations, foam bank for bitumen
+
+5. ORIENTATION — prevailing wind direction considerations for pyrolysis exhaust
+
+6. SCALE FACTOR — how the layout scales from {capacity:.0f} TPD to 10 TPD and 20 TPD
+
+Capacity scaling rule: shed area scales as capacity^0.6 (5TPD=396sqm, 10TPD=665sqm, 20TPD=1118sqm)
+Total plot scaling: 5TPD needs ~3000sqm, 10TPD ~5000sqm, 20TPD ~8000sqm"""
+
+    system = SYSTEM_PROMPT_BASE + "\nYou are a plant layout engineer with HAZOP experience."
+    return ask_ai(prompt, system, max_tokens=2000)
+
+
+def ai_machine_bom(cfg):
+    """AI generates full Plant & Machinery BOM with specs and indicative costs."""
+    capacity = cfg.get('capacity_tpd', 5)
+    state = cfg.get('state', 'India')
+
+    prompt = f"""Generate the COMPLETE Plant & Machinery Bill of Materials for a {capacity:.0f} TPD bio-bitumen (PMB-40) plant.
+
+For EACH equipment item provide:
+- Item No, Equipment Name, Quantity, Capacity/Size, Material of Construction,
+  Key Spec (temp/pressure/power), Indicative Cost (Rs Lakhs), Make/Source suggestion
+
+Categories (cover all):
+1. BIOMASS HANDLING (conveyor, elevator, weigh hopper, rotary valve)
+2. PRE-PROCESSING (shredder/hammer mill, dryer with burner, cyclone, vibro-screen)
+3. PYROLYSIS REACTOR (continuous screw/rotary type, 480°C, SS316, PLC-interlocked)
+4. CONDENSATION SYSTEM (condenser bank, decanter, oil-water separator, bio-oil tank)
+5. GAS HANDLING (gas line, burner, flare stack, gas scrubber)
+6. BIO-OIL UPGRADE (vacuum still/fractionation, if applicable)
+7. PMB BLENDING (high-shear mixer, blending tank, storage tank, pump)
+8. BITUMEN/VG-10 STORAGE (insulated storage tanks, heating coils, temperature control)
+9. BIOCHAR HANDLING (char cooler, conveyor, bagging/bulk loading, storage)
+10. UTILITIES (compressor, boiler/thermic fluid heater, cooling tower, DG set, chiller)
+11. ELECTRICAL (MCC panel, PLC/SCADA, instrumentation, cabling, earthing, lighting)
+12. QC LABORATORY (penetration test, softening point, viscosity, flash point apparatus)
+13. ETP (effluent treatment: primary, secondary, sludge handling)
+14. FIRE & SAFETY (foam system, sprinkler, fire hydrant, CO2 extinguisher bank)
+15. CIVIL EMBEDDED (RCC foundations, anchor bolts — listed for reference)
+
+Scaling rules: {capacity:.0f} TPD → adjust capacities proportionally from 5 TPD base.
+Power: ~{capacity*27:.0f} kW connected load (27 kW/TPD).
+End with: TOTAL P&M COST (Rs Cr) and split into Imported vs Indigenous %."""
+
+    system = SYSTEM_PROMPT_BASE + f"\nYou are a procurement engineer building the BOM for a {capacity:.0f} TPD plant in {state}."
+    return ask_ai(prompt, system, max_tokens=3000)
 
 
 def test_api_connection():
