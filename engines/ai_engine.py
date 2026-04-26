@@ -82,7 +82,7 @@ _CONFIG_DEFAULTS = {
     # Settings
     "preferred_provider": "groq",
     "openai_model": "gpt-4o-mini",
-    "claude_model": "claude-sonnet-4-20250514",
+    "claude_model": "claude-sonnet-4-6",
     "gemini_model": "gemini-2.5-flash",
     "deepseek_model": "deepseek-chat",
 }

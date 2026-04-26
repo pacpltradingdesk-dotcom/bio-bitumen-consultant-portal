@@ -156,20 +156,37 @@ MODULES = [
 # ── load project context from ai_config.json ──────────────────────────
 
 def _load_context():
+    # Try to load from state_manager (live project data)
+    cfg = {}
     try:
-        cfg = json.loads(CFG_PATH.read_text(encoding="utf-8"))
+        import sys
+        sys.path.insert(0, str(_HERE))
+        from state_manager import DEFAULTS
+        cfg = dict(DEFAULTS)
     except Exception:
-        cfg = {}
+        pass
+    # Also pull persisted DB config if available
+    try:
+        import sqlite3
+        db = _HERE / "data" / "consultant_portal.db"
+        if db.exists():
+            con = sqlite3.connect(str(db))
+            row = con.execute("SELECT data FROM project_config ORDER BY id DESC LIMIT 1").fetchone()
+            if row:
+                cfg.update(json.loads(row[0]))
+            con.close()
+    except Exception:
+        pass
     return {
-        "name":      cfg.get("client_name", "Bio Bitumen Plant"),
-        "capacity":  f"{cfg.get('capacity_tpd', 50)} TPD bio-bitumen",
+        "name":      cfg.get("client_name") or cfg.get("project_name", "Bio Bitumen Plant"),
+        "capacity":  f"{cfg.get('capacity_tpd', 20)} TPD biomass input",
         "location":  f"{cfg.get('location', 'India')}, {cfg.get('state', '')}".strip(", "),
         "stage":     "DPR Preparation",
-        "budget":    f"INR {cfg.get('investment_cr', 6.5):.1f} Cr",
-        "product":   "VG-10 (Rs 48k/MT) + PMB (Rs 72k/MT)",
-        "biomass":   cfg.get("biomass_source", "Rice Husk"),
-        "irr":       f"{cfg.get('irr_pct', 26)}%",
-        "dscr":      f"{cfg.get('dscr_yr3', 1.35)}x",
+        "budget":    f"INR {cfg.get('investment_cr', 0) or '—'} Cr",
+        "product":   "VG-10 + PMB bio-bitumen",
+        "biomass":   cfg.get("biomass_source", "Rice Husk / Agro-waste"),
+        "irr":       f"{cfg.get('irr_pct', 0) or 'TBD'}%",
+        "dscr":      f"{cfg.get('dscr_yr3', 0) or 'TBD'}x",
         "audience":  ["Investors", "Banks (CMA)", "NHAI", "Govt schemes"],
     }
 
@@ -297,7 +314,6 @@ SKILL_MAP = {
 
 def run_scan(verbose=True):
     notes = {}
-    ctx = _ctx_string()
 
     if verbose:
         print(f"\n[{datetime.now():%H:%M:%S}] Scanning {len(MODULES)} modules...")

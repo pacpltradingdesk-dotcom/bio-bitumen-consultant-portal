@@ -74,8 +74,9 @@ with c2:
     st.markdown("[Get key](https://console.anthropic.com/settings/keys)")
     claude_key = st.text_input("Claude API Key", value=ai_cfg.get("claude_key", ""),
                                 type="password", placeholder="sk-ant-...", key="claude_key_in")
-    claude_model = st.selectbox("Model", ["claude-sonnet-4-20250514", "claude-haiku-4-5-20251001"],
-                                 index=0, key="claude_model_sel")
+    claude_model = st.selectbox("Model", ["claude-sonnet-4-6", "claude-opus-4-7", "claude-haiku-4-5-20251001"],
+                                 index=["claude-sonnet-4-6", "claude-opus-4-7", "claude-haiku-4-5-20251001"].index(
+                                     ai_cfg.get("claude_model", "claude-sonnet-4-6")), key="claude_model_sel")
 
     st.markdown("### DeepSeek (Ultra Cheap)")
     st.markdown("[Get key](https://platform.deepseek.com) — ₹0.05-0.15 per 1000 questions")
