@@ -379,6 +379,89 @@ except Exception as e:
     st.error(f"Seasonal engine error: {e}")
 
 
+# ── Live Mandi Prices & Weather Impact ───────────────────────────────
+st.markdown("---")
+st.subheader("🌐 Live Market Data — Feedstock & Site Conditions")
+
+try:
+    from engines.free_apis import get_weather_current, get_mandi_prices, get_exchange_rates
+    import pandas as _pd
+
+    _city  = cfg.get("location", "") or cfg.get("state", "Delhi")
+    _state = cfg.get("state", "Uttar Pradesh")
+
+    _ma1, _ma2, _ma3 = st.columns(3)
+
+    # ── Mandi prices for key biomass feedstocks ───────────────────────
+    with _ma1:
+        st.markdown("**Live Mandi Prices (Biomass Feedstocks)**")
+        _feedstocks = ["rice straw", "wheat straw", "sugarcane bagasse", "cotton stalks"]
+        _price_rows = []
+        for _feed in _feedstocks:
+            _mp = get_mandi_prices(_feed, _state)
+            if _mp and "prices" in _mp and _mp["prices"]:
+                _px = _mp["prices"][0]
+                _price_rows.append({
+                    "Feedstock": _feed.title(),
+                    "Min (₹/MT)": _px.get("min_price", "—"),
+                    "Modal (₹/MT)": _px.get("modal_price", "—"),
+                    "Max (₹/MT)": _px.get("max_price", "—"),
+                    "Source": _mp.get("source", "")[:18],
+                })
+        if _price_rows:
+            st.dataframe(_pd.DataFrame(_price_rows), use_container_width=True,
+                         hide_index=True)
+        else:
+            st.info("Price data loading…")
+
+    # ── Live weather impact on drying/storage ─────────────────────────
+    with _ma2:
+        st.markdown("**Current Site Conditions — Biomass Impact**")
+        _w = get_weather_current(_city)
+        if "error" not in _w:
+            _temp = _w.get("temperature_c", 25)
+            _hum  = _w.get("humidity_pct", 50)
+            _wind = _w.get("wind_kmh", 0)
+
+            st.metric("Temperature", f"{_temp}°C",
+                      delta="High — check cooling" if _temp > 38 else None)
+            st.metric("Humidity", f"{_hum}%",
+                      delta="Drying +25%" if _hum > 70 else ("Fast dry" if _hum < 35 else None))
+            st.metric("Wind Speed", f"{_wind} km/h")
+
+            # Moisture content advisory
+            if _hum > 70:
+                st.warning("⚠️ High humidity — increase biomass drying time by ~20-25%. "
+                           "Moisture content may exceed 15%.")
+            elif _hum > 50:
+                st.info("ℹ️ Moderate humidity — standard drying protocol applies.")
+            else:
+                st.success("✅ Low humidity — optimal for fast biomass drying.")
+
+    # ── USD/INR for imported processing chemicals ─────────────────────
+    with _ma3:
+        st.markdown("**Live Exchange Rate**")
+        _fx = get_exchange_rates()
+        if "error" not in _fx:
+            _usd_inr = _fx.get("usd_inr", 84)
+            _eur_inr = _fx.get("eur_inr", 90)
+            st.metric("USD / INR", f"₹ {_usd_inr:.2f}")
+            st.metric("EUR / INR", f"₹ {_eur_inr:.2f}")
+            st.caption(f"Source: {_fx.get('source','')}")
+
+            # Impact on imported catalyst/chemicals
+            _import_cost_usd = 500  # typical $/MT for processing chemicals
+            _import_cost_inr = _import_cost_usd * _usd_inr
+            st.markdown(f"**Imported chemicals est.:**  "
+                        f"₹ {_import_cost_inr:,.0f} / MT  "
+                        f"(@ USD {_import_cost_usd}/MT)")
+        else:
+            st.info("Exchange rate data loading…")
+
+except Exception as _ex:
+    st.info(f"Live market data: {_ex}")
+
+
 # ── Next Steps Navigation ──
 try:
     from engines.page_navigation import add_next_steps

@@ -177,8 +177,44 @@ with tab1:
         # grade scale reference
         st.markdown("---")
         st.caption("Grade Scale: A+ ≥ 90 | A ≥ 80 | B+ ≥ 70 | B ≥ 60 | C ≥ 50 | D < 50")
-    else:
-        st.info("Click **Calculate Project Rating** to score this project.")
+
+    # ── Live market context for project rating ────────────────────────
+    st.markdown("---")
+    st.markdown("**📡 Live Market Context**")
+    try:
+        from engines.free_apis import get_exchange_rates, get_india_gdp, get_india_holidays
+        _fx89 = get_exchange_rates()
+        _gdp89 = get_india_gdp(2)
+        _hols89 = get_india_holidays(datetime.now().year)
+
+        _mc1, _mc2, _mc3 = st.columns(3)
+        with _mc1:
+            if "error" not in _fx89:
+                st.metric("USD / INR (live)", f"₹ {_fx89.get('usd_inr',84):.2f}")
+                st.metric("EUR / INR (live)", f"₹ {_fx89.get('eur_inr',90):.2f}")
+        with _mc2:
+            if _gdp89 and len(_gdp89) >= 2:
+                _g1 = _gdp89[-2]["gdp_usd_billion"]
+                _g2 = _gdp89[-1]["gdp_usd_billion"]
+                _gdp_growth = (_g2 - _g1) / _g1 * 100
+                st.metric("India GDP Growth", f"{_gdp_growth:.1f}%",
+                          help=f"Year {_gdp89[-1]['year']}: USD {_g2:,.0f}B")
+                st.metric("GDP (latest)", f"USD {_g2:,.0f}B")
+        with _mc3:
+            if _hols89:
+                _next_hol = next(
+                    (h for h in _hols89
+                     if h["date"] >= datetime.now().strftime("%Y-%m-%d")), None
+                )
+                if _next_hol:
+                    st.info(f"🗓️ Next holiday: **{_next_hol['name_en']}** "
+                            f"({_next_hol['date']})")
+                _yr_hols = len([h for h in _hols89
+                                if h["date"].startswith(str(datetime.now().year))])
+                st.metric("Holidays This Year", _yr_hols,
+                          help="Affects working days in financial projections")
+    except Exception:
+        pass
 
 # ─────────────────────────────────────────────────────────────────────────
 # TAB 2 — DPR COMPLETENESS

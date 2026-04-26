@@ -364,6 +364,47 @@ except Exception as e:
     st.error(f"Flow audit error: {e}")
 
 
+# ── Free API Health Check ─────────────────────────────────────────────
+st.markdown("---")
+st.subheader("🌐 Free API Connection Status")
+st.caption("10 free data sources — no keys required. Click to test all.")
+
+try:
+    from engines.free_apis import check_all_connections
+    if st.button("▶ Test All Free APIs", key="test_free_apis"):
+        with st.spinner("Pinging 10 free APIs…"):
+            _api_results = check_all_connections()
+        _ac1, _ac2, _ac3 = st.columns(3)
+        _cols = [_ac1, _ac2, _ac3]
+        for _i, (_name, _status) in enumerate(_api_results.items()):
+            with _cols[_i % 3]:
+                _ok = _status.get("ok", False)
+                _lat = _status.get("latency_ms", "—")
+                _note = _status.get("note", "")
+                if _ok:
+                    st.success(f"✅ **{_name}** — {_lat}ms")
+                else:
+                    st.error(f"❌ **{_name}** — {_note or 'Failed'}")
+    else:
+        # Show static table of what each API provides
+        import pandas as _pd
+        _api_table = [
+            {"API": "Open-Meteo",      "Data": "Live weather, 7-day forecast",          "Key?": "No"},
+            {"API": "Frankfurter",     "Data": "USD/INR, EUR/INR exchange rates",        "Key?": "No"},
+            {"API": "Nominatim",       "Data": "Geocoding — city → lat/lon",             "Key?": "No"},
+            {"API": "World Bank",      "Data": "India GDP, inflation, lending rate",     "Key?": "No"},
+            {"API": "Nager.at",        "Data": "Indian public holidays calendar",        "Key?": "No"},
+            {"API": "REST Countries",  "Data": "India state/region data",               "Key?": "No"},
+            {"API": "ExchangeRate-API","Data": "150+ currency conversion rates",         "Key?": "No"},
+            {"API": "Agmarknet",       "Data": "Biomass / commodity mandi prices",       "Key?": "No"},
+            {"API": "IP-API",          "Data": "Visitor location detection",             "Key?": "No"},
+            {"API": "Wikipedia",       "Data": "Knowledge base summaries",               "Key?": "No"},
+        ]
+        st.dataframe(_pd.DataFrame(_api_table), use_container_width=True, hide_index=True)
+except Exception as _ex:
+    st.info(f"Free API engine: {_ex}")
+
+
 # ── Next Steps Navigation ──
 try:
     from engines.page_navigation import add_next_steps

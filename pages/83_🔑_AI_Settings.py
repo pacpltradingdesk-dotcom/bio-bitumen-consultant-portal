@@ -262,7 +262,71 @@ if st.button("Ask AI (uses fallback chain)", type="primary", key="test_ask"):
                 st.error(f"Error: {e}")
 
 st.markdown("---")
-st.caption(f"{COMPANY['name']} | AI Auto-Connection Manager | 6 providers, never fails")
+
+# ══════════════════════════════════════════════════════════════════════
+# FREE DATA APIs — No Key Required
+# ══════════════════════════════════════════════════════════════════════
+st.subheader("6. Free Data APIs — Always Connected, No Key Needed")
+st.caption("These 10 APIs power live weather, exchange rates, market prices, and holidays across the portal.")
+
+try:
+    from engines.free_apis import (get_weather_current, get_exchange_rates,
+                                    get_india_holidays, get_india_gdp,
+                                    get_mandi_prices, check_all_connections)
+    import pandas as _pd
+
+    _city = cfg.get("location", "Delhi")
+
+    _fd1, _fd2 = st.columns(2)
+    with _fd1:
+        st.markdown("**Live Sample — Current Data**")
+        _w = get_weather_current(_city)
+        if "error" not in _w:
+            st.success(f"🌤️ Weather ({_city}): {_w['temperature_c']}°C, "
+                       f"{_w['condition']}, Humidity {_w['humidity_pct']}%")
+        _fx = get_exchange_rates()
+        if "error" not in _fx:
+            st.success(f"💱 Exchange Rate: ₹{_fx.get('usd_inr',84):.2f}/USD  "
+                       f"₹{_fx.get('eur_inr',90):.2f}/EUR")
+        _hols = get_india_holidays(2026)
+        if _hols:
+            _next = next((h for h in _hols
+                          if h["date"] >= __import__('datetime').datetime.now().strftime("%Y-%m-%d")), None)
+            if _next:
+                st.success(f"🗓️ Next Holiday: {_next['date']} — {_next['name_en']}")
+
+    with _fd2:
+        st.markdown("**API → Portal Page Mapping**")
+        _mapping = [
+            {"Free API":     "Open-Meteo Weather",    "Used In": "Location (12), Raw Material (24)"},
+            {"Free API":     "Frankfurter FX",         "Used In": "Raw Material (24), Loan EMI (33)"},
+            {"Free API":     "World Bank GDP",         "Used In": "Loan EMI (33), Financial (30)"},
+            {"Free API":     "Agmarknet Mandi",        "Used In": "Raw Material (24)"},
+            {"Free API":     "Nager.at Holidays",      "Used In": "Location (12), Operations"},
+            {"Free API":     "ExchangeRate-API",       "Used In": "Financial (30), Rating (89)"},
+            {"Free API":     "Nominatim Geocode",      "Used In": "Location (12), Maps"},
+            {"Free API":     "Wikipedia",              "Used In": "AI Knowledge Base"},
+            {"Free API":     "REST Countries",         "Used In": "Project Setup (10)"},
+            {"Free API":     "IP-API",                 "Used In": "Visitor Location"},
+        ]
+        st.dataframe(_pd.DataFrame(_mapping), use_container_width=True, hide_index=True)
+
+    if st.button("Test All 10 Free APIs", key="test_free_data_apis"):
+        with st.spinner("Testing 10 free data APIs…"):
+            _results = check_all_connections()
+        _ok_count = sum(1 for v in _results.values() if v.get("ok"))
+        st.success(f"{_ok_count}/{len(_results)} free APIs reachable")
+        for _name, _s in _results.items():
+            if _s.get("ok"):
+                st.markdown(f"✅ **{_name}** — {_s.get('latency_ms','?')}ms")
+            else:
+                st.markdown(f"❌ **{_name}** — {_s.get('note','Failed')}")
+
+except Exception as _ex:
+    st.info(f"Free API engine: {_ex}")
+
+st.markdown("---")
+st.caption(f"{COMPANY['name']} | AI Auto-Connection Manager | 11 AI + 10 Free Data APIs")
 
 
 # ── Next Steps Navigation ──

@@ -168,6 +168,93 @@ except Exception:
     pass
 
 
+# ── Live Weather & Site Conditions ────────────────────────────────────
+st.markdown("---")
+st.subheader("🌤️ Live Site Weather & Conditions")
+st.caption("Real-time data via Open-Meteo (free, no key) — updates every 10 min")
+
+try:
+    from engines.free_apis import get_weather_current, get_weather_forecast, get_india_holidays
+    _city  = cfg.get("location", "") or cfg.get("state", "Delhi")
+    _state = cfg.get("state", "")
+
+    _wc1, _wc2, _wc3 = st.columns([2, 2, 1])
+
+    with _wc1:
+        _w = get_weather_current(_city)
+        if "error" not in _w:
+            st.markdown(f"""
+<div style="background:#1E1B14;border:1px solid #3A3520;border-radius:10px;padding:14px;">
+  <div style="font-size:1.6rem;font-weight:800;color:#E8B547;">{_w.get('temperature_c','?')}°C</div>
+  <div style="color:#9A8A6A;font-size:13px;">{_w.get('condition','')}</div>
+  <div style="color:#C8B88A;font-size:12px;margin-top:6px;">
+    💧 Humidity: {_w.get('humidity_pct','?')}%&nbsp;&nbsp;
+    🌬️ Wind: {_w.get('wind_kmh','?')} km/h
+  </div>
+  <div style="color:#7A6A4A;font-size:11px;margin-top:4px;">{_city}, {_state}</div>
+</div>
+""", unsafe_allow_html=True)
+        else:
+            st.info(f"Weather unavailable: {_w.get('error','')}")
+
+    with _wc2:
+        _forecast = get_weather_forecast(_city, days=5)
+        if _forecast and "error" not in _forecast:
+            import pandas as _pd
+            _fdf = _pd.DataFrame(_forecast[:5])
+            if not _fdf.empty and "date" in _fdf.columns:
+                import plotly.graph_objects as _go
+                _fig_w = _go.Figure()
+                _fig_w.add_trace(_go.Bar(
+                    x=_fdf["date"], y=_fdf.get("temp_max_c", _fdf.get("temperature_c", [])),
+                    name="Max °C", marker_color="#E8B547", opacity=0.8
+                ))
+                if "temp_min_c" in _fdf.columns:
+                    _fig_w.add_trace(_go.Bar(
+                        x=_fdf["date"], y=_fdf["temp_min_c"],
+                        name="Min °C", marker_color="#74C0FC", opacity=0.7
+                    ))
+                _fig_w.update_layout(
+                    title="5-Day Forecast", height=200,
+                    margin=dict(t=30, b=10, l=30, r=10),
+                    paper_bgcolor="#1E1B14", plot_bgcolor="#1E1B14",
+                    font_color="#C8B88A", showlegend=True,
+                    legend=dict(font=dict(color="#9A8A6A", size=10)),
+                    barmode="group",
+                )
+                st.plotly_chart(_fig_w, use_container_width=True,
+                                config={"displayModeBar": False})
+
+    with _wc3:
+        st.markdown("**Operational Impact**")
+        _temp = _w.get("temperature_c", 25) if "error" not in _w else 25
+        _hum  = _w.get("humidity_pct", 50) if "error" not in _w else 50
+        if _temp > 40:
+            st.warning("🔥 High temp — extra cooling needed for biomass storage")
+        elif _temp < 10:
+            st.warning("❄️ Cold — viscosity checks critical for bitumen output")
+        else:
+            st.success("✅ Temp optimal for plant operations")
+        if _hum > 75:
+            st.warning("💧 High humidity — biomass drying time +20%")
+        elif _hum < 30:
+            st.success("✅ Low humidity — fast biomass drying")
+
+        # Upcoming holidays
+        _yr = __import__('datetime').datetime.now().year
+        _hols = get_india_holidays(_yr)
+        if _hols:
+            _upcoming = [h for h in _hols
+                         if h["date"] >= __import__('datetime').datetime.now().strftime("%Y-%m-%d")][:3]
+            if _upcoming:
+                st.markdown("**Upcoming Holidays:**")
+                for _h in _upcoming:
+                    st.markdown(f"- {_h['date'][5:]} {_h['name_en']}")
+
+except Exception as _ex:
+    st.info(f"Live weather: {_ex}")
+
+
 # ── Next Steps Navigation ──
 try:
     from engines.page_navigation import add_next_steps
