@@ -1,0 +1,30 @@
+{
+  "pptx": [
+    {
+      "version": 1,
+      "path": "C:\\Users\\HP\\Desktop\\Bio Bitumen Full Working all document\\consultant_portal\\data\\exports\\Bio_Bitumen_25TPD_Gujarat_20260407.pptx",
+      "generated_at": "2026-04-07T12:40:01.076814",
+      "capacity_tpd": 25,
+      "state": "Gujarat",
+      "process_id": 1
+    },
+    {
+      "version": 2,
+      "path": "C:\\Users\\HP\\Desktop\\Bio Bitumen Full Working all document\\consultant_portal\\data\\exports\\Bio_Bitumen_25TPD_Gujarat_20260407.pptx",
+      "generated_at": "2026-04-07T13:02:13.832485",
+      "capacity_tpd": 25,
+      "state": "Gujarat",
+      "process_id": 1
+    }
+  ],
+  "dpr": [
+    {
+      "version": 1,
+      "path": "C:\\Users\\HP\\Desktop\\Bio Bitumen Full Working all document\\consultant_portal\\data\\exports\\DPR_25TPD_Gujarat_20260407.html",
+      "generated_at": "2026-04-07T12:40:01.089826",
+      "capacity_tpd": 25,
+      "state": "Gujarat",
+      "process_id": 1
+    }
+  ]
+}

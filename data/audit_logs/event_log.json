@@ -1,0 +1,71 @@
+[
+  {
+    "timestamp": "2026-04-07T12:40:00.029817",
+    "event_type": "TEST",
+    "source_page": "audit_test",
+    "action": "Testing audit logger",
+    "status": "success",
+    "details": {},
+    "affected_modules": []
+  },
+  {
+    "timestamp": "2026-04-07T12:40:01.077820",
+    "event_type": "EXPORT_CREATED",
+    "source_page": "export_engine",
+    "action": "pptx v1",
+    "status": "success",
+    "details": {
+      "path": "C:\\Users\\HP\\Desktop\\Bio Bitumen Full Working all document\\consultant_portal\\data\\exports\\Bio_Bitumen_25TPD_Gujarat_20260407.pptx"
+    },
+    "affected_modules": []
+  },
+  {
+    "timestamp": "2026-04-07T12:40:01.086195",
+    "event_type": "EXPORT_CREATED",
+    "source_page": "report_generator",
+    "action": "PPT Bio_Bitumen_25TPD_Gujarat_20260407.pptx",
+    "status": "success",
+    "details": {},
+    "affected_modules": []
+  },
+  {
+    "timestamp": "2026-04-07T12:40:01.101980",
+    "event_type": "EXPORT_CREATED",
+    "source_page": "export_engine",
+    "action": "dpr v1",
+    "status": "success",
+    "details": {
+      "path": "C:\\Users\\HP\\Desktop\\Bio Bitumen Full Working all document\\consultant_portal\\data\\exports\\DPR_25TPD_Gujarat_20260407.html"
+    },
+    "affected_modules": []
+  },
+  {
+    "timestamp": "2026-04-07T12:40:01.109785",
+    "event_type": "EXPORT_CREATED",
+    "source_page": "report_generator",
+    "action": "DPR DPR_25TPD_Gujarat_20260407.html",
+    "status": "success",
+    "details": {},
+    "affected_modules": []
+  },
+  {
+    "timestamp": "2026-04-07T13:02:13.840302",
+    "event_type": "EXPORT_CREATED",
+    "source_page": "export_engine",
+    "action": "pptx v2",
+    "status": "success",
+    "details": {
+      "path": "C:\\Users\\HP\\Desktop\\Bio Bitumen Full Working all document\\consultant_portal\\data\\exports\\Bio_Bitumen_25TPD_Gujarat_20260407.pptx"
+    },
+    "affected_modules": []
+  },
+  {
+    "timestamp": "2026-04-07T13:02:13.842392",
+    "event_type": "EXPORT_CREATED",
+    "source_page": "report_generator",
+    "action": "PPT Bio_Bitumen_25TPD_Gujarat_20260407.pptx",
+    "status": "success",
+    "details": {},
+    "affected_modules": []
+  }
+]
