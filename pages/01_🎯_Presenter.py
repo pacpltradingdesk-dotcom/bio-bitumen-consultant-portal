@@ -120,7 +120,7 @@ SLIDE_TITLES = [
     "3-Process Model Comparison",          # 41
     # Section H: Why PPS Anantams (42-48)
     "About PPS Anantams Corporation",      # 42
-    "Our 25 Years of Experience",          # 43
+    "Our 25 Years of Experience (since 2001)",   # 43
     "Our Role — Complete Turnkey Solution", # 44
     "What We Deliver (Documents & Support)", # 45
     "Our Competitive Advantage (SWOT)",     # 46
@@ -255,10 +255,11 @@ elif slide == 1:
     st.markdown("---")
     st.markdown(f"""
     ### Why {COMPANY['trade_name']}?
-    - **{COMPANY['years_experience']} years** bitumen industry experience
-    - **{COMPANY['plants_built']} plants** built across India
-    - **{COMPANY['industry_contacts']:,} contacts** — contractors, traders, importers
-    - **International VG-30 supply** — 2.4 Lakh MT/yr (Getka USA-Iraq contract)
+    - **{COMPANY['years_experience']} years** in bitumen industry (since {COMPANY.get('career_start_year', 2001)}) — founder of BSE-listed Omnipotent Industries Ltd (2016)
+    - **{COMPANY.get('years_as_director', 17)}+ years** as MCA-Registered Director (DIN {COMPANY.get('din', '06680837')}, since {COMPANY.get('director_since_year', 2009)})
+    - **{COMPANY['plants_engaged']} plants engaged** — {COMPANY.get('plants_breakdown', '')}
+    - **{COMPANY['industry_contacts']:,}-contact industry database** — contractors, traders, importers, transporters, manufacturers (built via Omnipotent since 2016)
+    - **1.2 Lakh MT UK bitumen contract** (2023, via PS Enterprises) | **11 Joint Ventures** (Omnipotent) | **International VG-30** import capacity up to 2.4 Lakh MT/yr (Iraq/USA via Getka)
     """)
 
 # ══════════════════════════════════════════════════════════════════════
@@ -898,24 +899,33 @@ elif slide == 41:
 elif slide == 42:
     st.markdown("### About PPS Anantams Corporation Pvt Ltd")
     st.markdown(f"""
-    - **Founder:** {COMPANY['owner']}
-    - **Experience:** {COMPANY.get('years_experience', 25)} years in bitumen industry
-    - **Plants Built:** {COMPANY.get('plants_built', 10)} across India
-    - **Network:** {COMPANY.get('industry_contacts', 4452):,} industry contacts
-    - **HQ:** {COMPANY.get('hq', 'Vadodara, Gujarat')}
-    - **International:** VG-30 supply — 2.4 Lakh MT/yr (Getka USA-Iraq)
-    - **GST:** {COMPANY.get('gst', '')}
+    - **Founder & Director:** {COMPANY['owner']} (DIN {COMPANY.get('din', '06680837')})
+    - **Experience:** {COMPANY.get('years_experience', 25)} years in bitumen industry (since {COMPANY.get('career_start_year', 2001)})
+    - **MCA-Registered Director:** {COMPANY.get('years_as_director', 17)}+ years (since {COMPANY.get('director_since_year', 2009)})
+    - **Group Company:** Founder of **Omnipotent Industries Ltd** — BSE-LISTED (CIN {COMPANY.get('omnipotent_cin', 'L74999MH2016PLC285902')}), founded 2016
+    - **Track Record:** Omnipotent IPO 2020 (fully subscribed, BSE-listed) | 11 Joint Ventures | PS Enterprises signed 1.2 Lakh MT UK bitumen supply contract (2023)
+    - **Plants Engaged:** {COMPANY.get('plants_engaged', 9)} — {COMPANY.get('plants_breakdown', '3 as GM, 1 as CEO, 3 as Founder/MD, 2 as Consultant')}
+    - **Network:** {COMPANY.get('industry_contacts', 4452):,}-contact industry database (built via Omnipotent since 2016)
+    - **HQ:** {COMPANY.get('hq', 'Vadodara, Gujarat (Operations) | Mumbai (Registered)')}
+    - **International:** VG-30 import capacity up to 2.4 Lakh MT/yr (Iraq/USA)
+    - **PACPL CIN:** {COMPANY.get('cin', '')} | **GST:** {COMPANY.get('gst', '')} | **PAN:** {COMPANY.get('pan', '')}
+    - **Award:** Pride of India Icon 2021 — Best Fast-Growing Business
     """)
 
 elif slide == 43:
-    st.markdown("### Our 25 Years of Experience")
+    st.markdown(f"### Our {COMPANY.get('years_experience', 25)} Years of Experience (since {COMPANY.get('career_start_year', 2001)})")
     try:
         for cred in KEY_CREDENTIALS[:8]:
             st.markdown(f"- **{cred['category']}**: {cred['detail']}")
     except Exception:
-        st.markdown("- International bitumen trading (USA, Iraq, UAE)")
-        st.markdown("- 10 plants built across Gujarat, Maharashtra, MP, UP")
-        st.markdown("- CSIR-CRRI technology partnership")
+        st.markdown("- 2001: Started career at Southern Asphalt, Mangalore (GM)")
+        st.markdown("- 2006-2012: GM, Tiki Tar Industries Baroda Ltd — Mangalore Unit")
+        st.markdown("- 2009: First directorship (Mundra Oil Pvt Ltd, DIN 06680837)")
+        st.markdown("- 2013-2014: CEO, Krush Tar Industries — plant commissioned in 90 days")
+        st.markdown("- 2016: Founded Omnipotent Industries Ltd (BSE-LISTED)")
+        st.markdown("- 2019: Founded PPS Anantams Corporation Pvt Ltd")
+        st.markdown("- 2020-21: 1.2 Lakh MT bitumen traded via Omnipotent")
+        st.markdown("- 2026: Launched Bio-Bitumen Consulting through PACPL")
 
 elif slide == 44:
     st.markdown("### Our Role — Complete Turnkey Solution")
@@ -959,7 +969,7 @@ elif slide == 46:
                 for item in items:
                     st.markdown(f"- {item}")
     except Exception:
-        st.markdown("- 25 years experience | 10 plants | 4,452 contacts")
+        st.markdown(f"- {COMPANY.get('years_experience', 25)} years in bitumen industry (since 2001) | DIN 06680837 | Founder of BSE-listed Omnipotent Industries | 9 plants engaged | 4,452-contact industry database")
 
 elif slide == 47:
     st.markdown("### Client Success Stories")
@@ -992,11 +1002,11 @@ elif slide == 49:
     |---|---|---|
     | **DPR Preparation** | Rs 3-5 Lac (external CA) | Included in fee |
     | **Technology Selection** | Trial & error, wrong choice risk | CSIR-CRRI proven, pre-validated |
-    | **Machinery Procurement** | Overpay 15-25% (no benchmarks) | Best price from 4,452 contacts |
+    | **Machinery Procurement** | Overpay 15-25% (no benchmarks) | Best price via 4,452-contact industry database |
     | **Bank Loan Process** | 6-12 months, multiple rejections | 3-4 months, bank-ready DPR |
     | **Government Approvals** | 8-15 months (wrong sequence) | 4-6 months (parallel processing) |
     | **Construction Mistakes** | Rs 20-50 Lac wasted on rework | Zero rework — pre-engineered layout |
-    | **Wrong Equipment** | Rs 30-80 Lac loss (wrong spec) | Exact specs from 10 plant experience |
+    | **Wrong Equipment** | Rs 30-80 Lac loss (wrong spec) | Exact specs from hands-on engagement across 9 plants |
     | **Production Start** | 24-30 months | 12-15 months |
     | **First Year Issues** | Low yield, quality rejection | 85%+ utilization, IS:73 certified |
     | **TOTAL EXTRA COST** | **Rs {inv*0.3:.1f}-{inv*0.5:.1f} Cr wasted** | **Rs {inv*0.10:.1f} Cr consulting fee** |
@@ -1057,7 +1067,7 @@ elif slide == 51:
         ("Installation & Commissioning", "WE MANAGE", "Erection, piping, testing, trial run"),
         ("Quality Testing (IS:73)", "WE ARRANGE", "CSIR-CRRI lab testing"),
         ("NHAI / GeM Registration", "WE DO", "Supplier registration for govt supply"),
-        ("Buyer Network Setup", "WE CONNECT", "4,452 contacts — contractors, traders"),
+        ("Buyer Network Setup", "WE CONNECT", "4,452-contact industry database — contractors, traders, importers"),
     ]
 
     for item, who, detail in checklist:
@@ -1159,7 +1169,7 @@ elif slide == 53:
             "Commercial production begins",
             "GeM portal + NHAI registration",
             "First customer orders",
-            "Buyer network activation (4,452 contacts)",
+            "Buyer network activation via 4,452-contact industry database",
             "Monthly review + support for 6 months",
         ]),
     ]

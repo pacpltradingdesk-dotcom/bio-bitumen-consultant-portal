@@ -1,8 +1,21 @@
 """
 Bio Bitumen Master Consulting System — Central Configuration
-Updated with REAL data from Prince P. Shah profile PDFs (April 2026)
+ALL PROFILE DATA FLOWS FROM: PROFILE_MASTER.py  (single source of truth — never edit here)
+Update profile facts in PROFILE_MASTER.py only.
 """
 from pathlib import Path
+from PROFILE_MASTER import (
+    CAREER_START_YEAR, DIRECTOR_SINCE_YEAR,
+    OMNIPOTENT_INCORP_YEAR as OMNIPOTENT_FOUNDED,
+    PACPL_INCORP_YEAR as PACPL_FOUNDED,
+    OMNIPOTENT_IPO_YEAR,
+    YEARS_EXPERIENCE, YEARS_AS_DIRECTOR,
+    IDENTITY, CONTACT, REGULATORY, ENTITIES,
+    PLANTS_ENGAGED as _PLANTS_DETAIL, INNOVATIONS, FIRSTS,
+    NETWORK, PARTNERSHIPS, TECHNICAL_EXPERTISE, PMC_OFFER,
+    EDUCATION as _EDUCATION_LIST, AWARDS as _AWARDS_LIST,
+    ASSOCIATIONS as _ASSOCIATIONS, ELEVATOR_PITCH, HEADLINES,
+)
 
 # ── PATHS ─────────────────────────────────────────────────────────────
 DOC_ROOT = Path(r"C:\Users\HP\Desktop\Bio Bitumen Full Working all document")
@@ -84,46 +97,102 @@ CUSTOMER_STATUSES = [
 # ══════════════════════════════════════════════════════════════════════
 # COMPANY PROFILE — REAL DATA from Prince P. Shah PDFs
 # ══════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════
+# COMPANY — derived from PROFILE_MASTER.py (DO NOT hand-edit fields here)
+# ══════════════════════════════════════════════════════════════════════
 COMPANY = {
-    "name": "PPS Anantams Corporation Private Limited",
-    "short_name": "PACPL",
-    "trade_name": "PPS Anantams",
-    "owner": "Prince Pratap Shah",
-    "phone": "+91 7795242424",
-    "email": "princepshah@gmail.com",
-    "website": "www.princeshah.com",
-    "gst": "24AAHCV1611L2ZD",
-    "pan": "AAHCV1611L",
-    "cin": "U46632GJ2019PTC110676",
-    "hq": "Vadodara, Gujarat",
-    "experience": "25 Years in Bitumen Industry | 10 Plants Built | 5 Product Types",
-    "tagline": "Bio-Modified Bitumen — Complete Plant Setup & Consulting",
-    "usp": "India's Only Consultant: Site Selection > Plant Construction > Commercial Production > VG30 Supply > 4,452-Contact Buyer Network",
-    # Key credentials
-    "plants_built": 10,
-    "years_experience": 25,
-    "industry_contacts": 4452,
-    "product_types": 5,
-    "states_network": 17,
-    "intl_import_mt_yr": 240000,  # 2.4 Lakh MT/yr
-    # Education
-    "education": "MBA (Marketing & Finance) — Dr. C.V. Raman University | B.Com — Vinayaka Missions University | Diploma Safety & Fire Management",
-    # Awards
-    "awards": "Pride of India Icon 2021 — Best Fast-Growing Business",
+    # ── IDENTITY ──
+    "name":         "PPS Anantams Corporation Private Limited",
+    "short_name":   "PACPL",
+    "trade_name":   "PPS Anantams",
+    "owner":        IDENTITY["full_name"],
+    "dob":          IDENTITY["dob"],
+
+    # ── CONTACT ──
+    "phone":        CONTACT["phone_primary"],
+    "phone_secondary": CONTACT["phone_secondary"],
+    "landline":     CONTACT["landline_mumbai"],
+    "email":        CONTACT["email_personal"],
+    "email_business": CONTACT["email_business"],
+    "website":      CONTACT["website"],
+    "linkedin":     CONTACT["linkedin"],
+
+    # ── REGULATORY IDs ──
+    "din":          REGULATORY["din"],
+    "pan":          REGULATORY["pacpl_pan"],
+    "gst":          REGULATORY["pacpl_gst"],
+    "cin":          REGULATORY["pacpl_cin"],
+    "omnipotent_cin": REGULATORY["omnipotent_cin"],
+
+    # ── ADDRESSES ──
+    "hq":                   f"{CONTACT['address_operations']} (Operations) | Mumbai (Registered)",
+    "registered_address":   CONTACT["address_registered"],
+    "operations_address":   CONTACT["address_operations"],
+
+    # ── HEADLINE ──
+    "experience":   (f"{YEARS_EXPERIENCE} Years in Bitumen Industry (since {CAREER_START_YEAR}) | "
+                     f"{YEARS_AS_DIRECTOR}+ Years as MCA-Registered Director (since {DIRECTOR_SINCE_YEAR}) | "
+                     f"Founder — Omnipotent Industries Ltd (BSE-Listed IPO {OMNIPOTENT_IPO_YEAR}) | "
+                     f"9 Bitumen Plants Commissioned"),
+    "tagline":      "Bio-Modified Bitumen + Conventional Bitumen — Complete Plant Setup & PMC Consulting",
+    "usp":          (f"{YEARS_EXPERIENCE}-year bitumen industry veteran, founder of BSE-listed Omnipotent Industries Ltd (IPO {OMNIPOTENT_IPO_YEAR}), "
+                     f"9 plants commissioned, 9+ documented plant innovations, {NETWORK['total_database']:,}-contact industry database — "
+                     f"now offering full-service PMC for Bitumen, CRMB, PMB, Emulsion & Bio-Modified Bitumen plants via PACPL."),
+
+    # ── CAREER ANCHORS ──
+    "career_start_year":    CAREER_START_YEAR,
+    "director_since_year":  DIRECTOR_SINCE_YEAR,
+    "omnipotent_ipo_year":  OMNIPOTENT_IPO_YEAR,
+    "years_experience":     YEARS_EXPERIENCE,
+    "years_as_director":    YEARS_AS_DIRECTOR,
+
+    # ── PLANT / PROJECT EXPOSURE ──
+    "plants_engaged":       9,
+    "plants_built":         9,   # alias
+    "plants_breakdown":     "3 as GM, 1 as CEO, 3 as Founder/MD, 2 as Consultant",
+
+    # ── BUSINESS SCALE ──
+    "uk_contract_mt":       NETWORK["uk_contract_mt"],      # 1.2 Lakh MT UK contract 2023 via PS Enterprises
+    "uk_contract_year":     2023,
+    "joint_ventures":       11,
+    "omnipotent_branches":  2,
+    "intl_import_mt_yr":    NETWORK["int_import_capacity_mt_yr"],
+
+    # ── NETWORK ──
+    "industry_contacts":    NETWORK["total_database"],      # 150,000 total
+    "petroleum_db":         NETWORK["petroleum_db_total"],  # 125,000 verified petroleum
+    "bitumen_db":           NETWORK["bitumen_db"],          # 25,000 bitumen-specific
+    "curated_contacts":     NETWORK["curated_total"],       # 4,452 curated / deeper relationships
+    "contacts_framing":     (f"{NETWORK['total_database']:,}-Contact Pan-India Industry Database "
+                             f"(verified: {NETWORK['petroleum_db_total']:,} petroleum + {NETWORK['bitumen_db']:,} bitumen-specific)"),
+    "product_types":        NETWORK["product_types"],
+    "states_network":       NETWORK["states_covered"],
+
+    # ── EDUCATION / AWARDS / LANGUAGES / ASSOCIATIONS ──
+    "education":    " | ".join(
+        f"{e['degree']}" + (f" ({e['specialisation']})" if e.get('specialisation') else "") + f" — {e['institute']}"
+        for e in _EDUCATION_LIST
+    ),
+    "awards":       " | ".join(f"{a['award']} {a['year']} — {a['category']}" for a in _AWARDS_LIST),
+    "languages":    (f"{', '.join(IDENTITY['languages_rws'])} (Read/Write/Speak); "
+                     f"{', '.join(IDENTITY['languages_spoken'])} (Speak)"),
+    "associations": _ASSOCIATIONS,
 }
 
 # ── CONSULTANT CAREER TRACK RECORD ────────────────────────────────────
+# MCA-verifiable milestones marked with [MCA] — rest from CV + Omnipotent public sources
 CAREER_TRACK = [
-    {"year": 2001, "company": "Southern Asphalt", "location": "Mangalore, Karnataka", "plant_type": "Bitumen Emulsion Plant", "role": "Employee (GM)"},
-    {"year": 2004, "company": "Tiki Tar Industries", "location": "Karnataka, South India", "plant_type": "Blown Bitumen Plant", "role": "Employee (GM)"},
-    {"year": 2008, "company": "Tiki Tar Industries", "location": "Karnataka, South India", "plant_type": "CRMB Plant", "role": "Employee (GM)"},
-    {"year": 2014, "company": "Krush Tar Industries", "location": "Karnataka, South India", "plant_type": "Import Terminal + Emulsion (90 days!)", "role": "CEO — Own Venture"},
-    {"year": 2016, "company": "Teknobit Industries", "location": "Gujarat, West India", "plant_type": "Bitumen Processing Plant", "role": "CONSULTANT"},
-    {"year": 2018, "company": "Omnipotent Industries", "location": "Panvel, Maharashtra", "plant_type": "Decanter + Warehousing", "role": "Founder & MD"},
-    {"year": 2019, "company": "Omnipotent Industries", "location": "Vadodara, Gujarat", "plant_type": "Decanter + Warehousing", "role": "Founder & MD"},
-    {"year": 2020, "company": "Omnipotent Industries", "location": "Kutch, Gujarat", "plant_type": "Decanter + Warehousing", "role": "Founder & MD"},
-    {"year": 2024, "company": "Teknobit Industries", "location": "Mathura, UP", "plant_type": "Decanter Plant", "role": "CONSULTANT"},
-    {"year": 2026, "company": "YOUR BIO-BITUMEN PLANT", "location": "PAN India", "plant_type": "Pyrolysis + VG30 Blending", "role": "CONSULTANT"},
+    {"year": 2001, "company": "Southern Asphalt", "location": "Mangalore, Karnataka", "plant_type": "Bitumen Emulsion Plant", "role": "General Manager"},
+    {"year": 2006, "company": "Tiki Tar Industries (Baroda) Ltd", "location": "Mangalore Unit — Karnataka, N.Kerala, Goa, W.Tamil Nadu, E.Andhra Pradesh", "plant_type": "Blown Bitumen + Regional Distribution", "role": "General Manager / Regional Head"},
+    {"year": 2009, "company": "Mundra Oil Pvt Ltd [MCA]", "location": "India", "plant_type": "Oil / Petroleum Products", "role": "Additional Director (first directorship, DIN 06680837)"},
+    {"year": 2013, "company": "Krush Tar Industries Pvt Ltd", "location": "India", "plant_type": "Manufacturing + Trading (40 KMT/yr) — commissioned in 90 days", "role": "CEO (Own Venture)"},
+    {"year": 2016, "company": "Omnipotent Industries Limited [MCA / BSE-Listed]", "location": "Mumbai (Registered) + Pan-India operations", "plant_type": "Bitumen Import, Distribution, 11 Joint Ventures, 1.2 Lakh MT traded (FY2020-21)", "role": "Founder"},
+    {"year": 2016, "company": "Teknobit Industries", "location": "Gujarat", "plant_type": "Bitumen Processing Plant", "role": "Consultant"},
+    {"year": 2018, "company": "Omnipotent Industries — Panvel Unit", "location": "Panvel, Maharashtra", "plant_type": "Decanter + Warehousing", "role": "Founder & MD"},
+    {"year": 2019, "company": "PPS Anantams Corporation Pvt Ltd [MCA]", "location": "Vadodara, Gujarat (CIN U46632GJ2019PTC110676)", "plant_type": "Bio-Bitumen Consulting + Plant Setup", "role": "Founder & Director"},
+    {"year": 2019, "company": "Omnipotent Industries — Vadodara Unit", "location": "Vadodara, Gujarat", "plant_type": "Decanter + Warehousing", "role": "Founder & MD"},
+    {"year": 2020, "company": "Omnipotent Industries — Kutch Unit", "location": "Kutch, Gujarat", "plant_type": "Decanter + Warehousing", "role": "Founder & MD"},
+    {"year": 2024, "company": "Teknobit Industries", "location": "Mathura, UP", "plant_type": "Decanter Plant", "role": "Consultant"},
 ]
 
 # ── LIVE INDUSTRY NETWORK ─────────────────────────────────────────────
@@ -455,13 +524,14 @@ COMPETITORS = [
 # PPS Anantams competitive advantages for SWOT
 PPS_SWOT = {
     "strengths": [
-        "25 years bitumen industry experience — 10 plants built",
-        "4,452 live industry contacts (contractors, traders, importers)",
-        "International VG-30 supply contract (2.4 Lakh MT/yr, Getka USA-Iraq)",
+        f"{YEARS_EXPERIENCE} years in bitumen industry (since {CAREER_START_YEAR}) — 9 plants engaged (3 as GM, 1 as CEO, 3 as Founder/MD, 2 as Consultant)",
+        f"{YEARS_AS_DIRECTOR}+ years as MCA-registered Company Director (DIN 06680837, since {DIRECTOR_SINCE_YEAR})",
+        "Founder of BSE-LISTED Omnipotent Industries Limited (CIN L74999MH2016PLC285902) — 1.2 Lakh MT bitumen traded FY2020-21, 11 Joint Ventures across India",
+        "4,452-contact industry database (contractors, traders, importers, transporters, manufacturers) — built through Omnipotent Industries since 2016",
+        "International VG-30 import capacity — up to 2.4 Lakh MT/yr (Iraq/USA)",
         "Only consultant offering end-to-end: site selection to sales network",
-        "BSE-listed founder background (Omnipotent Industries)",
-        "5 product types expertise (Emulsion/Blown/CRMB/PMB/VG30)",
-        "17-state distribution network — first of its kind",
+        "5 product types expertise (Emulsion / Blown / CRMB / PMB / VG30)",
+        "17-state distribution network",
     ],
     "weaknesses": [
         "Small team — relies heavily on founder expertise",

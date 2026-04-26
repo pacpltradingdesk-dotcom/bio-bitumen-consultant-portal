@@ -198,10 +198,12 @@ def generate_pptx(cfg, company=None):
 
     # Slide 18: Why PPS Anantams
     add_slide(f"Why {company.get('trade_name', 'PPS Anantams')}?",
-        f"Experience: {company.get('years_experience', 25)} years in bitumen industry\n"
-        f"Plants Built: {company.get('plants_built', 10)} across India\n"
-        f"Network: {company.get('industry_contacts', 4452):,} industry contacts\n"
-        f"International: VG-30 supply 2.4 Lakh MT/yr\n"
+        f"Experience: {company.get('years_experience', 25)} years in bitumen industry (since 2001)\n"
+        f"Director: {company.get('years_as_director', 17)}+ years MCA-registered (DIN 06680837, since 2009)\n"
+        f"Group: Founder of BSE-Listed Omnipotent Industries Ltd (2016) — 1.2 Lakh MT traded, 11 JVs\n"
+        f"Plants Engaged: {company.get('plants_engaged', 9)} — {company.get('plants_breakdown', '3 as GM, 1 as CEO, 3 as Founder/MD, 2 as Consultant')}\n"
+        f"Network: {company.get('industry_contacts', 4452):,}-contact industry database (via Omnipotent)\n"
+        f"International: VG-30 import capacity up to 2.4 Lakh MT/yr (Iraq/USA)\n"
         f"Turnkey: DPR to Dispatch — complete solution"
     )
 
@@ -299,7 +301,7 @@ def generate_dpr_pdf(cfg, company=None):
     <h2>2. Promoter Profile</h2>
     <p>{company.get('trade_name', 'PPS Anantams Corporation Pvt Ltd')}<br>
     Owner: {company.get('owner', 'Prince Pratap Shah')}<br>
-    Experience: {company.get('years_experience', 25)} years in bitumen industry<br>
+    Experience: {company.get('years_experience', 25)} years in bitumen industry (since 2001) | Director since 2009 (DIN 06680837) | Founder Omnipotent Industries (BSE-Listed, 2016)<br>
     Contact: {company.get('phone', '')} | {company.get('email', '')}</p>
 
     <h2>3. Technology</h2>

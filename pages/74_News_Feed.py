@@ -114,7 +114,7 @@ the market is set for exponential growth.
 - Equipment costs dropping — pelletizer prices down 30% in 2 years
 - State subsidies expanding — MNRE Waste-to-Wealth now covers bio-bitumen
 
-**PPS Anantams Position:** With 25 years experience, 4,452 contacts, and VG-30 import contract,
+**PPS Anantams Position:** With 25 years of bitumen-industry experience (since 2001), founder of BSE-listed Omnipotent Industries Ltd (2016, 1.2 Lakh MT traded FY2020-21), 17+ years as MCA-registered Director (DIN 06680837), a 4,452-contact industry database, and VG-30 import capacity (up to 2.4 Lakh MT/yr from Iraq/USA),
 we are uniquely positioned to serve the 130-216 new plants needed in the next 5-7 years.
 """)
 

@@ -183,12 +183,23 @@ Lab Technician:     1-2 (Rs 20-30K/month)
 Helpers:            {max(6, int(capacity * 0.5))} (Rs 12-15K/month)
 
 ═══ 7. CONSULTANT ═══
-Consultant:         PPS Anantams Corporation Pvt Ltd
-Owner:              Prince Pratap Shah
-Experience:         25 years | 10 plants built | 4,452 contacts
-Phone:              +91 7795242424
+Consultant:         PPS Anantams Corporation Pvt Ltd (CIN U46632GJ2019PTC110676)
+Owner:              Prince Pratap Shah — DIN 06680837 (MCA-registered director since 2009)
+Experience:         25 years hands-on bitumen industry (since 2001) | 17+ years as Director | 9 plants commissioned
+Group Companies:    Omnipotent Industries Limited (CIN L74999MH2016PLC285902) — incorporated 2016, IPO 2020, BSE-LISTED
+                    Global Enterprises (prop., since 2004) — AMT Techno Worldwide Marketing Rep (Ref L-012/2015-16)
+                    PS Enterprises (prop., since 2023) — 1.2 Lakh MT UK bitumen contract
+Business scale:     3 Omnipotent plants (Panvel/Kandala/Karjan) | 11 JVs | 2.4 Lakh MT/yr VG-30 import capacity (Getka USA)
+Signature firsts:   1st automatic emulsion plant in Karnataka (2013) | 1st decanter plant Panvel (2016) | 1st drum-bitumen supplier West+South India (2019)
+Innovations:        9 documented on-plant engineering improvements 2001-2010
+Network:            150,000-contact pan-India database (125K petroleum verified + 25K bitumen-specific)
+Awards:             Pride of India Icon 2021 — Best Fast-Growing Business
+Phone:              +91 7795242424  (Secondary: +91 7506941655)
+Email:              princepshah@gmail.com  (Business: sales@princeshah.com)
+Website:            www.princeshah.com
 GST:                24AAHCV1611L2ZD
-HQ:                 Vadodara, Gujarat
+PAN:                AAHCV1611L
+HQ:                 Vadodara, Gujarat (Operations) | Bhandup West, Mumbai (Registered)
 
 ═══════════════════════════════════════════════════════════════
 END OF MASTER CONTEXT — ALL AI OUTPUTS MUST USE THESE VALUES

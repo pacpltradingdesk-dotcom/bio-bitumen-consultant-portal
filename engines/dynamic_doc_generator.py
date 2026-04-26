@@ -561,16 +561,28 @@ def generate_dpr_docx(cfg, company, customer=None):
     _add_heading(doc, "16. CONSULTANT PROFILE")
     doc.add_paragraph(f"{company['trade_name']} — {company.get('tagline', '')}")
     doc.add_paragraph(f"Owner & Managing Director: {company['owner']}")
-    doc.add_paragraph(f"Experience: {company.get('experience', '25 years')}")
-    doc.add_paragraph(f"Headquarters: {company.get('hq', 'Vadodara, Gujarat')}")
-    doc.add_paragraph(f"Contact: {company['phone']} | {company.get('email', '')}")
+    doc.add_paragraph(f"Experience: {company.get('experience', '25 Years in Bitumen Industry (since 2001) | 17+ Years as MCA-Registered Director (since 2009) | Founder, Omnipotent Industries (BSE-Listed) | 9 Plants Engaged')}")
+    doc.add_paragraph(f"Headquarters: {company.get('hq', 'Vadodara, Gujarat (Operations) | Mumbai (Registered)')}")
+    doc.add_paragraph(f"DIN: {company.get('din', '06680837')} | PAN: {company.get('pan', '')} | GST: {company.get('gst', '')}")
+    doc.add_paragraph(f"PACPL CIN: {company.get('cin', '')}")
+    doc.add_paragraph(f"Omnipotent CIN: {company.get('omnipotent_cin', 'L74999MH2016PLC285902')} (BSE-Listed)")
+    doc.add_paragraph(f"Contact: {company['phone']} | {company.get('email', '')} | {company.get('website', '')}")
     doc.add_paragraph("")
-    doc.add_paragraph("Key Credentials:")
-    for cred in ["BSE-Listed Founder — Omnipotent Industries (1.2L MT, 11 JVs)",
-                  "International Import Contracts — 2.4 Lakh MT/yr VG-30 (Iraq/USA)",
-                  "10 Plants Built — 5 Product Types across 17 States",
-                  "4,452 Industry Contacts — Contractors, Traders, Importers",
-                  "Pride of India Award — Best Fast-Growing Business 2021"]:
+    doc.add_paragraph("Key Credentials (all publicly verifiable):")
+    for cred in [
+        "Founder — Omnipotent Industries Limited (CIN L74999MH2016PLC285902) — incorporated 2016, IPO fully subscribed 2020, BSE-LISTED. 3 plants, 11 Joint Ventures, 17-state network.",
+        "MCA-Registered Company Director for 17+ years — DIN 06680837, active since 2009 (publicly verifiable on mca.gov.in)",
+        "Founder & MD — PPS Anantams Corporation Pvt Ltd (CIN U46632GJ2019PTC110676, incorporated 2019) — Bio-Modified Bitumen PMC consulting (CSIR-CRRI KrishiBind partner)",
+        "Proprietor — Global Enterprises (since 2004) — Worldwide Authorised Marketing & Sales Representative for AMT Techno (ISO 9001) under Ref L-012 (2015-16)",
+        "Proprietor — PS Enterprises (since 2023) — signed 1.2 Lakh MT bitumen supply contract with UK-based company",
+        "9 Plants Engaged — 3 as GM (Southern Asphalt 2001, Tiki Tar Mangalore 2006-12), 1 as CEO (Krush Tar Hubli — 1st automatic emulsion plant in Karnataka, 90-day commissioning), 3 as Founder/MD (Omnipotent — Panvel 2016, Kandala 2018, Karjan/Vadodara 2019), 2 as Consultant (Teknobit Vadodara 2014, Mathura 2025, Hubli 2026)",
+        "9 documented on-plant engineering innovations (2001-2010) — emulsion drum redesign, flash-point fuel pre-heating, 2x coil-heating, pulsation + water softening, condenser chillers, 3,000-retailer network, 3x capacity expansion, explosive-storage licence",
+        "International VG-30 Import Capacity — up to 2.4 Lakh MT/yr via Getka Energy Trading LLC (Tulsa, Oklahoma, USA)",
+        "5 Product Types across 17 States — Bitumen Emulsion, Blown Bitumen, CRMB, PMB, VG-30",
+        "150,000-Contact Pan-India Industry Database — 125,000 petroleum product contacts (verified) + 25,000 bitumen-specific (international + domestic exporters, importers, traders, contractors, transporters, manufacturers)",
+        "Pride of India Icon 2021 — Best Fast-Growing Business",
+        "Education: MBA (Marketing & Finance), B.Com, Diploma Safety & Fire Management, Diploma Computer Hardware Engineering",
+    ]:
         doc.add_paragraph(f"  - {cred}")
 
     # 17. Civil & Infrastructure Requirements

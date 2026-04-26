@@ -270,7 +270,7 @@ PROJECT DATA (use EXACTLY these numbers):
 - Location: {cfg.get('location', '')}, {cfg.get('state', '')}
 
 CONSULTANT: {company.get('trade_name', 'PPS Anantams')} | {company.get('owner', '')}
-Experience: {company.get('experience', '25 years')}
+Experience: {company.get('experience', '25 Years in Bitumen Industry (since 2001) | 17+ Years as MCA-Registered Director (since 2009) | Founder, Omnipotent Industries (BSE-Listed) | 9 Plants Engaged')}
 
 Generate for each slide:
 SLIDE 1: Title + Tagline

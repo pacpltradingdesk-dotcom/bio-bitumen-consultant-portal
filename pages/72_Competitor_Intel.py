@@ -169,7 +169,7 @@ st.markdown(f"""
     <div style="display: flex; gap: 30px; flex-wrap: wrap; margin-top: 15px;">
         <div style="flex: 1; min-width: 200px;">
             <h4 style="color: #99ccff;">Network Effect</h4>
-            <p>{COMPANY['industry_contacts']:,} live contacts — contractors, traders, importers built over 25 years. Cannot be replicated quickly.</p>
+            <p>{COMPANY['industry_contacts']:,}-contact industry database — contractors, traders, importers, transporters, manufacturers — built through Omnipotent Industries Ltd (BSE-listed) since 2016 and curated over {COMPANY.get('years_experience', 25)} years in the industry. Cannot be replicated quickly.</p>
         </div>
         <div style="flex: 1; min-width: 200px;">
             <h4 style="color: #99ccff;">Supply Chain Lock</h4>
@@ -181,7 +181,7 @@ st.markdown(f"""
         </div>
         <div style="flex: 1; min-width: 200px;">
             <h4 style="color: #99ccff;">Proven Track Record</h4>
-            <p>{COMPANY['plants_built']} plants built, {COMPANY['product_types']} product types, {COMPANY['states_network']}-state distribution. BSE-listed founder.</p>
+            <p>{COMPANY['plants_engaged']} plants engaged ({COMPANY.get('plants_breakdown', '')}), {COMPANY['product_types']} product types, {COMPANY['states_network']}-state distribution. Founder of BSE-LISTED Omnipotent Industries (CIN {COMPANY.get('omnipotent_cin', 'L74999MH2016PLC285902')}). MCA director since 2009 (DIN {COMPANY.get('din', '06680837')}).</p>
         </div>
     </div>
 </div>
