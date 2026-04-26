@@ -306,6 +306,64 @@ except Exception:
     pass
 
 
+# ── Flow Audit — UI Action → Backend Chain ────────────────────────────
+st.markdown("---")
+st.subheader("🔗 Flow Audit — UI → Backend Connection Map")
+st.caption("Scans every page to verify buttons and forms are wired to backend functions.")
+
+try:
+    from engines.flow_audit_engine import scan_page_actions, find_broken_chains
+    import os, pandas as pd
+    from pathlib import Path
+
+    pages_dir = Path(__file__).parent
+    page_files = sorted(pages_dir.glob("*.py"))
+
+    if st.button("▶ Run Flow Audit", key="run_flow_audit"):
+        with st.spinner(f"Scanning {len(page_files)} pages…"):
+            all_actions = []
+            for pf in page_files:
+                try:
+                    actions = scan_page_actions(str(pf))
+                    for a in actions:
+                        a["page"] = pf.name[:30]
+                        all_actions.append(a)
+                except Exception:
+                    pass
+
+        if all_actions:
+            df_fa = pd.DataFrame(all_actions)
+            # summarise
+            total   = len(df_fa)
+            handled = df_fa["has_handler"].sum() if "has_handler" in df_fa.columns else total
+            broken  = total - handled
+
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Total UI Actions", total)
+            c2.metric("Handled", handled, delta=f"{handled/max(total,1)*100:.0f}%")
+            c3.metric("Potentially Broken", broken,
+                      delta=f"-{broken}" if broken else "0", delta_color="inverse")
+
+            with st.expander("Full Action Table", expanded=(broken > 0)):
+                show_cols = [c for c in ["page","label","handler_type","has_handler","key"]
+                             if c in df_fa.columns]
+                if show_cols:
+                    st.dataframe(df_fa[show_cols], use_container_width=True, hide_index=True)
+                else:
+                    st.dataframe(df_fa, use_container_width=True, hide_index=True)
+
+            st.download_button("⬇ Download Flow Audit CSV",
+                               df_fa.to_csv(index=False),
+                               file_name="flow_audit.csv", mime="text/csv")
+        else:
+            st.info("No UI actions detected — check pages directory.")
+
+except ImportError:
+    st.warning("flow_audit_engine not found in engines/.")
+except Exception as e:
+    st.error(f"Flow audit error: {e}")
+
+
 # ── Next Steps Navigation ──
 try:
     from engines.page_navigation import add_next_steps

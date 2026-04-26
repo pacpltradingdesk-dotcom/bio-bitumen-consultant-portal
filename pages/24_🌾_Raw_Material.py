@@ -292,6 +292,93 @@ except Exception:
     pass
 
 
+# ── Seasonal Operations Engine ────────────────────────────────────────
+st.markdown("---")
+st.subheader("📅 Seasonal Biomass Strategy")
+st.caption("Month-by-month pricing, procurement plan, and yield variation by feedstock.")
+
+try:
+    from engines.seasonal_engine import (
+        SEASONAL_RM_PRICES, FEEDSTOCK_YIELDS, STATE_BIOMASS, MONTHS
+    )
+    import plotly.graph_objects as go
+    import plotly.express as px
+
+    project_state = cfg.get("state", "Punjab")
+    sb_info = STATE_BIOMASS.get(project_state, STATE_BIOMASS.get("Punjab"))
+    primary_feed = sb_info["primary"] if sb_info else "rice_straw"
+
+    col_s1, col_s2 = st.columns(2)
+    with col_s1:
+        sel_feed = st.selectbox(
+            "Feedstock for seasonal pricing",
+            list(FEEDSTOCK_YIELDS.keys()),
+            index=list(FEEDSTOCK_YIELDS.keys()).index(primary_feed)
+                  if primary_feed in FEEDSTOCK_YIELDS else 0,
+            key="seas_feed",
+        )
+    with col_s2:
+        if sb_info:
+            st.info(
+                f"**{project_state}:** Primary = {sb_info['primary'].replace('_',' ').title()} | "
+                f"Peak season = {sb_info['peak']} | "
+                f"Annual availability = {sb_info['annual_mt']/1e6:.1f}M MT | "
+                f"Rating = {'⭐'*sb_info['rating']}"
+            )
+
+    # Monthly price chart
+    monthly_prices = [SEASONAL_RM_PRICES[m].get(sel_feed, 0) for m in MONTHS]
+    avg_price = sum(monthly_prices) / 12
+    fig_seas = go.Figure()
+    fig_seas.add_trace(go.Bar(
+        x=MONTHS, y=monthly_prices,
+        marker_color=["#51CF66" if p <= avg_price else "#FF6B6B" for p in monthly_prices],
+        name="Rs/MT",
+    ))
+    fig_seas.add_hline(y=avg_price, line_dash="dot", line_color="#E8B547",
+                       annotation_text=f"Annual avg: Rs {avg_price:.0f}/MT")
+    fig_seas.update_layout(
+        title=f"{sel_feed.replace('_',' ').title()} — Monthly Farm Gate Price (Rs/MT)",
+        template="plotly_white", height=300,
+        yaxis_title="Rs/MT", xaxis_title="Month",
+    )
+    st.plotly_chart(fig_seas, use_container_width=True)
+
+    # Procurement advice
+    cheap_months = [MONTHS[i] for i, p in enumerate(monthly_prices) if p <= avg_price * 0.85]
+    peak_months  = [MONTHS[i] for i, p in enumerate(monthly_prices) if p >= avg_price * 1.15]
+    if cheap_months:
+        st.success(f"**Stock up in:** {', '.join(cheap_months)} — prices are 15%+ below annual average.")
+    if peak_months:
+        st.warning(f"**Avoid buying in:** {', '.join(peak_months)} — prices are 15%+ above average. Use stored inventory.")
+
+    # Yield comparison table
+    st.markdown("#### Feedstock Yield Comparison")
+    yield_rows = []
+    for feed, y in FEEDSTOCK_YIELDS.items():
+        tpd = cfg.get("capacity_tpd", 20)
+        daily_oil_mt = tpd * y["bio_oil"] / 100
+        ann_oil_mt   = daily_oil_mt * cfg.get("working_days", 300)
+        yield_rows.append({
+            "Feedstock":      feed.replace("_", " ").title(),
+            "Bio-Oil %":      y["bio_oil"],
+            "Bio-Char %":     y["bio_char"],
+            "Syngas %":       y["syngas"],
+            "Moisture %":     y["moisture"],
+            "Quality":        y["quality"],
+            f"Oil MT/day @{tpd:.0f}TPD": round(daily_oil_mt, 1),
+            "Annual Oil MT":  round(ann_oil_mt, 0),
+        })
+    import pandas as pd
+    df_yields = pd.DataFrame(yield_rows)
+    st.dataframe(df_yields, use_container_width=True, hide_index=True)
+
+except ImportError:
+    st.warning("seasonal_engine not found.")
+except Exception as e:
+    st.error(f"Seasonal engine error: {e}")
+
+
 # ── Next Steps Navigation ──
 try:
     from engines.page_navigation import add_next_steps

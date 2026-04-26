@@ -1,6 +1,7 @@
 """
 AI Full Consultant — 6 capability areas in one page
 Tabs: Cross-Validate | Viability Check | Permissions | Layout | BOM | Free Chat
+All inputs pre-filled from live project config (state_manager).
 """
 import json
 import streamlit as st
@@ -14,6 +15,8 @@ from engines.ai_engine import (
     ai_financial_analysis, SYSTEM_PROMPT_BASE,
     load_ai_config, get_ai_provider_summary,
 )
+from state_manager import init_state, get_config
+from config import STATES
 
 # ── page config ───────────────────────────────────────────────────────
 st.set_page_config(
@@ -21,6 +24,7 @@ st.set_page_config(
     page_icon="🤖",
     layout="wide",
 )
+init_state()
 
 # ── shared styles ─────────────────────────────────────────────────────
 st.markdown("""
@@ -43,8 +47,20 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# ── load live project config ──────────────────────────────────────────
+_live = get_config()
+_def_cap   = float(_live.get("capacity_tpd", 20.0))
+_def_inv   = float(_live.get("investment_cr", 6.5) or 6.5)
+_def_state = _live.get("state", "Haryana")
+_def_city  = _live.get("location", "")
+_def_roi   = float(_live.get("roi_pct", 22.0) or 22.0)
+_def_irr   = float(_live.get("irr_pct", 26.0) or 26.0)
+_def_dscr  = float(_live.get("dscr_yr3", 1.35) or 1.35)
+_def_bev   = int(_live.get("break_even_months", 28) or 28)
+_def_rev5  = int(_live.get("revenue_yr5_lac", 0) or 0)
+
 # ══════════════════════════════════════════════════════════════════════
-# SIDEBAR — provider status + quick config
+# SIDEBAR — provider status + quick config (pre-filled from live project)
 # ══════════════════════════════════════════════════════════════════════
 with st.sidebar:
     st.markdown("### 🤖 AI Provider Status")
@@ -60,33 +76,44 @@ with st.sidebar:
             unsafe_allow_html=True,
         )
     st.divider()
-    st.markdown("**Tip:** Set API keys in ⚙️ Settings page for best results. Groq free key recommended.")
-    st.divider()
+    st.caption("Pre-filled from Project Setup. Change here to override for this session.")
     st.markdown("#### Quick Project Config")
-    sb_cap = st.number_input("Capacity (TPD)", 1.0, 200.0, 5.0, 1.0, key="sb_cap")
-    sb_inv = st.number_input("Investment (Rs Cr)", 0.5, 100.0, 6.5, 0.5, key="sb_inv")
-    sb_state = st.selectbox("State", [
+    _state_list = STATES if "STATES" in dir() else [
         "Haryana", "Maharashtra", "Gujarat", "Rajasthan", "Punjab",
         "Uttar Pradesh", "Madhya Pradesh", "Karnataka", "Odisha",
         "West Bengal", "Tamil Nadu", "Telangana", "Andhra Pradesh",
         "Jharkhand", "Bihar", "Chhattisgarh",
-    ], key="sb_state")
-    sb_city = st.text_input("City / Location", "Bahadurgarh", key="sb_city")
+    ]
+    _state_idx = _state_list.index(_def_state) if _def_state in _state_list else 0
+    sb_cap   = st.number_input("Capacity (TPD)",      1.0, 200.0, _def_cap,   1.0,  key="sb_cap")
+    sb_inv   = st.number_input("Investment (Rs Cr)",  0.5, 200.0, _def_inv,   0.5,  key="sb_inv")
+    sb_state = st.selectbox("State", _state_list, index=_state_idx, key="sb_state")
+    sb_city  = st.text_input("City / Location", _def_city, key="sb_city")
+    with st.expander("Financial Metrics"):
+        sb_roi  = st.number_input("ROI (%)",         0.0, 100.0, _def_roi,  0.5, key="sb_roi")
+        sb_irr  = st.number_input("IRR (%)",         0.0, 100.0, _def_irr,  0.5, key="sb_irr")
+        sb_dscr = st.number_input("DSCR Year 3",     0.0,   5.0, _def_dscr, 0.05,key="sb_dscr")
+        sb_bev  = st.number_input("Break-even (mo)", 6,     120,  _def_bev,  1,   key="sb_bev")
+        sb_rev5 = st.number_input("Revenue Yr5 (Lac)",0,  50000, _def_rev5, 50,  key="sb_rev5")
 
 def _sidebar_cfg():
+    inv = st.session_state.get("sb_inv", _def_inv)
     return {
-        "capacity_tpd": st.session_state.get("sb_cap", 5.0),
-        "investment_cr": st.session_state.get("sb_inv", 6.5),
-        "state": st.session_state.get("sb_state", "Haryana"),
-        "location": st.session_state.get("sb_city", ""),
-        "pm_cost_cr": round(st.session_state.get("sb_inv", 6.5) * 0.57, 2),
-        "civil_cost_cr": round(st.session_state.get("sb_inv", 6.5) * 0.17, 2),
-        "utility_cost_cr": round(st.session_state.get("sb_inv", 6.5) * 0.10, 2),
-        "wc_cr": round(st.session_state.get("sb_inv", 6.5) * 0.12, 2),
-        "preop_cr": round(st.session_state.get("sb_inv", 6.5) * 0.04, 2),
-        "roi_pct": 22.0, "irr_pct": 26.0, "dscr_yr3": 1.35,
-        "break_even_months": 28, "revenue_yr5_lac": 0,
-        "util_yr1": 60,
+        "capacity_tpd":      st.session_state.get("sb_cap",   _def_cap),
+        "investment_cr":     inv,
+        "state":             st.session_state.get("sb_state",  _def_state),
+        "location":          st.session_state.get("sb_city",   _def_city),
+        "pm_cost_cr":        round(inv * 0.57, 2),
+        "civil_cost_cr":     round(inv * 0.17, 2),
+        "utility_cost_cr":   round(inv * 0.10, 2),
+        "wc_cr":             round(inv * 0.12, 2),
+        "preop_cr":          round(inv * 0.04, 2),
+        "roi_pct":           st.session_state.get("sb_roi",   _def_roi),
+        "irr_pct":           st.session_state.get("sb_irr",   _def_irr),
+        "dscr_yr3":          st.session_state.get("sb_dscr",  _def_dscr),
+        "break_even_months": st.session_state.get("sb_bev",   _def_bev),
+        "revenue_yr5_lac":   st.session_state.get("sb_rev5",  _def_rev5),
+        "util_yr1":          60,
     }
 
 

@@ -48,70 +48,141 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════
-# API KEY INPUT — All 4 paid/free providers
+# API KEY INPUT — All 11 providers (FREE first, then PAID)
 # ══════════════════════════════════════════════════════════════════════
 st.subheader("1. API Keys")
-st.caption("Keys stored locally in `data/ai_config.json` — never uploaded anywhere except the AI provider")
+st.caption("Keys stored locally in `data/ai_config.json` — never sent anywhere except the AI provider you call")
 
-c1, c2 = st.columns(2)
-with c1:
-    st.markdown("### OpenAI (GPT-4o)")
-    st.markdown("[Get key](https://platform.openai.com/api-keys) — Free tier, then pay-per-use")
-    openai_key = st.text_input("OpenAI API Key", value=ai_cfg.get("openai_key", ""),
-                                type="password", placeholder="sk-...", key="openai_key_in")
-    openai_model = st.selectbox("Model", ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini"],
-                                 index=["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini"].index(
-                                     ai_cfg.get("openai_model", "gpt-4o-mini")))
+# ── FREE PROVIDERS ─────────────────────────────────────────────────────
+st.markdown("#### FREE Providers — Add these first (no credit card needed)")
+f1, f2, f3 = st.columns(3)
 
-    st.markdown("### Gemini (Google AI)")
-    st.markdown("[Get FREE key](https://aistudio.google.com/apikey) — Free tier, no payment needed")
+with f1:
+    st.markdown("**Groq** — Fastest (Llama 3.3 70B)")
+    st.caption("console.groq.com → API Keys → Create")
+    groq_key = st.text_input("Groq API Key", value=ai_cfg.get("groq_key", ""),
+                              type="password", placeholder="gsk_...", key="groq_key_in")
+
+    st.markdown("**OpenRouter** — 100+ free models")
+    st.caption("openrouter.ai/keys → Create Key")
+    openrouter_key = st.text_input("OpenRouter Key", value=ai_cfg.get("openrouter_key", ""),
+                                    type="password", placeholder="sk-or-...", key="or_key_in")
+
+with f2:
+    st.markdown("**Cerebras** — Ultra fast (fastest inference)")
+    st.caption("cloud.cerebras.ai → API Keys")
+    cerebras_key = st.text_input("Cerebras API Key", value=ai_cfg.get("cerebras_key", ""),
+                                  type="password", placeholder="csk_...", key="cerebras_key_in")
+
+    st.markdown("**Gemini (Google AI)**")
+    st.caption("aistudio.google.com/apikey — Free 1M ctx")
     gemini_key = st.text_input("Gemini API Key", value=ai_cfg.get("gemini_key", ""),
                                 type="password", placeholder="AIza...", key="gemini_key_in")
-    st.caption("Without key: Gemini Flash free tier works for basic questions. With key: higher limits.")
 
-with c2:
-    st.markdown("### Anthropic Claude")
-    st.markdown("[Get key](https://console.anthropic.com/settings/keys)")
-    claude_key = st.text_input("Claude API Key", value=ai_cfg.get("claude_key", ""),
-                                type="password", placeholder="sk-ant-...", key="claude_key_in")
-    claude_model = st.selectbox("Model", ["claude-sonnet-4-6", "claude-opus-4-7", "claude-haiku-4-5-20251001"],
-                                 index=["claude-sonnet-4-6", "claude-opus-4-7", "claude-haiku-4-5-20251001"].index(
-                                     ai_cfg.get("claude_model", "claude-sonnet-4-6")), key="claude_model_sel")
+with f3:
+    st.markdown("**Mistral** — EU-hosted, privacy-first")
+    st.caption("console.mistral.ai → API Keys")
+    mistral_key = st.text_input("Mistral API Key", value=ai_cfg.get("mistral_key", ""),
+                                 type="password", placeholder="...", key="mistral_key_in")
 
-    st.markdown("### DeepSeek (Ultra Cheap)")
-    st.markdown("[Get key](https://platform.deepseek.com) — ₹0.05-0.15 per 1000 questions")
-    deepseek_key = st.text_input("DeepSeek API Key", value=ai_cfg.get("deepseek_key", ""),
-                                  type="password", placeholder="sk-...", key="deepseek_key_in")
-    st.caption("Best quality per rupee. Excellent for bulk AI usage.")
+    st.markdown("**GitHub Models** — Free for GitHub users")
+    st.caption("github.com/settings/tokens → Generate (classic)")
+    github_token = st.text_input("GitHub Token", value=ai_cfg.get("github_token", ""),
+                                  type="password", placeholder="ghp_...", key="github_key_in")
+
+# ── LOCAL PROVIDER ─────────────────────────────────────────────────────
+st.markdown("**Ollama (Local — Truly unlimited, no internet needed)**")
+ol1, ol2 = st.columns(2)
+with ol1:
+    ollama_host = st.text_input("Ollama Host", value=ai_cfg.get("ollama_host", "http://localhost:11434"),
+                                 key="ollama_host_in")
+with ol2:
+    ollama_model = st.text_input("Ollama Model", value=ai_cfg.get("ollama_model", "llama3.2"),
+                                  key="ollama_model_in")
+    st.caption("Run: `ollama pull llama3.2` to download model")
 
 st.markdown("---")
 
-# Preferred provider
+# ── PAID PROVIDERS ─────────────────────────────────────────────────────
+st.markdown("#### PAID Providers (Optional — best quality)")
+p1, p2 = st.columns(2)
+
+with p1:
+    st.markdown("**OpenAI (GPT-4o)**")
+    openai_key = st.text_input("OpenAI API Key", value=ai_cfg.get("openai_key", ""),
+                                type="password", placeholder="sk-...", key="openai_key_in")
+    openai_model = st.selectbox("OpenAI Model", ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini"],
+                                 index=["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini"].index(
+                                     ai_cfg.get("openai_model", "gpt-4o-mini")), key="openai_model_sel")
+
+    st.markdown("**DeepSeek (Cheapest paid — ₹0.05–0.15/1k)**")
+    deepseek_key = st.text_input("DeepSeek API Key", value=ai_cfg.get("deepseek_key", ""),
+                                  type="password", placeholder="sk-...", key="deepseek_key_in")
+
+with p2:
+    st.markdown("**Anthropic Claude (Best writing quality)**")
+    claude_key = st.text_input("Claude API Key", value=ai_cfg.get("claude_key", ""),
+                                type="password", placeholder="sk-ant-...", key="claude_key_in")
+    claude_model = st.selectbox("Claude Model",
+                                 ["claude-sonnet-4-6", "claude-opus-4-7", "claude-haiku-4-5-20251001"],
+                                 index=["claude-sonnet-4-6", "claude-opus-4-7", "claude-haiku-4-5-20251001"].index(
+                                     ai_cfg.get("claude_model", "claude-sonnet-4-6")), key="claude_model_sel")
+
+st.markdown("---")
+
+# ── PREFERRED PROVIDER ─────────────────────────────────────────────────
 st.subheader("2. Preferred AI Provider")
-providers = ["openai", "claude", "gemini", "deepseek"]
-provider_labels = {"openai": "OpenAI (GPT)", "claude": "Claude (Anthropic)",
-                   "gemini": "Gemini (Google)", "deepseek": "DeepSeek"}
-current_pref = ai_cfg.get("preferred_provider", "openai")
-if current_pref not in providers:
-    current_pref = "openai"
-preferred = st.radio("Primary provider (others are automatic fallback):",
-                      providers, format_func=lambda x: provider_labels[x],
-                      index=providers.index(current_pref), horizontal=True)
-st.caption("If preferred fails, system auto-tries: next paid → Gemini free → Offline engine. User never sees failure.")
+all_providers   = ["groq", "cerebras", "gemini", "mistral", "openrouter", "github",
+                   "openai", "claude", "deepseek", "ollama"]
+provider_labels = {
+    "groq":        "Groq (FREE — fastest)",
+    "cerebras":    "Cerebras (FREE — ultra fast)",
+    "gemini":      "Gemini (FREE — Google)",
+    "mistral":     "Mistral (FREE — EU)",
+    "openrouter":  "OpenRouter (FREE — 100+ models)",
+    "github":      "GitHub Models (FREE)",
+    "openai":      "OpenAI (PAID — GPT-4o)",
+    "claude":      "Claude (PAID — Anthropic)",
+    "deepseek":    "DeepSeek (PAID — cheapest)",
+    "ollama":      "Ollama (LOCAL — unlimited)",
+}
+current_pref = ai_cfg.get("preferred_provider", "groq")
+if current_pref not in all_providers:
+    current_pref = "groq"
+preferred = st.selectbox("Primary provider (others are automatic fallback):",
+                          all_providers,
+                          format_func=lambda x: provider_labels[x],
+                          index=all_providers.index(current_pref),
+                          key="pref_provider_sel")
+st.caption("Fallback chain: Groq → Cerebras → Gemini → Mistral → OpenRouter → GitHub → Ollama → OpenAI → Claude → DeepSeek → Offline")
 
 st.markdown("---")
 
 # SAVE
 if st.button("SAVE ALL API SETTINGS", type="primary", key="save_ai"):
     new_config = {
-        "openai_key": openai_key, "claude_key": claude_key,
-        "gemini_key": gemini_key, "deepseek_key": deepseek_key,
-        "openai_model": openai_model, "claude_model": claude_model,
-        "gemini_model": "gemini-2.0-flash", "deepseek_model": "deepseek-chat",
+        # Free
+        "groq_key":        groq_key,
+        "cerebras_key":    cerebras_key,
+        "gemini_key":      gemini_key,
+        "mistral_key":     mistral_key,
+        "openrouter_key":  openrouter_key,
+        "github_token":    github_token,
+        "ollama_host":     ollama_host,
+        "ollama_model":    ollama_model,
+        # Paid
+        "openai_key":      openai_key,
+        "openai_model":    openai_model,
+        "claude_key":      claude_key,
+        "claude_model":    claude_model,
+        "deepseek_key":    deepseek_key,
+        # Settings
+        "gemini_model":    "gemini-2.0-flash",
+        "deepseek_model":  "deepseek-chat",
         "preferred_provider": preferred,
     }
     save_ai_config(new_config)
-    st.success("All API settings saved! 6-provider fallback chain active.")
+    st.success("All 11 provider settings saved! Full failover chain active.")
     st.rerun()
 
 st.markdown("---")

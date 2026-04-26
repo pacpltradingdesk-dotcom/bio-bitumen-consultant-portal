@@ -629,17 +629,22 @@ def recalculate():
     cfg["equity_cr"] = round(inv_cr * cfg["equity_ratio"], 2)
 
     # ── Production ────────────────────────────────────────────────
-    output_per_day = tpd * OIL_YIELD  # MT output/day
+    # Use editable yield from config (bio_oil_yield_pct slider) — was hardcoded OIL_YIELD=0.40
+    oil_yield  = cfg.get("bio_oil_yield_pct", 32) / 100   # e.g. 32% → 0.32
+    char_yield = cfg.get("bio_char_yield_pct", 28) / 100  # e.g. 28% → 0.28
+    output_per_day = tpd * oil_yield   # MT bio-oil output/day
     annual_output_full = output_per_day * days  # at 100% util
     cfg["annual_production_mt"] = round(annual_output_full, 0)
+    cfg["oil_yield_used"]  = oil_yield
+    cfg["char_yield_used"] = char_yield
 
     # ── Revenue per MT ────────────────────────────────────────────
     if cfg["product_model"] == "bitumen":
         rev_per_mt = cfg["selling_price_per_mt"] + cfg["biochar_price_per_mt"] + cfg["syngas_value_per_mt"]
     else:
         # Oil+char model: convert to per-MT-output equivalent
-        rev_per_mt = (cfg["oil_price_per_litre"] * 1000 * OIL_YIELD +
-                      cfg["char_price_per_kg"] * 1000 * CHAR_YIELD) / OIL_YIELD
+        rev_per_mt = (cfg["oil_price_per_litre"] * 1000 * oil_yield +
+                      cfg["char_price_per_kg"] * 1000 * char_yield) / oil_yield
     cfg["total_revenue_per_mt"] = round(rev_per_mt, 0)
 
     # ── Variable cost per MT ──────────────────────────────────────
@@ -720,29 +725,44 @@ def recalculate():
     else:
         cfg["roi_pct"] = 0
 
-    # ── Break-Even ────────────────────────────────────────────────
+    # ── Break-Even (Total Investment Payback Period) ──────────────
+    # Definition: months to recover full investment via cash accrual
     if len(timeline) > 0:
-        avg_monthly = sum(t["PAT (Lac)"] for t in timeline[:5]) / 60  # avg monthly over 5 yrs
-        if avg_monthly > 0:
-            cfg["break_even_months"] = int(np.ceil(inv_lac / (avg_monthly + timeline[0].get("Depreciation (Lac)", 0) / 12)))
+        avg_monthly_cash = sum(t["Cash Accrual (Lac)"] for t in timeline[:5]) / 60
+        if avg_monthly_cash > 0:
+            cfg["break_even_months"] = int(np.ceil(inv_lac / avg_monthly_cash))
         else:
             cfg["break_even_months"] = 0
     else:
         cfg["break_even_months"] = 0
+    cfg["break_even_label"] = "Total Investment Payback (months)"
 
-    # ── IRR (Newton-Raphson) ──────────────────────────────────────
+    # ── IRR (Newton-Raphson with proper amortization) ─────────────
+    # Build amortization schedule to correctly separate interest vs principal
     equity_lac = cfg["equity_cr"] * 100
+    loan_bal   = cfg["loan_cr"] * 100
+    r_mth      = cfg["interest_rate"] / 12
+    emi_lac    = cfg["emi_lac_mth"]
     cash_flows = [-equity_lac]
     for t in timeline:
-        cash_flows.append(t["Cash Accrual (Lac)"] - cfg["emi_lac_mth"] * 12 * 0.5)  # approx principal
+        # principal repaid this year = total EMI payments minus interest on opening balance
+        interest_yr = loan_bal * cfg["interest_rate"]
+        principal_yr = min(emi_lac * 12 - interest_yr, loan_bal)
+        principal_yr = max(0, principal_yr)
+        loan_bal = max(0, loan_bal - principal_yr)
+        free_cf = t["Cash Accrual (Lac)"] - principal_yr
+        cash_flows.append(free_cf)
     try:
         irr = 0.20
-        for _ in range(100):
-            npv = sum(cf / (1 + irr)**i for i, cf in enumerate(cash_flows))
+        for _ in range(200):
+            npv  = sum(cf / (1 + irr)**i for i, cf in enumerate(cash_flows))
             dnpv = sum(-i * cf / (1 + irr)**(i + 1) for i, cf in enumerate(cash_flows))
             if abs(dnpv) < 1e-10:
                 break
-            irr = irr - npv / dnpv
+            delta = npv / dnpv
+            irr   = irr - delta
+            if abs(delta) < 1e-8:
+                break
         cfg["irr_pct"] = round(max(0, min(irr * 100, 200)), 1)
     except Exception:
         cfg["irr_pct"] = 0
