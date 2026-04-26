@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>YUGA PMC — Navigation & System Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #15130F;
+  --panel: #1E1B16;
+  --panel-2: #252119;
+  --panel-3: #2A2620;
+  --border: #2E2A22;
+  --border-soft: #38332B;
+  --text: #E8E4DA;
+  --text-dim: #948D7E;
+  --text-faint: #5A5447;
+  --gold: #E8B547;
+  --gold-soft: #C99A3A;
+  --gold-glow: rgba(232, 181, 71, 0.15);
+  --green: #5FB37C;
+  --green-bg: rgba(95, 179, 124, 0.12);
+  --amber: #E8A547;
+  --amber-bg: rgba(232, 165, 71, 0.12);
+  --red: #D87055;
+  --red-bg: rgba(216, 112, 85, 0.12);
+  --blue: #6B96B8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 80% -10%, rgba(232,181,71,0.06), transparent 50%),
+    radial-gradient(circle at -10% 110%, rgba(107,150,184,0.04), transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* ───────────────────────── SIDEBAR ───────────────────────── */
+.sidebar {
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 20px 0 40px;
+  overflow-y: auto;
+  max-height: 100vh;
+  position: sticky;
+  top: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.brand {
+  padding: 0 20px 18px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1A1612;
+  letter-spacing: -0.04em;
+}
+.brand h1 {
+  font-family: 'Fraunces', serif;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.brand p {
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin-top: 1px;
+}
+
+.search {
+  margin: 0 16px 14px;
+  position: relative;
+}
+.search input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px 8px 32px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.15s;
+}
+.search input:focus { border-color: var(--gold-soft); box-shadow: 0 0 0 2px var(--gold-glow); }
+.search input::placeholder { color: var(--text-faint); }
+.search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-faint);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.nav-group {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+
+.nav-group-header {
+  padding: 11px 20px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.nav-group-header:hover { background: rgba(232,181,71,0.04); }
+
+.nav-group-title {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: var(--text-dim);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-group-icon { font-size: 12px; color: var(--gold-soft); }
+
+.nav-group-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-group-count {
+  font-size: 10px;
+  color: var(--text-faint);
+  font-family: 'JetBrains Mono', monospace;
+}
+.chevron {
+  transition: transform 0.2s;
+  color: var(--text-faint);
+  font-size: 9px;
+  display: inline-block;
+}
+.nav-group.collapsed .chevron { transform: rotate(-90deg); }
+
+.nav-group-items {
+  padding: 2px 0 10px;
+  max-height: 1000px;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+}
+.nav-group.collapsed .nav-group-items { max-height: 0; padding: 0; }
+
+.nav-item {
+  padding: 6px 20px 6px 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+  position: relative;
+}
+.nav-item:hover {
+  color: var(--text);
+  background: rgba(232,181,71,0.04);
+}
+.nav-item.active {
+  color: var(--gold);
+  background: linear-gradient(90deg, var(--gold-glow), transparent);
+  border-left-color: var(--gold);
+  font-weight: 500;
+}
+.nav-item-label { flex: 1; }
+.nav-item-new {
+  font-size: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(232,181,71,0.15);
+  color: var(--gold);
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+}
+.health-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.health-dot.ok   { background: var(--green); box-shadow: 0 0 6px rgba(95,179,124,0.5); }
+.health-dot.warn { background: var(--amber); box-shadow: 0 0 6px rgba(232,165,71,0.5); }
+.health-dot.err  { background: var(--red);   box-shadow: 0 0 6px rgba(216,112,85,0.5); animation: pulse 1.5s infinite; }
+.health-dot.idle { background: var(--text-faint); }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ───────────────────────── MAIN ───────────────────────── */
+.main {
+  padding: 32px 40px 60px;
+  overflow-y: auto;
+  max-width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.header-title h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  margin-bottom: 6px;
+  line-height: 1.1;
+}
+.header-title h2 em {
+  font-style: italic;
+  color: var(--gold);
+  font-weight: 500;
+}
+.header-title p {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+.header-title p .live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-right: 6px;
+  animation: pulse 2s infinite;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+button.btn {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 16px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+button.btn:hover { border-color: var(--gold-soft); color: var(--gold); background: var(--panel-2); }
+button.btn.primary {
+  background: var(--gold);
+  color: #1A1612;
+  border-color: var(--gold);
+  font-weight: 600;
+}
+button.btn.primary:hover { background: var(--gold-soft); color: #1A1612; border-color: var(--gold-soft); }
+
+/* STATS */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.stat {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+.stat:hover { border-color: var(--border-soft); transform: translateY(-1px); }
+
+.stat::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--text-faint);
+}
+.stat.ok::before   { background: var(--green); }
+.stat.warn::before { background: var(--amber); }
+.stat.err::before  { background: var(--red); }
+.stat.gold::before { background: var(--gold); }
+
+.stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-family: 'Fraunces', serif;
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+.stat.ok .stat-value   { color: var(--green); }
+.stat.warn .stat-value { color: var(--amber); }
+.stat.err .stat-value  { color: var(--red); }
+.stat.gold .stat-value { color: var(--gold); }
+
+.stat-sub {
+  font-size: 12px;
+  color: var(--text-faint);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* NEW-SESSION BANNER */
+.session-banner {
+  background: linear-gradient(90deg, rgba(232,181,71,0.08), transparent);
+  border: 1px solid rgba(232,181,71,0.2);
+  border-radius: 8px;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+.session-banner-icon { font-size: 18px; }
+.session-banner strong { color: var(--gold); }
+.session-banner-tags { margin-left: auto; display: flex; gap: 6px; }
+.session-tag {
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(232,181,71,0.12);
+  color: var(--gold);
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid rgba(232,181,71,0.2);
+}
+
+/* TABLE */
+.table-wrap {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table-header {
+  padding: 18px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.table-header h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.table-header h3 small {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-left: 8px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--bg);
+  padding: 3px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+}
+.filter-tab {
+  padding: 5px 11px;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-weight: 500;
+  transition: all 0.15s;
+  user-select: none;
+}
+.filter-tab:hover { color: var(--text); }
+.filter-tab.active {
+  background: var(--panel-2);
+  color: var(--gold);
+}
+
+.table-scroll { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+th {
+  text-align: left;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  padding: 12px 16px;
+  font-weight: 600;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+th:first-child { padding-left: 22px; }
+th:last-child  { padding-right: 22px; }
+
+td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  vertical-align: middle;
+}
+td:first-child { padding-left: 22px; }
+td:last-child  { padding-right: 22px; }
+
+tr:last-child td { border-bottom: none; }
+tbody tr { transition: background 0.1s; }
+tbody tr:hover { background: rgba(232,181,71,0.025); }
+tbody tr.new-row { background: rgba(232,181,71,0.04); }
+tbody tr.new-row:hover { background: rgba(232,181,71,0.07); }
+
+.module-name {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.new-badge {
+  font-size: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(232,181,71,0.15);
+  color: var(--gold);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.module-cat {
+  font-size: 10.5px;
+  color: var(--text-faint);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: 'JetBrains Mono', monospace;
+  white-space: nowrap;
+}
+.status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.status.ok   { background: var(--green-bg); color: var(--green); }
+.status.ok::before   { background: var(--green); }
+.status.warn { background: var(--amber-bg); color: var(--amber); }
+.status.warn::before { background: var(--amber); }
+.status.err  { background: var(--red-bg);   color: var(--red); }
+.status.err::before  { background: var(--red); animation: pulse 1.5s infinite; }
+.status.idle { background: rgba(148,141,126,0.1); color: var(--text-dim); }
+.status.idle::before { background: var(--text-dim); }
+
+.tag {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.tag.has      { color: var(--green); border-color: rgba(95,179,124,0.25);  background: rgba(95,179,124,0.05); }
+.tag.has-gold { color: var(--gold);  border-color: rgba(232,181,71,0.25);  background: rgba(232,181,71,0.05); }
+.tag.no       { color: var(--text-faint); border-style: dashed; }
+
+.last-run {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  white-space: nowrap;
+}
+
+.toggle {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  background: var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggle::after {
+  content: "";
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  background: var(--text-dim);
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+.toggle.on { background: rgba(95,179,124,0.3); }
+.toggle.on::after { left: 16px; background: var(--green); }
+
+.actions { display: flex; gap: 4px; }
+.icon-btn {
+  width: 28px; height: 28px;
+  border-radius: 5px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+.icon-btn:hover {
+  background: var(--bg);
+  border-color: var(--border);
+  color: var(--gold);
+}
+
+.legend-row {
+  display: flex;
+  gap: 24px;
+  padding: 12px 22px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+  background: var(--bg);
+}
+.legend-item {
+  font-size: 11px;
+  color: var(--text-faint);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+@media (max-width: 1100px) {
+  .app   { grid-template-columns: 1fr; }
+  .sidebar { position: relative; max-height: none; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">Y</div>
+    <div>
+      <h1>YUGA PMC</h1>
+      <p>Bio-Bitumen Consultant</p>
+    </div>
+  </div>
+
+  <div class="search">
+    <span class="search-icon">⌕</span>
+    <input type="text" placeholder="Search modules..." id="navSearch" />
+  </div>
+
+  <nav id="navContainer"></nav>
+</aside>
+
+<!-- ═══════════════════════ MAIN ═══════════════════════ -->
+<main class="main">
+  <div class="header">
+    <div class="header-title">
+      <h2>System <em>Health</em></h2>
+      <p><span class="live-dot"></span>Live monitoring · 55 backend pipelines · last sync 12s ago</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn">⟳ Refresh</button>
+      <button class="btn">⚙ Auto-heal: ON</button>
+      <button class="btn primary">Run all checks</button>
+    </div>
+  </div>
+
+  <!-- Session banner — new additions -->
+  <div class="session-banner">
+    <span class="session-banner-icon">✦</span>
+    <span><strong>3 new modules</strong> added this session — AI Full Consultant, Guarantor AI (20-rule cross-validator), PMC Files</span>
+    <div class="session-banner-tags">
+      <span class="session-tag">page 62</span>
+      <span class="session-tag">page 84</span>
+      <span class="session-tag">page 85</span>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat ok">
+      <div class="stat-label">Healthy</div>
+      <div class="stat-value">41</div>
+      <div class="stat-sub">75% of 55 modules</div>
+    </div>
+    <div class="stat warn">
+      <div class="stat-label">Degraded</div>
+      <div class="stat-value">7</div>
+      <div class="stat-sub">slow / partial response</div>
+    </div>
+    <div class="stat err">
+      <div class="stat-label">Down</div>
+      <div class="stat-value">4</div>
+      <div class="stat-sub">need attention</div>
+    </div>
+    <div class="stat gold">
+      <div class="stat-label">Auto-Healed</div>
+      <div class="stat-value">12</div>
+      <div class="stat-sub">in last 24 hours</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <h3>Backend Modules <small id="tableCount">— 55 total</small></h3>
+      <div class="filter-tabs" id="filterTabs">
+        <div class="filter-tab active" data-filter="all">All</div>
+        <div class="filter-tab" data-filter="new">New</div>
+        <div class="filter-tab" data-filter="err">Down</div>
+        <div class="filter-tab" data-filter="warn">Degraded</div>
+        <div class="filter-tab" data-filter="no-ai">No AI</div>
+        <div class="filter-tab" data-filter="no-api">No API</div>
+        <div class="filter-tab" data-filter="no-skill">No Skill</div>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Module</th>
+            <th>Status</th>
+            <th>AI Provider</th>
+            <th>API</th>
+            <th>Skill</th>
+            <th>Last Run</th>
+            <th>Auto-Heal</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="moduleTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="legend-row">
+      <span class="legend-item"><span class="health-dot ok"></span> Healthy</span>
+      <span class="legend-item"><span class="health-dot warn"></span> Degraded</span>
+      <span class="legend-item"><span class="health-dot err"></span> Down</span>
+      <span class="legend-item"><span class="health-dot idle"></span> Not configured</span>
+      <span class="legend-item" style="color:var(--gold);border:1px solid rgba(232,181,71,0.2);padding:1px 8px;border-radius:3px;font-size:10px;">NEW</span>
+      <span class="legend-item" style="color:var(--gold);font-size:11px;">Added this session</span>
+      <span class="legend-item" style="margin-left:auto;">Auto-update: enabled · Pipeline check every 60s</span>
+    </div>
+  </div>
+</main>
+
+</div><!-- .app -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   DATA — 55 modules across 9 groups
+   isNew: true = added this session (pages 62, 84, 85)
+═══════════════════════════════════════════════════════════════════════ */
+const NAV = [
+  {
+    title: 'Overview', icon: '◈',
+    items: [
+      { name: 'Dashboard',          status: 'ok',   ai: null,          api: null,         skill: 'aggregator',      lastRun: '8s ago',  autoHeal: true  },
+      { name: 'System Health',      status: 'ok',   ai: null,          api: null,         skill: 'monitor',         lastRun: 'live',    autoHeal: true, active: true },
+      { name: 'Presenter',          status: 'ok',   ai: 'Gemini',      api: null,         skill: 'slide-engine',    lastRun: '2m ago',  autoHeal: true  },
+    ]
+  },
+  {
+    title: 'Client & Project', icon: '◐',
+    items: [
+      { name: 'Client Manager',     status: 'ok',   ai: null,          api: 'CRM',        skill: 'crud',            lastRun: '14s ago', autoHeal: true  },
+      { name: 'Project Setup',      status: 'ok',   ai: null,          api: null,         skill: 'wizard',          lastRun: '1m ago',  autoHeal: true  },
+      { name: 'Customers',          status: 'ok',   ai: null,          api: 'CRM',        skill: 'crud',            lastRun: '20s ago', autoHeal: true  },
+      { name: 'Client Journey',     status: 'warn', ai: 'Gemini',      api: null,         skill: 'flow-mapper',     lastRun: '5m ago',  autoHeal: true  },
+      { name: 'Project Standards',  status: 'ok',   ai: null,          api: null,         skill: 'rules-engine',    lastRun: '1h ago',  autoHeal: false },
+    ]
+  },
+  {
+    title: 'Market Intelligence', icon: '◑',
+    items: [
+      { name: 'Location',           status: 'ok',   ai: null,          api: 'Google Maps', skill: 'geo-lookup',     lastRun: '30s ago', autoHeal: true  },
+      { name: 'Market',             status: 'ok',   ai: 'Gemini',      api: 'Market-data', skill: 'analytics',      lastRun: '2m ago',  autoHeal: true  },
+      { name: 'Competitor Intel',   status: 'err',  ai: 'GPT-4o',      api: 'SerpAPI',     skill: 'scraper',        lastRun: '1h ago',  autoHeal: true  },
+      { name: 'News Feed',          status: 'warn', ai: null,          api: 'NewsAPI',     skill: 'rss-parser',     lastRun: '15m ago', autoHeal: true  },
+      { name: 'Weather Site',       status: 'ok',   ai: null,          api: 'OpenWeather', skill: 'forecast',       lastRun: '5m ago',  autoHeal: true  },
+    ]
+  },
+  {
+    title: 'Plant Engineering', icon: '◇',
+    items: [
+      { name: 'Technology',         status: 'ok',   ai: 'Claude',      api: null,         skill: 'tech-selector',   lastRun: '10m ago', autoHeal: true  },
+      { name: 'Three Process',      status: 'ok',   ai: null,          api: null,         skill: 'process-calc',    lastRun: '3m ago',  autoHeal: true  },
+      { name: 'Process Flow',       status: 'ok',   ai: 'Claude',      api: null,         skill: 'flow-builder',    lastRun: '5m ago',  autoHeal: true  },
+      { name: 'Plant Design',       status: 'warn', ai: 'Gemini',      api: null,         skill: 'cad-engine',      lastRun: '20m ago', autoHeal: true  },
+      { name: 'AI Plant Layouts',   status: 'ok',   ai: 'Gemini',      api: null,         skill: 'layout-gen',      lastRun: '8m ago',  autoHeal: true  },
+      { name: 'Drawings',           status: 'ok',   ai: null,          api: null,         skill: 'svg-renderer',    lastRun: '2m ago',  autoHeal: true  },
+      { name: 'AI Drawings',        status: 'err',  ai: 'GPT-Image',   api: 'OpenAI',     skill: 'img-gen',         lastRun: '2h ago',  autoHeal: true  },
+      { name: 'Raw Material',       status: 'ok',   ai: null,          api: null,         skill: 'inventory',       lastRun: '4m ago',  autoHeal: true  },
+      { name: 'Lab Testing',        status: 'idle', ai: null,          api: null,         skill: null,              lastRun: 'never',   autoHeal: false },
+      { name: 'Product Grades',     status: 'ok',   ai: null,          api: null,         skill: 'grade-calc',      lastRun: '6m ago',  autoHeal: true  },
+    ]
+  },
+  {
+    title: 'Financial Modeling', icon: '◊',
+    items: [
+      { name: 'Investment Optimizer',status: 'ok',  ai: 'Claude',      api: null,         skill: 'optimizer',       lastRun: '1m ago',  autoHeal: true  },
+      { name: 'Financial',           status: 'ok',  ai: null,          api: null,         skill: 'fin-engine',      lastRun: '30s ago', autoHeal: true  },
+      { name: 'Detailed Costing',    status: 'ok',  ai: null,          api: null,         skill: 'cost-calc',       lastRun: '2m ago',  autoHeal: true  },
+      { name: 'Working Capital',     status: 'ok',  ai: null,          api: null,         skill: 'wc-calc',         lastRun: '4m ago',  autoHeal: true  },
+      { name: 'Loan EMI',            status: 'ok',  ai: null,          api: null,         skill: 'emi-calc',        lastRun: '1m ago',  autoHeal: true  },
+      { name: 'Cash Flow 5-Year',    status: 'warn',ai: null,          api: null,         skill: 'cashflow',        lastRun: '8m ago',  autoHeal: true  },
+      { name: 'Break Even',          status: 'ok',  ai: null,          api: null,         skill: 'break-even',      lastRun: '3m ago',  autoHeal: true  },
+      { name: 'ROI Quick Calc',      status: 'ok',  ai: null,          api: null,         skill: 'roi-calc',        lastRun: '20s ago', autoHeal: true  },
+      { name: 'Capacity Compare',    status: 'ok',  ai: null,          api: null,         skill: 'compare',         lastRun: '5m ago',  autoHeal: true  },
+      { name: 'Sensitivity',         status: 'warn',ai: 'Claude',      api: null,         skill: 'monte-carlo',     lastRun: '12m ago', autoHeal: true  },
+      { name: 'State Profitability', status: 'ok',  ai: null,          api: null,         skill: 'state-compare',   lastRun: '10m ago', autoHeal: true  },
+    ]
+  },
+  {
+    title: 'Project Execution', icon: '◫',
+    items: [
+      { name: 'Timeline',            status: 'ok',  ai: null,          api: null,         skill: 'gantt-engine',    lastRun: '2m ago',  autoHeal: true  },
+      { name: 'Project Gantt',       status: 'ok',  ai: null,          api: null,         skill: 'gantt-engine',    lastRun: '2m ago',  autoHeal: true  },
+      { name: 'DPR Generator',       status: 'ok',  ai: 'Claude',      api: null,         skill: 'doc-builder',     lastRun: '1h ago',  autoHeal: true  },
+      { name: 'Vendor Emails',       status: 'err', ai: 'Gemini',      api: 'Gmail',      skill: 'mail-sender',     lastRun: '3h ago',  autoHeal: true  },
+      { name: 'Procurement',         status: 'ok',  ai: null,          api: null,         skill: 'po-manager',      lastRun: '15m ago', autoHeal: true  },
+      { name: 'Packages',            status: 'ok',  ai: null,          api: null,         skill: 'bundler',         lastRun: '10m ago', autoHeal: true  },
+      { name: 'Buyers',              status: 'ok',  ai: null,          api: null,         skill: 'crud',            lastRun: '25m ago', autoHeal: true  },
+    ]
+  },
+  {
+    title: 'Documents & Comms', icon: '◧',
+    items: [
+      { name: 'Document Hub',        status: 'ok',  ai: null,          api: 'Drive',      skill: 'file-store',      lastRun: '40s ago', autoHeal: true  },
+      { name: 'Files',               status: 'ok',  ai: null,          api: 'Drive',      skill: 'file-store',      lastRun: '40s ago', autoHeal: true  },
+      { name: 'Export Center',       status: 'ok',  ai: null,          api: null,         skill: 'pdf-builder',     lastRun: '5m ago',  autoHeal: true  },
+      { name: 'Send',                status: 'warn',ai: null,          api: 'Gmail',      skill: 'mail-sender',     lastRun: '20m ago', autoHeal: true  },
+      { name: 'Meeting Planner',     status: 'ok',  ai: 'Gemini',      api: 'Calendar',   skill: 'scheduler',       lastRun: '1m ago',  autoHeal: true  },
+      { name: 'PMC Files',           status: 'ok',  ai: null,          api: null,         skill: 'file-manager',    lastRun: '5m ago',  autoHeal: false, isNew: true },
+    ]
+  },
+  {
+    title: 'Compliance & Risk', icon: '◈',
+    items: [
+      { name: 'Compliance',          status: 'ok',  ai: null,          api: null,         skill: 'checklist',       lastRun: '1h ago',  autoHeal: false },
+      { name: 'Environmental',       status: 'ok',  ai: null,          api: null,         skill: 'env-check',       lastRun: '1h ago',  autoHeal: false },
+      { name: 'Risk Matrix',         status: 'ok',  ai: null,          api: null,         skill: 'risk-engine',     lastRun: '2h ago',  autoHeal: false },
+      { name: 'NHAI Tenders',        status: 'ok',  ai: null,          api: 'GeM Portal', skill: 'tender-scraper',  lastRun: '30m ago', autoHeal: true  },
+    ]
+  },
+  {
+    title: 'AI & Tools', icon: '◉',
+    items: [
+      { name: 'AI Advisor',          status: 'ok',  ai: 'Claude',      api: null,         skill: 'rag',             lastRun: '30s ago', autoHeal: true  },
+      { name: 'AI Meeting Copilot',  status: 'ok',  ai: 'Claude',      api: null,         skill: 'live-qa',         lastRun: 'live',    autoHeal: true  },
+      { name: 'AI Settings',         status: 'ok',  ai: null,          api: null,         skill: 'config',          lastRun: '1h ago',  autoHeal: false },
+      { name: 'Advanced Tools',      status: 'ok',  ai: null,          api: null,         skill: 'utilities',       lastRun: '20m ago', autoHeal: true  },
+      { name: 'System Calculations', status: 'ok',  ai: null,          api: null,         skill: 'calc-engine',     lastRun: '2m ago',  autoHeal: true  },
+      { name: 'Analytics',           status: 'ok',  ai: null,          api: null,         skill: 'analytics',       lastRun: '5m ago',  autoHeal: true  },
+      { name: 'Training',            status: 'idle',ai: null,          api: null,         skill: null,              lastRun: 'never',   autoHeal: false },
+      // ── NEW THIS SESSION ──────────────────────────────────────────
+      { name: 'AI Full Consultant',  status: 'ok',  ai: 'Groq+Claude', api: null,         skill: 'full-consult',    lastRun: '1m ago',  autoHeal: true, isNew: true },
+      { name: 'Guarantor AI',        status: 'ok',  ai: 'Claude',      api: null,         skill: '20-rule-audit',   lastRun: '2m ago',  autoHeal: true, isNew: true },
+    ]
+  },
+];
+
+/* ════════════════════════ RENDER SIDEBAR ════════════════════════ */
+const navContainer = document.getElementById('navContainer');
+NAV.forEach(group => {
+  const groupEl = document.createElement('div');
+  groupEl.className = 'nav-group';
+  groupEl.innerHTML = `
+    <div class="nav-group-header">
+      <span class="nav-group-title">
+        <span class="nav-group-icon">${group.icon}</span>
+        ${group.title}
+      </span>
+      <span class="nav-group-meta">
+        <span class="nav-group-count">${group.items.length}</span>
+        <span class="chevron">▾</span>
+      </span>
+    </div>
+    <div class="nav-group-items">
+      ${group.items.map(item => `
+        <div class="nav-item ${item.active ? 'active' : ''}" data-name="${item.name}">
+          <span class="nav-item-label">${item.name}</span>
+          ${item.isNew ? '<span class="nav-item-new">NEW</span>' : ''}
+          <span class="health-dot ${item.status}"></span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  navContainer.appendChild(groupEl);
+});
+
+document.querySelectorAll('.nav-group-header').forEach(h => {
+  h.addEventListener('click', () => h.parentElement.classList.toggle('collapsed'));
+});
+
+document.getElementById('navSearch').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase().trim();
+  document.querySelectorAll('.nav-group').forEach(g => {
+    let any = false;
+    g.querySelectorAll('.nav-item').forEach(it => {
+      const match = it.dataset.name.toLowerCase().includes(q);
+      it.style.display = match ? 'flex' : 'none';
+      if (match) any = true;
+    });
+    g.style.display = (any || !q) ? '' : 'none';
+    if (q) g.classList.remove('collapsed');
+  });
+});
+
+/* ════════════════════════ RENDER TABLE ════════════════════════ */
+const tbody = document.getElementById('moduleTableBody');
+
+function statusLabel(s) {
+  return { ok: 'Working', warn: 'Degraded', err: 'Down', idle: 'Not Set' }[s] || s;
+}
+function tagFor(val, type) {
+  if (!val) return `<span class="tag no">— none</span>`;
+  if (type === 'ai')    return `<span class="tag has-gold">${val}</span>`;
+  return `<span class="tag has">${val}</span>`;
+}
+
+function renderTable(filter = 'all') {
+  tbody.innerHTML = '';
+  let count = 0;
+  NAV.forEach(group => {
+    group.items.forEach(item => {
+      if (filter === 'err'      && item.status !== 'err')  return;
+      if (filter === 'warn'     && item.status !== 'warn') return;
+      if (filter === 'new'      && !item.isNew)            return;
+      if (filter === 'no-ai'    && item.ai)                return;
+      if (filter === 'no-api'   && item.api)               return;
+      if (filter === 'no-skill' && item.skill)             return;
+      count++;
+
+      const row = document.createElement('tr');
+      if (item.isNew) row.className = 'new-row';
+      row.innerHTML = `
+        <td>
+          <div class="module-name">
+            ${item.name}
+            ${item.isNew ? '<span class="new-badge">NEW</span>' : ''}
+          </div>
+          <div class="module-cat">${group.title}</div>
+        </td>
+        <td><span class="status ${item.status}">${statusLabel(item.status)}</span></td>
+        <td>${tagFor(item.ai, 'ai')}</td>
+        <td>${tagFor(item.api, 'api')}</td>
+        <td>${tagFor(item.skill, 'skill')}</td>
+        <td><span class="last-run">${item.lastRun}</span></td>
+        <td><div class="toggle ${item.autoHeal ? 'on' : ''}" data-toggle></div></td>
+        <td>
+          <div class="actions">
+            <button class="icon-btn" title="Test now">▶</button>
+            <button class="icon-btn" title="Configure">⚙</button>
+            <button class="icon-btn" title="Logs">≡</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+  });
+  document.getElementById('tableCount').textContent = `— ${count} shown`;
+
+  document.querySelectorAll('[data-toggle]').forEach(t => {
+    t.addEventListener('click', () => t.classList.toggle('on'));
+  });
+}
+renderTable();
+
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderTable(tab.dataset.filter);
+  });
+});
+</script>
+</body>
+</html>
