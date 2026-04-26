@@ -74,6 +74,24 @@ def check_auth():
 check_auth()
 init_state()
 
+# ── Background worker — starts once per server process ───────────────
+try:
+    from engines.self_healing_worker import start_worker
+    if "worker_started" not in st.session_state:
+        start_worker(interval=300)          # health check every 5 min
+        st.session_state["worker_started"] = True
+except Exception:
+    pass
+
+# ── Auto-updater — refresh market data & clean cache ─────────────────
+try:
+    from engines.auto_updater import run_startup_tasks
+    if "auto_updater_run" not in st.session_state:
+        run_startup_tasks()
+        st.session_state["auto_updater_run"] = True
+except Exception:
+    pass
+
 # CSS
 css_path = os.path.join(os.path.dirname(__file__), "assets", "style.css")
 if os.path.exists(css_path):

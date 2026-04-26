@@ -23,6 +23,13 @@ from pathlib import Path
 CACHE_DIR = Path(__file__).parent.parent / "data"
 CACHE_TTL = 3600  # 1 hour default
 
+# data.gov.in open/public API key (non-secret — published on data.gov.in portal for all users)
+# To use your own key: set env var DATAGOV_API_KEY or update data/ai_config.json
+_DATAGOV_KEY = os.environ.get(
+    "DATAGOV_API_KEY",
+    "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b"
+)
+
 
 def _cache_path(name):
     return CACHE_DIR / f"api_cache_{name}.json"
@@ -577,7 +584,7 @@ def get_mandi_prices(commodity="Rice", state="Punjab"):
         # Commodity daily price endpoint (open, no key needed for basic access)
         url = f"https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
         params = {
-            "api-key": "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b",  # data.gov.in open key
+            "api-key": _DATAGOV_KEY,  # data.gov.in open key
             "format": "json",
             "filters[commodity]": commodity,
             "filters[state]": state,
@@ -658,7 +665,7 @@ def check_all_connections():
 
     # data.gov.in
     try:
-        r = requests.get("https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key=579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b&format=json&limit=1", timeout=10)
+        r = requests.get(f"https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key={_DATAGOV_KEY}&format=json&limit=1", timeout=10)
         results["mandi"] = {"status": "LIVE" if r.ok else "OFFLINE",
                              "name": "data.gov.in Mandi Prices", "type": "free"}
     except Exception:

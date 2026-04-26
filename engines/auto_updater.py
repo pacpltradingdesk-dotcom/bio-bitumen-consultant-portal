@@ -239,3 +239,24 @@ def get_update_log(limit=50):
     except Exception:
         pass
     return []
+
+
+def run_startup_tasks(city="Vadodara"):
+    """Fast non-blocking startup tasks — called once when app.py first loads.
+    Runs lightweight checks only; kicks off background updater thread.
+    """
+    try:
+        cleanup_expired_cache(48)
+    except Exception:
+        pass
+    try:
+        check_database_health()
+    except Exception:
+        pass
+    try:
+        check_config_consistency()
+    except Exception:
+        pass
+    # Start background updater (non-blocking daemon thread)
+    start_updater(interval=300, city=city)
+    _log_action("startup", "OK", f"Startup tasks complete, updater started every 300s")

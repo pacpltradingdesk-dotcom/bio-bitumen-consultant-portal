@@ -13,3 +13,6 @@ fpdf2
 qrcode[pil]
 anthropic>=0.25.0
 openai>=1.30.0
+pdfplumber
+python-pptx
+Markdown
